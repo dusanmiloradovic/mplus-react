@@ -1,0 +1,23 @@
+{
+  "name": "mplus-react",
+  "version": "1.0.0",
+  "description": "Basic MaximoPlus React template",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dusan Miloradovic",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^16.4.1",
+    "webpack": "^4.12.0",
+    "webpack-cli": "^3.0.8"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.0.0-beta.51",
+    "@babel/preset-env": "^7.0.0-beta.51",
+    "@babel/preset-react": "^7.0.0-beta.51",
+    "babel-loader": "^8.0.0-beta.4",
+    "react-dom": "^16.4.1"
+  }
+}
