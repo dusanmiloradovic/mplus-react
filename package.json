@@ -4,7 +4,9 @@
   "description": "Basic MaximoPlus React template",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "buildweb": "rollup -c rollup.config.testweb.js"
   },
   "author": "Dusan Miloradovic",
   "license": "ISC",
@@ -15,7 +17,6 @@
     "@babel/core": "^7.0.0-beta.51",
     "@babel/preset-env": "^7.0.0-beta.51",
     "@babel/preset-react": "^7.0.0-beta.51",
-    "babel-loader": "^8.0.0-beta.4",
     "maximoplus-core": "^2.1.17",
     "react-dom": "^16.4.1",
     "rollup": "^0.61.2",
