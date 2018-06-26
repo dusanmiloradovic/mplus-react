@@ -4,6 +4,7 @@ import babel from "rollup-plugin-babel";
 
 export default {
   input: "src/mplus-react.js",
+  external: ["react", "react-dom"],
   output: {
     file: "distrollup/bundle.js",
     format: "es",

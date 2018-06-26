@@ -1,4 +1,5 @@
 import React from "react";
+import flyd from "flyd";
 
 let kont = {};
 
@@ -24,6 +25,8 @@ const getDeferredContainer = contId => {
   kont[contId] = prom;
   return prom;
 };
+
+export const animating = flyd.stream(false);
 
 class AppContainer extends React.Component {
   constructor(props) {
