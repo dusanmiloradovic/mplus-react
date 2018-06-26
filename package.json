@@ -9,21 +9,20 @@
     "buildweb": "rollup -c rollup.config.testweb.js"
   },
   "author": "Dusan Miloradovic",
-    "license": "ISC",
-    "peerDependencies":{
-	"react": "^16.4.1",
-	"maximoplus-core": "^2.1.17"
-    },
+  "license": "ISC",
+  "peerDependencies": {
+    "react": "^16.4.1",
+    "maximoplus-core": "^2.1.17"
+  },
   "dependencies": {
     "flyd": "^0.2.7"
-
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.51",
     "@babel/preset-env": "^7.0.0-beta.51",
     "@babel/preset-react": "^7.0.0-beta.51",
-      "maximoplus-core": "^2.1.17",
-      "react": "^16.4.1",
+    "maximoplus-core": "^2.1.17",
+    "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "rollup": "^0.61.2",
     "rollup-plugin-babel": "^4.0.0-beta.5",
