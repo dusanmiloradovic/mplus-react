@@ -75,13 +75,13 @@ class AppContainer extends React.Component {
 }
 
 class RelContainer extends React.Component {
-  construnctor(props) {
+  componentWillMount() {
     getDeferredContainer(this.props.container).then(mboCont => {
       let mp = new maximoplus.basecontrols.RelContainer(
         mboCont,
         this.props.relationship
       );
-      this.state = { mp: mp };
+      this.setState({ mp: mp });
       resolveContainer(this.props.id, mp);
     });
   }
@@ -171,3 +171,289 @@ const filterTemplates = {
     />
   )
 }; //also in separated file and generated from the tool
+
+export class MPlusComponent extends React.Component {
+  //the following tho methods should be overriden in the concrete implementations with
+  //MPlusComponent.prototype.pushDialog = function (dialog)...
+
+  pushDialog(dialog) {
+    //this indirection is necessary, becuase wh can override just the prototype function
+    openDialog(dialog);
+  }
+
+  popDialog() {
+    closeDialog();
+  }
+
+  componentDidMount() {
+    /*
+The components that sub-class this component may have the property container or maxcontainer (but not both).
+container is string referencing the container (AppContainer, RelContainer...), maxcontainer is the container itself (usually called from the library code).
+In case the container property is passed, we have to make sure container is available (promise is resolved), before we initiate the MaximoPlus library component (section, list...)
+    */
+    if (this.props.container && this.props.maxcontainer) {
+      throw Error("can't have both container and maxcontainer as properties");
+    }
+
+    if (this.props.container) {
+      getDeferredContainer(this.props.container).then(container => {
+        this.putContainer(container);
+      });
+    }
+    if (this.props.maxcontainer) {
+      this.putContainer(this.props.maxcontainer);
+    }
+    animating.map(val => this.setState({ animating: val })); //if component is animating don't display the change until the animation is finished
+  }
+
+  componentDidUpdate(prevProps) {
+    /*If for any reason container is changed in the property, we have to re-initialize*/
+    if (this.props.container && this.props.container != prevProps.container) {
+      getDeferredContainer(this.props.container).then(container => {
+        this.putContainer(container);
+      });
+    }
+    if (
+      this.props.maxcontainer &&
+      this.props.maxcontainer != prevProps.maxcontainer
+    ) {
+      this.put.container(this.props.maxcontainer);
+    }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.animating) {
+      return false;
+    }
+    return super.shouldComponentUpdate(nextProps, nextState);
+  }
+
+  putContainer() {
+    throw Error("should override");
+  }
+
+  getListTemplate(templateId) {
+    //this has to be overriden in the child implementation.
+    //List templates will be defined in the separate JSX file , but will be loaded with the main application
+    //(maybe again it will just define the list templates variable)
+    return listTemplates[templateId];
+  }
+
+  setInternalState(property, state) {
+    //called from the core library
+    this.setState((prevState, props) => {
+      if (property == "maxfields") {
+        //any field can have the new dialog added, we loop all the fields and add the dialog
+        //with this we move the dialog from the field level to the top level of the app
+        for (let j = 0; j < state.length; j++) {
+          let newDialogs = state[j].dialogs;
+          if (!newDialogs) {
+            continue;
+          }
+          let prevDialogs =
+            prevState.maxfields.length == 0 || !prevState.maxfields[j]
+              ? []
+              : prevState.maxfields[j].dialogs;
+          if (!prevDialogs) {
+            prevDialogs = [];
+          }
+          if (newDialogs.length < prevDialogs.length) {
+            this.popDialog();
+          }
+          if (newDialogs.length > prevDialogs.length) {
+            this.pushDialog(newDialogs[0]);
+          }
+        }
+      }
+      return { property: state };
+    });
+  }
+
+  getInternalState(property) {
+    return this.state[property];
+  }
+}
+
+export class List extends MPlusComponent {
+  initData() {
+    this.state.mp.initData();
+  }
+
+  putContainer(mboCont) {
+    let mp = new maximoplus.re.Grid(
+      mboCont,
+      this.props.columns,
+      this.props.norows
+    );
+    mp.renderDeferred();
+    if (this.props.selectableF && typeof this.props.selectableF == "function") {
+      mp.setSelectableF(this.props.selectableF);
+    }
+    mp.addWrappedComponent(this);
+    if (this.props.initdata) {
+      mp.initData();
+    }
+    this.setState({ mp: mp });
+  }
+
+  render() {
+    let drs = [];
+    if (this.state.maxrows) {
+      let template = this.getListTemplate(this.props.listTemplate);
+      if (template) {
+        drs = this.state.maxrows.map(template);
+      }
+    }
+    return this.drawList(drs, this.getFilterButton());
+  }
+
+  showFilter() {
+    let container = this.props.maxcontainer
+      ? this.props.maxcontainer
+      : kont[this.props.container];
+    this.pushDialog({
+      type: "filter",
+      maxcontainer: container,
+      filtername: this.props.filterTemplate
+    });
+  }
+
+  getFilterButton() {
+    if (this.props.filterTemplate) {
+      return <button onClick={ev => this.showFilter()}>Filter</button>;
+    }
+    return <div />;
+  }
+
+  //should ne oberriden
+  drawList(rows, button) {
+    return (
+      <div>
+        {rows}
+        {button}
+      </div>
+    );
+  }
+}
+
+export class PickerList extends List {
+  putContainer(mboCont) {
+    super.putContainer(mboCont);
+    super.initData();
+    this.props.maxpickerfield.addPickerList(this.state.mp);
+  }
+  render() {
+    let drs = [];
+    if (this.state.maxrows) {
+      drs = this.maxrows.map((object, i) => {
+        let selected = object.picked ? "selected" : "";
+        let optionKey = object.data[this.props.pickerkeycol.toUpperCase()];
+        let optionVal = object.data[this.props.pickercol.toUpperCase()];
+        let ret = <option value={optionKey}>{optionVal}</option>;
+        if (object.picked) {
+          ret = (
+            <option selected="true" value={optionKey}>
+              {optionVal}
+            </option>
+          );
+        }
+        return ret;
+      });
+    }
+    return (
+      <div>
+        <div>{this.props.label}</div>
+        <select onChange={ev => this.props.changeListener(ev.target.value)}>
+          {drs}
+        </select>
+      </div>
+    );
+  }
+}
+
+export class RadioButton extends PickerList {
+  render() {
+    let drs = [];
+    if (this.maxrows) {
+      drs = this.maxrows.map(function(object, i) {
+        let optionKey = object.data[this.props.pickerkeycol.toUpperCase()];
+        let optionVal = object.data[this.props.pickercol.toUpperCase()];
+        if (object.picked) {
+          return (
+            <label style="display:block">
+              {" "}
+              <input
+                name={this.props.label}
+                checked="checked"
+                value={optionKey}
+                onChange={ev => this.props.changeListener(ev.target.value)}
+                type="radio"
+              />
+              {optionVal}
+            </label>
+          );
+        }
+        return (
+          <label style="display:block">
+            <input
+              name={this.props.label}
+              value={optionKey}
+              onChange={ev => this.props.changeListener(ev.target.value)}
+              type="radio"
+            />
+            {optionVal}
+          </label>
+        );
+      });
+    }
+    return (
+      <fieldset>
+        <legend>{this.props.label}</legend>
+        {drs}
+      </fieldset>
+    );
+  }
+}
+
+export class TextField extends MPlusComponent {
+  render() {
+    let lookup =
+      this.props.showLookupF && typeof this.props.showLookupF == "function" ? (
+        <span onClick={this.props.showLookupF}>&#9167;</span>
+      ) : (
+        ""
+      );
+    return (
+      <div>
+        <div class="label">{this.props.label}</div>
+        <div>
+          {lookup}
+          <input
+            value={this.props.value}
+            onChange={ev => this.props.listener(ev.target.value)}
+          />
+        </div>
+      </div>
+    );
+  }
+}
+
+export class Section extends MPlusComponent {
+  putContainer(mboCont) {
+    if (!mboCont || !this.props.columns || this.props.columns.length == 0)
+      return;
+    let mp = new maximoplus.re.Section(mboCont, this.columns);
+    if (this.props.metadata) {
+      mp.addColumnsMeta(this.metadata);
+    }
+    mp.addWrappedComponent(this);
+    mp.renderDeferred();
+    this.setState({ mp: mp });
+  }
+  componentDidUpdate(prevProps) {
+    super.componentDidUpdate(prevProps);
+    if (prevProps.metadata != this.props.metadata && this.state.mp) {
+      this.state.mp.addColumnsMeta(this.props.metadata);
+    }
+  }
+}
