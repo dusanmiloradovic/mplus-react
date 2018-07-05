@@ -450,10 +450,160 @@ export class Section extends MPlusComponent {
     mp.renderDeferred();
     this.setState({ mp: mp });
   }
+
   componentDidUpdate(prevProps) {
     super.componentDidUpdate(prevProps);
     if (prevProps.metadata != this.props.metadata && this.state.mp) {
       this.state.mp.addColumnsMeta(this.props.metadata);
     }
+  }
+
+  render() {
+    let flds = [];
+    if (this.state.maxfields) {
+      flds = this.state.maxfields.map(f => {
+        if (f.metadata.picker && f.picker) {
+          let lst = f.picker.list;
+          if (lst) {
+            return (
+              <RadioButton
+                label={f.metadata.title}
+                maxcontainer={lst.listContainer}
+                selectableF={lst.selectableF}
+                pickercol={lst.pickerCol}
+                pickerkeycol={lst.pickerKeyCol}
+                columns={[lst.pickerKeyCol, lst.pickerCol]}
+                changeListener={f.listeners["change"]}
+                maxpickerfield={f.maximoField}
+                enabled={!f.readonly}
+                required={f.required}
+              />
+            );
+          } else {
+            return <div />;
+          }
+        } else {
+          let attrs = {
+            label: f.metadata.title,
+            value: f.data,
+            type: f.metadata.maxType,
+            listener: f.listeners["change"],
+            enabled: !f.readonly,
+            required: f.required
+          };
+          if (f.metadata.hasLookup) {
+            if (f.metadata.gl) {
+              attrs.showLookupF = () => f.maximoField.showGlLookup();
+            } else {
+              attrs.showLookupF = () => f.maximoField.showLookup();
+            }
+          }
+          return <TextField {...attrs} />;
+        }
+      });
+    }
+    return this.drawFields(flds);
+  }
+
+  drawFields(fields) {
+    return <div>{fields}</div>;
+  }
+}
+
+export class QbeSection extends MPlusComponent {
+  putContainer(mboCont) {
+    if (!mboCont || !this.props.columns || this.props.columns.length == 0)
+      return;
+    let mp = new maximoplus.re.QbeSection(mboCont, this.props.columns);
+
+    /*
+	 Important.
+	 The QbeSection in MaximoPlus core library is the only component where column may be the string or the javascript object. The case for javascript object is when we want to search the range in QbeSection. For that we use the standard Maximo functionality - qbePrepend. The columns have to be registered when creating the QbeSection, and the qbePrepend data has to be sent with them, this is why we have that exception. For the case of the components registered with the markup (HTML or JSX, for the web components or React), we already have the metadata defined at the same time as the columns, so we can read this from the metadata itself, and send to the  MaximoPlus constructor.
+	 */
+
+    if (this.props.qbePrepends) {
+      for (let qp of this.props.qbePrepends) {
+        this.mp.addPrependColumns(
+          qp.virtualName,
+          qp.qbePrepend,
+          qp.attributeName,
+          qp.title,
+          parseInt(qp.position)
+        );
+      }
+    }
+
+    if (this.props.metadata) {
+      mp.addColumnsMeta(this.props.metadata);
+    }
+
+    mp.addWrappedComponent(this);
+    mp.renderDeferred();
+    mp.initData();
+    this.setState({ mp: mp });
+  }
+  clear() {
+    this.state.mp.clearQbe();
+  }
+
+  search() {
+    this.state.mp.getContainer().reset(); //i dont' directly access container, becuase it could have been passed as an attribute through HTML, or directly as an object through JSX
+    if (this.state.filterDialog) {
+      this.state.filterDialog.closeDialog();
+    }
+  }
+
+  getSearchButtons() {
+    //this may not be necessary, it will render the search buttons for the dialog
+    let buttons = [
+      { label: "Search", action: ev => this.search() },
+      { label: "Clear", action: ev => this.clear() }
+    ];
+    if (this.state.filterDialog) {
+      buttons.push({
+        label: "Cancel",
+        action: ev => this.state.filterDialog.closeDialog()
+      });
+    }
+    return this.renderSearchButtons(buttons);
+  }
+
+  renderSearchButtons(buttons) {
+    let rbs = buttons.map(button => (
+      <button onClick={button.action}>{button.label}</button>
+    ));
+    return <div>{rbs}</div>;
+  }
+
+  render() {
+    let flds = [];
+    let buttons = this.getSearchButtons();
+    if (this.state.maxfields) {
+      flds = this.state.maxfields.map(f => {
+        let attrs = {
+          label: f.metadata.title,
+          value: f.data,
+          type: f.metadata.maxType,
+          enabled: true,
+          listener: f.listeners["change"]
+        };
+        if (f.metadata.hasLookup) {
+          attrs.showLookupF = () => f.maximoField.showLookup();
+          attrs.qbe = true; //in qbe mode display only the text field, not the checkbox
+        }
+        return <TextField {...attrs} />; //try to put this as a function, to be able to override. There is no indirection, or maybe HOC
+      });
+    }
+    return this.drawFields(flds, buttons);
+  }
+
+  drawFields(fields, buttons) {
+    //to be implemented in subclass
+    return (
+      <div>
+        {fields}
+        {buttons}
+      </div>
+    );
   }
 }
