@@ -30,6 +30,27 @@ export const animating = flyd.stream(false);
 
 export let rootComponent = null;
 
+export let dialogs = {
+  list: dialog => <ListDialog dialog={dialog} />,
+  qbelist: dialog => <ListDialog dialog={dialog} />,
+  filter: dialog => <filter-dialog dialog={dialog} />,
+  gl: dialog => (
+    <GLDialog
+      field={dialog.field}
+      orgid={dialog.orgid}
+      defaultAction={dialog.defaultAction}
+      closeAction={dialog.closeAction}
+    />
+  ),
+  workflow: dialog => (
+    <WorkflowDialog
+      container={dialog.container}
+      processname={dialog.processname}
+    />
+  ),
+  login: dialog => <login-dialog />
+};
+
 //this is going to be set from ref in the main component
 
 export const openDialog = dialog => {
@@ -265,7 +286,9 @@ In case the container property is passed, we have to make sure container is avai
           }
         }
       }
-      return { property: state };
+      let ret = {};
+      ret[property] = state;
+      return ret;
     });
   }
 
@@ -606,4 +629,95 @@ export class QbeSection extends MPlusComponent {
       </div>
     );
   }
+}
+
+export class DialogHolder extends React.Component {
+  render() {
+    if (!this.props.dialogs.legnth == 0) {
+      return <div />;
+    }
+    let currDialog = this.props.dialogs[this.props.dialogs.length - 1];
+    if (!currDialog) {
+      return <div />;
+    } else {
+      return this.getJSXDialog(currDialog);
+    }
+  }
+  getJSXDialog(dialog) {
+    return dialogs[dialog.type](dialog);
+  }
+}
+
+export function getListDialog(WrappedList, drawList) {
+  //HOC
+  return class extends React.Component {
+    render() {
+      return drawList(
+        this.props.dialog,
+        <WrappedList
+          norows="10"
+          listTemplate={this.props.dialog.field.metadata.listTemplate}
+          filterTemplate={this.props.dialog.field.metadata.filterTemplate}
+          maxcontainer={this.props.dialog.listContainer}
+          initdata="true"
+          columns={this.props.dialog.dialogCols}
+          selectableF={this.props.dialog.defaultAction}
+        />
+      );
+    }
+  };
+}
+
+export function getFilterDialog(FilterTemplate, drawFilter) {
+  return class extends React.Component {
+    render() {
+      let kont = this.props.maxcontainer;
+      return drawFilter(FilterTemplate(kont, this));
+    }
+    closeDialog() {
+      closeDialog();
+    }
+  };
+}
+
+export function getGLDialog(drawSegments, drawDialog, WrappedList) {
+  //glindividualsegment is a function of object with the following keys:
+  //- listener
+  //- segmentName
+  //- segmentValue
+  //- segmentDelimiter
+  //drawSegments is  a function that draws all the segments into one gl (arg - array of above objects)
+  //drawDialog draws the final dialog from all these
+  //WrappedList - concreate List implementation
+  return class extends React.Component {
+    componentDidMpunt() {
+      let mp = new maximoplus.re.GLDialog(this.props.field, this.props.orgid);
+      mp.addWrappedComponent(this);
+      this.setState({ mp: mp });
+    }
+    getInternalState(property) {
+      return this.state[property];
+    }
+
+    setInternalState(property, state) {
+      let st = {};
+      st[property] = state;
+      this.setState(st);
+    }
+
+    render() {
+      let segments = drawSegments(this.state.segments);
+      let gllist = (
+        <WrappedList
+          maxcontainer={this.state.pickerlist.glcontainer}
+          columns={this.state.pickerlist.pickercols}
+          norows="20"
+          initdata="true"
+          list-template="gllist"
+          selectableF={this.state.pickerlist.pickerf}
+        />
+      );
+      return drawDialog(segments, gllist, this.state.chooseF, closeDialog);
+    }
+  };
 }
