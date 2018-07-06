@@ -359,84 +359,82 @@ export class List extends MPlusComponent {
   }
 }
 
-export class PickerList extends List {
-  putContainer(mboCont) {
-    super.putContainer(mboCont);
-    super.initData();
-    this.props.maxpickerfield.addPickerList(this.state.mp);
-  }
-  render() {
-    let drs = [];
-    if (this.state.maxrows) {
-      drs = this.maxrows.map((object, i) => {
-        let selected = object.picked ? "selected" : "";
-        let optionKey = object.data[this.props.pickerkeycol.toUpperCase()];
-        let optionVal = object.data[this.props.pickercol.toUpperCase()];
-        let ret = <option value={optionKey}>{optionVal}</option>;
-        if (object.picked) {
-          ret = (
-            <option selected="true" value={optionKey}>
-              {optionVal}
-            </option>
+function getPickerList(drawPickerOption, drawPicker) {
+  return class extends List {
+    putContainer(mboCont) {
+      super.putContainer(mboCont);
+      super.initData();
+      this.props.maxpickerfield.addPickerList(this.state.mp);
+    }
+    render() {
+      let drs = [];
+      if (this.state.maxrows) {
+        drs = this.state.maxrows.map((object, i) => {
+          let selected = object.picked;
+          let optionKey = object.data[this.props.pickerkeycol.toUpperCase()];
+          let optionVal = object.data[this.props.pickercol.toUpperCase()];
+          return drawPickerOption(
+            this.props.label,
+            selected,
+            optionKey,
+            optionVal,
+            this.props.changeListener
           );
-        }
-        return ret;
-      });
+        });
+      }
+      return drawPicker(this.props.label, this.props.changeListener, drs);
+    }
+  };
+}
+
+const PickerList = getPickerList(
+  (label, selected, optionkey, optionval, changeListener) => {
+    let obj = {};
+    if (selected) {
+      obj[selected] = true;
     }
     return (
+      <option {...obj} value={optionkey}>
+        {optionval}
+      </option>
+    );
+  },
+  (label, changeListener, rows) => {
+    return (
       <div>
-        <div>{this.props.label}</div>
-        <select onChange={ev => this.props.changeListener(ev.target.value)}>
-          {drs}
-        </select>
+        <div>{label}</div>
+        <select onChange={ev => changeListener(ev.target.value)}>{rows}</select>
       </div>
     );
   }
-}
+);
 
-export class RadioButton extends PickerList {
-  render() {
-    let drs = [];
-    if (this.maxrows) {
-      drs = this.maxrows.map(function(object, i) {
-        let optionKey = object.data[this.props.pickerkeycol.toUpperCase()];
-        let optionVal = object.data[this.props.pickercol.toUpperCase()];
-        if (object.picked) {
-          return (
-            <label style="display:block">
-              {" "}
-              <input
-                name={this.props.label}
-                checked="checked"
-                value={optionKey}
-                onChange={ev => this.props.changeListener(ev.target.value)}
-                type="radio"
-              />
-              {optionVal}
-            </label>
-          );
-        }
-        return (
-          <label style="display:block">
-            <input
-              name={this.props.label}
-              value={optionKey}
-              onChange={ev => this.props.changeListener(ev.target.value)}
-              type="radio"
-            />
-            {optionVal}
-          </label>
-        );
-      });
+const RadioButton = getPickerList(
+  (label, selected, optionKey, optionVal, changeListener) => {
+    let objParam = {
+      name: label,
+      value: optionKey,
+      onChange: ev => changeListener(ev.target.value),
+      type: "radio"
+    };
+    if (selected) {
+      objParam["checked"] = "checked";
     }
     return (
-      <fieldset>
-        <legend>{this.props.label}</legend>
-        {drs}
-      </fieldset>
+      <label style="display:block">
+        {" "}
+        <input {...objParam} />
+        {optionVal}
+      </label>
     );
-  }
-}
+  },
+  (label, changeListener, rows) => (
+    <fieldset>
+      <legend>{label}</legend>
+      {rows}>
+    </fieldset>
+  )
+);
 
 export class TextField extends MPlusComponent {
   render() {
@@ -461,174 +459,157 @@ export class TextField extends MPlusComponent {
   }
 }
 
-export class Section extends MPlusComponent {
-  putContainer(mboCont) {
-    if (!mboCont || !this.props.columns || this.props.columns.length == 0)
-      return;
-    let mp = new maximoplus.re.Section(mboCont, this.columns);
-    if (this.props.metadata) {
-      mp.addColumnsMeta(this.metadata);
+export function getSection(WrappedTextField, WrappedPicker, drawFields) {
+  return class extends MPlusComponent {
+    putContainer(mboCont) {
+      if (!mboCont || !this.props.columns || this.props.columns.length == 0)
+        return;
+      let mp = new maximoplus.re.Section(mboCont, this.columns);
+      if (this.props.metadata) {
+        mp.addColumnsMeta(this.metadata);
+      }
+      mp.addWrappedComponent(this);
+      mp.renderDeferred();
+      this.setState({ mp: mp });
     }
-    mp.addWrappedComponent(this);
-    mp.renderDeferred();
-    this.setState({ mp: mp });
-  }
 
-  componentDidUpdate(prevProps) {
-    super.componentDidUpdate(prevProps);
-    if (prevProps.metadata != this.props.metadata && this.state.mp) {
-      this.state.mp.addColumnsMeta(this.props.metadata);
+    componentDidUpdate(prevProps) {
+      super.componentDidUpdate(prevProps);
+      if (prevProps.metadata != this.props.metadata && this.state.mp) {
+        this.state.mp.addColumnsMeta(this.props.metadata);
+      }
     }
-  }
 
-  render() {
-    let flds = [];
-    if (this.state.maxfields) {
-      flds = this.state.maxfields.map(f => {
-        if (f.metadata.picker && f.picker) {
-          let lst = f.picker.list;
-          if (lst) {
-            return (
-              <RadioButton
-                label={f.metadata.title}
-                maxcontainer={lst.listContainer}
-                selectableF={lst.selectableF}
-                pickercol={lst.pickerCol}
-                pickerkeycol={lst.pickerKeyCol}
-                columns={[lst.pickerKeyCol, lst.pickerCol]}
-                changeListener={f.listeners["change"]}
-                maxpickerfield={f.maximoField}
-                enabled={!f.readonly}
-                required={f.required}
-              />
-            );
-          } else {
-            return <div />;
-          }
-        } else {
-          let attrs = {
-            label: f.metadata.title,
-            value: f.data,
-            type: f.metadata.maxType,
-            listener: f.listeners["change"],
-            enabled: !f.readonly,
-            required: f.required
-          };
-          if (f.metadata.hasLookup) {
-            if (f.metadata.gl) {
-              attrs.showLookupF = () => f.maximoField.showGlLookup();
+    render() {
+      let flds = [];
+      if (this.state.maxfields) {
+        flds = this.state.maxfields.map(f => {
+          if (f.metadata.picker && f.picker) {
+            let lst = f.picker.list;
+            if (lst) {
+              return (
+                <WrappedPicker
+                  label={f.metadata.title}
+                  maxcontainer={lst.listContainer}
+                  selectableF={lst.selectableF}
+                  pickercol={lst.pickerCol}
+                  pickerkeycol={lst.pickerKeyCol}
+                  columns={[lst.pickerKeyCol, lst.pickerCol]}
+                  changeListener={f.listeners["change"]}
+                  maxpickerfield={f.maximoField}
+                  enabled={!f.readonly}
+                  required={f.required}
+                />
+              );
             } else {
-              attrs.showLookupF = () => f.maximoField.showLookup();
+              return <div />;
             }
+          } else {
+            let attrs = {
+              label: f.metadata.title,
+              value: f.data,
+              type: f.metadata.maxType,
+              listener: f.listeners["change"],
+              enabled: !f.readonly,
+              required: f.required
+            };
+            if (f.metadata.hasLookup) {
+              if (f.metadata.gl) {
+                attrs.showLookupF = () => f.maximoField.showGlLookup();
+              } else {
+                attrs.showLookupF = () => f.maximoField.showLookup();
+              }
+            }
+            return <WrappedTextField {...attrs} />;
           }
-          return <TextField {...attrs} />;
-        }
-      });
+        });
+      }
+      return drawFields(flds);
     }
-    return this.drawFields(flds);
-  }
-
-  drawFields(fields) {
-    return <div>{fields}</div>;
-  }
+  };
 }
 
-export class QbeSection extends MPlusComponent {
-  putContainer(mboCont) {
-    if (!mboCont || !this.props.columns || this.props.columns.length == 0)
-      return;
-    let mp = new maximoplus.re.QbeSection(mboCont, this.props.columns);
+export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
+  return class extends MPlusComponent {
+    putContainer(mboCont) {
+      if (!mboCont || !this.props.columns || this.props.columns.length == 0)
+        return;
+      let mp = new maximoplus.re.QbeSection(mboCont, this.props.columns);
 
-    /*
+      /*
 	 Important.
 	 The QbeSection in MaximoPlus core library is the only component where column may be the string or the javascript object. The case for javascript object is when we want to search the range in QbeSection. For that we use the standard Maximo functionality - qbePrepend. The columns have to be registered when creating the QbeSection, and the qbePrepend data has to be sent with them, this is why we have that exception. For the case of the components registered with the markup (HTML or JSX, for the web components or React), we already have the metadata defined at the same time as the columns, so we can read this from the metadata itself, and send to the  MaximoPlus constructor.
 	 */
 
-    if (this.props.qbePrepends) {
-      for (let qp of this.props.qbePrepends) {
-        this.mp.addPrependColumns(
-          qp.virtualName,
-          qp.qbePrepend,
-          qp.attributeName,
-          qp.title,
-          parseInt(qp.position)
-        );
+      if (this.props.qbePrepends) {
+        for (let qp of this.props.qbePrepends) {
+          this.mp.addPrependColumns(
+            qp.virtualName,
+            qp.qbePrepend,
+            qp.attributeName,
+            qp.title,
+            parseInt(qp.position)
+          );
+        }
+      }
+
+      if (this.props.metadata) {
+        mp.addColumnsMeta(this.props.metadata);
+      }
+
+      mp.addWrappedComponent(this);
+      mp.renderDeferred();
+      mp.initData();
+      this.setState({ mp: mp });
+    }
+    clear() {
+      this.state.mp.clearQbe();
+    }
+
+    search() {
+      this.state.mp.getContainer().reset(); //i dont' directly access container, becuase it could have been passed as an attribute through HTML, or directly as an object through JSX
+      if (this.state.filterDialog) {
+        this.state.filterDialog.closeDialog();
       }
     }
 
-    if (this.props.metadata) {
-      mp.addColumnsMeta(this.props.metadata);
+    getSearchButtons() {
+      //this may not be necessary, it will render the search buttons for the dialog
+      let buttons = [
+        { label: "Search", action: ev => this.search() },
+        { label: "Clear", action: ev => this.clear() }
+      ];
+      if (this.state.filterDialog) {
+        buttons.push({
+          label: "Cancel",
+          action: ev => this.state.filterDialog.closeDialog()
+        });
+      }
+      return drawSearchButtons(buttons);
     }
 
-    mp.addWrappedComponent(this);
-    mp.renderDeferred();
-    mp.initData();
-    this.setState({ mp: mp });
-  }
-  clear() {
-    this.state.mp.clearQbe();
-  }
-
-  search() {
-    this.state.mp.getContainer().reset(); //i dont' directly access container, becuase it could have been passed as an attribute through HTML, or directly as an object through JSX
-    if (this.state.filterDialog) {
-      this.state.filterDialog.closeDialog();
+    render() {
+      let flds = [];
+      let buttons = this.getSearchButtons();
+      if (this.state.maxfields) {
+        flds = this.state.maxfields.map(f => {
+          let attrs = {
+            label: f.metadata.title,
+            value: f.data,
+            type: f.metadata.maxType,
+            enabled: true,
+            listener: f.listeners["change"]
+          };
+          if (f.metadata.hasLookup) {
+            attrs.showLookupF = () => f.maximoField.showLookup();
+            attrs.qbe = true; //in qbe mode display only the text field, not the checkbox
+          }
+          return <WrappedTextField {...attrs} />; //try to put this as a function, to be able to override. There is no indirection, or maybe HOC
+        });
+      }
+      return drawFields(flds, buttons);
     }
-  }
-
-  getSearchButtons() {
-    //this may not be necessary, it will render the search buttons for the dialog
-    let buttons = [
-      { label: "Search", action: ev => this.search() },
-      { label: "Clear", action: ev => this.clear() }
-    ];
-    if (this.state.filterDialog) {
-      buttons.push({
-        label: "Cancel",
-        action: ev => this.state.filterDialog.closeDialog()
-      });
-    }
-    return this.renderSearchButtons(buttons);
-  }
-
-  renderSearchButtons(buttons) {
-    let rbs = buttons.map(button => (
-      <button onClick={button.action}>{button.label}</button>
-    ));
-    return <div>{rbs}</div>;
-  }
-
-  render() {
-    let flds = [];
-    let buttons = this.getSearchButtons();
-    if (this.state.maxfields) {
-      flds = this.state.maxfields.map(f => {
-        let attrs = {
-          label: f.metadata.title,
-          value: f.data,
-          type: f.metadata.maxType,
-          enabled: true,
-          listener: f.listeners["change"]
-        };
-        if (f.metadata.hasLookup) {
-          attrs.showLookupF = () => f.maximoField.showLookup();
-          attrs.qbe = true; //in qbe mode display only the text field, not the checkbox
-        }
-        return <TextField {...attrs} />; //try to put this as a function, to be able to override. There is no indirection, or maybe HOC
-      });
-    }
-    return this.drawFields(flds, buttons);
-  }
-
-  drawFields(fields, buttons) {
-    //to be implemented in subclass
-    return (
-      <div>
-        {fields}
-        {buttons}
-      </div>
-    );
-  }
+  };
 }
 
 export class DialogHolder extends React.Component {
@@ -720,4 +701,67 @@ export function getGLDialog(drawSegments, drawDialog, WrappedList) {
       return drawDialog(segments, gllist, this.state.chooseF, closeDialog);
     }
   };
+}
+
+export function getWorkflowDialog(
+  WrappedSection,
+  WrappedActionButton,
+  drawDialog
+) {
+  return class extends MPlusComponent {
+    putContainer(mboCont) {
+      let mp = new maximoplus.re.WorkflowControl(
+        mboCont,
+        this.props.processname
+      );
+      mp.addWrappedComponent(this);
+      this.setState({ mp: mp });
+      mp.routeWf();
+    }
+    render() {
+      if (
+        !this.state.section ||
+        !this.state.section.fields ||
+        !this.state.actions
+      ) {
+        return <div />;
+      }
+      let actionButtons = Object.keys(this.state.actions).map(key => (
+        <WrappedActionButton onClick={this.state.actions[key].actionFunction}>
+          {this.state.actions[key].label}
+        </WrappedActionButton>
+      ));
+      let metadata = {
+        ACTIONID: {
+          picker: "true",
+          pickerkeycol: "actionid",
+          pickercol: "instruction",
+          pickerrows: "10"
+        }
+      };
+
+      if (this.state.section.objectName == "REASSIGNWF") {
+        metadata = {
+          ASSIGNEE: { hasLookup: "true", listTemplate: "personlist" }
+        };
+      }
+      return drawDialog(
+        this.state.title,
+        <WrappedSection
+          maxcontainer={this.state.section.contaienr}
+          columns={this.state.section.fields}
+          metadata={metadata}
+        />,
+        actionButtons
+      );
+    }
+  };
+}
+
+export function openWorkflow(container, processname) {
+  openDialog({
+    type: "workflow",
+    processname: processname,
+    container: container
+  });
 }
