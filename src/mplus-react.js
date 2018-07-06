@@ -71,7 +71,7 @@ export const closeDialog = () => {
   rootComponent.setState({ dialogs: newDialogs });
 };
 
-class AppContainer extends React.Component {
+export class AppContainer extends React.Component {
   constructor(props) {
     super(props);
     let mp = new maximoplus.basecontrols.AppContainer(
@@ -95,7 +95,7 @@ class AppContainer extends React.Component {
   }
 }
 
-class RelContainer extends React.Component {
+export class RelContainer extends React.Component {
   componentWillMount() {
     getDeferredContainer(this.props.container).then(mboCont => {
       let mp = new maximoplus.basecontrols.RelContainer(
@@ -359,7 +359,7 @@ export class List extends MPlusComponent {
   }
 }
 
-function getPickerList(drawPickerOption, drawPicker) {
+export function getPickerList(drawPickerOption, drawPicker) {
   return class extends List {
     putContainer(mboCont) {
       super.putContainer(mboCont);

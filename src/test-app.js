@@ -15,9 +15,12 @@ import {
   getListDialog,
   getFilterDialog,
   getGLDialog,
-  getWorkflowdialog,
+  getWorkflowDialog,
   openWorkflow
 } from "./mplus-react.js";
+import React from "react";
+import ReactDOM from "react-dom";
+
 //the components from the package will be used directly, they are the base for the real styled components. Still, we need to test them first
 
 const PickerList = getPickerList(
@@ -91,3 +94,21 @@ class TextField extends MPlusComponent {
     );
   }
 }
+
+const Section = getSection(TextField, RadioButton, flds => <div>{flds}</div>);
+
+const QbeSection = getQbeSection(
+  TextField,
+  (fields, buttons) => (
+    <div>
+      {fields}
+      {buttons}
+    </div>
+  ),
+  buttons => {
+    let rbs = buttons.map(button => (
+      <button onClick={button.action}>{button.label}</button>
+    ));
+    return <div>{rbs}</div>;
+  }
+);
