@@ -232,7 +232,8 @@ const FilterDialog = getFilterDialog(
 );
 
 class AppRoot extends React.Component {
-  constructor() {
+  constructor(props) {
+    super(props);
     this.state = { needsLogin: false, version: 1 };
     //when we login, all the state needs to be reset. Instead of reloading the page, we will just increment the counter, which will in turn re-initialize all the children
     maximoplus.core.globalFunctions.global_login_function = err => {
@@ -257,7 +258,8 @@ class AppRoot extends React.Component {
 }
 
 class LoginForm extends React.Component {
-  constructor() {
+  constructor(props) {
+    super(props);
     this.state = { username: "", password: "" };
   }
   loginAction() {
@@ -281,7 +283,7 @@ class LoginForm extends React.Component {
     }
     return (
       <div style={st}>
-        <div class="popup">
+        <div className="popup">
           <div>
             <span>Username:</span>
             <input
@@ -308,8 +310,8 @@ const App = props => (
   <AppRoot>
     <AppContainer mboname="po" appname="po" id="pocont" wfprocess="postatus" />
     <RelContainer container="pocont" relationship="poline" id="polinecont" />
-    <div class="flex">
-      <div class="flex-item">
+    <div className="flex">
+      <div className="flex-item">
         <List
           container="pocont"
           columns={["ponum", "description", "status"]}
@@ -318,7 +320,7 @@ const App = props => (
           list-template="porow"
         />>
       </div>
-      <div class="flex-item">
+      <div className="flex-item">
         <Section
           container="pocont"
           columns={["ponum", "description", "status", "shipvia", "orderdate"]}
@@ -337,7 +339,7 @@ const App = props => (
           }}
         />
       </div>
-      <div class="flex-item">
+      <div className="flex-item">
         <QbeSection
           container="pocont"
           columns={["ponum", "description", "status", "shipvia"]}
@@ -367,7 +369,7 @@ const App = props => (
           }}
         />
       </div>
-      <div class="flex-item">
+      <div className="flex-item">
         <Section
           container="polinecont"
           columns={[
