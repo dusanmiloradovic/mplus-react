@@ -21,3 +21,12 @@
     padding: 10px;
     z-index: 11;
 }
+
+.flex{
+    display:flex;
+    flex-direction:row;
+}
+.flex-item{
+    flex:1;
+    padding:20px;
+}
