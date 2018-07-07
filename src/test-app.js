@@ -304,7 +304,7 @@ class LoginForm extends React.Component {
   }
 }
 
-const App = (
+const App = props => (
   <AppRoot>
     <AppContainer mboname="po" appname="po" id="pocont" wfprocess="postatus" />
     <RelContainer container="pocont" relationship="poline" id="polinecont" />
@@ -384,9 +384,9 @@ const App = (
   </AppRoot>
 );
 
-document.addEventListener("load", _ => {
-  maximoplus.net.globalFunctions.serverRoot = function() {
-    return "http://localhost:8080";
-  };
+maximoplus.net.globalFunctions.serverRoot = function() {
+  return "http://localhost:8080";
+};
+window.onload = _ => {
   ReactDOM.render(<App />, document.getElementById("root"));
-});
+};
