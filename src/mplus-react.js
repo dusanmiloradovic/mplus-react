@@ -3,6 +3,13 @@ import flyd from "flyd";
 
 let kont = {};
 
+function shallowDiffers(a, b) {
+  if (!a && b) return true;
+  for (let i in a) if (!(i in b)) return true;
+  for (let i in b) if (a[i] !== b[i]) return true;
+  return false;
+}
+
 const resolveContainer = (contid, container) => {
   if (kont[contid]) {
     kont[contid].resolve(container);
@@ -159,7 +166,10 @@ In case the container property is passed, we have to make sure container is avai
     if (nextState.animating) {
       return false;
     }
-    return super.shouldComponentUpdate(nextProps, nextState);
+    return (
+      shallowDiffers(this.props, nextProps) ||
+      shallowDiffers(this.state, nextState)
+    );
   }
 
   putContainer() {
@@ -238,7 +248,7 @@ export function getList(getListTemplate, drawFilterButton, drawList) {
 
     render() {
       let drs = [];
-      if (this.state.maxrows) {
+      if (this.state && this.state.maxrows) {
         let template = getListTemplate(this.props.listTemplate);
         if (template) {
           drs = this.state.maxrows.map(template);
@@ -326,14 +336,18 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
 
     componentDidUpdate(prevProps) {
       super.componentDidUpdate(prevProps);
-      if (prevProps.metadata != this.props.metadata && this.state.mp) {
+      if (
+        prevProps.metadata != this.props.metadata &&
+        this.state &&
+        this.state.mp
+      ) {
         this.state.mp.addColumnsMeta(this.props.metadata);
       }
     }
 
     render() {
       let flds = [];
-      if (this.state.maxfields) {
+      if (this.state && this.state.maxfields) {
         flds = this.state.maxfields.map(f => {
           if (f.metadata.picker && f.picker) {
             let lst = f.picker.list;
@@ -394,7 +408,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
 
       if (this.props.qbePrepends) {
         for (let qp of this.props.qbePrepends) {
-          this.mp.addPrependColumns(
+          mp.addPrependColumns(
             qp.virtualName,
             qp.qbePrepend,
             qp.attributeName,
@@ -430,7 +444,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
         { label: "Search", action: ev => this.search() },
         { label: "Clear", action: ev => this.clear() }
       ];
-      if (this.state.filterDialog) {
+      if (this.state && this.state.filterDialog) {
         buttons.push({
           label: "Cancel",
           action: ev => this.state.filterDialog.closeDialog()
@@ -442,7 +456,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
     render() {
       let flds = [];
       let buttons = this.getSearchButtons();
-      if (this.state.maxfields) {
+      if (this.state && this.state.maxfields) {
         flds = this.state.maxfields.map(f => {
           let attrs = {
             label: f.metadata.title,
@@ -466,7 +480,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
 export function getDialogHolder(getDialogF) {
   return class extends React.Component {
     render() {
-      if (!this.props.dialogs.legnth == 0) {
+      if (!this.props.dialog || !this.props.dialogs.length == 0) {
         return <div />;
       }
       let currDialog = this.props.dialogs[this.props.dialogs.length - 1];

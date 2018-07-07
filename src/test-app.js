@@ -241,7 +241,9 @@ class AppRoot extends React.Component {
     };
   }
   softReload() {
-    this.setState({ version: this.state.version + 1 });
+    this.setState({
+      version: this.state && this.state.version ? this.state.version + 1 : 0
+    });
   }
   render() {
     return (
@@ -288,7 +290,7 @@ class LoginForm extends React.Component {
             <span>Username:</span>
             <input
               value={this.state.username}
-              onChange={ev => this.setState({ userame: ev.target.value })}
+              onChange={ev => this.setState({ username: ev.target.value })}
             />
           </div>
           <div>
@@ -318,7 +320,7 @@ const App = props => (
           norows="20"
           initdata="true"
           list-template="porow"
-        />>
+        />
       </div>
       <div className="flex-item">
         <Section
