@@ -176,13 +176,6 @@ In case the container property is passed, we have to make sure container is avai
     throw Error("should override");
   }
 
-  getListTemplate(templateId) {
-    //this has to be overriden in the child implementation.
-    //List templates will be defined in the separate JSX file , but will be loaded with the main application
-    //(maybe again it will just define the list templates variable)
-    return listTemplates[templateId];
-  }
-
   setInternalState(property, state) {
     //called from the core library
     this.setState((prevState, props) => {
@@ -219,10 +212,6 @@ In case the container property is passed, we have to make sure container is avai
     return this.state[property];
   }
 }
-
-const TemplateWrapper = (getListTemplate, templateid) => props => {
-  return getListTemplate(templateid)(props);
-};
 
 export function getList(getListTemplate, drawFilterButton, drawList) {
   return class extends MPlusComponent {
@@ -332,7 +321,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
-      let mp = new maximoplus.re.Section(mboCont, this.columns);
+      let mp = new maximoplus.re.Section(mboCont, this.props.columns);
       if (this.props.metadata) {
         mp.addColumnsMeta(this.metadata);
       }
@@ -355,7 +344,8 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
     render() {
       let flds = [];
       if (this.state && this.state.maxfields) {
-        flds = this.state.maxfields.map(f => {
+        flds = this.state.maxfields.map((f, i) => {
+          let fKey = f.metadata.attributeName + i;
           if (f.metadata.picker && f.picker) {
             let lst = f.picker.list;
             if (lst) {
@@ -371,10 +361,11 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
                   maxpickerfield={f.maximoField}
                   enabled={!f.readonly}
                   required={f.required}
+                  key={fKey}
                 />
               );
             } else {
-              return <div />;
+              return <div key={fKey} />;
             }
           } else {
             let attrs = {
@@ -383,7 +374,8 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
               type: f.metadata.maxType,
               listener: f.listeners["change"],
               enabled: !f.readonly,
-              required: f.required
+              required: f.required,
+              key: fKey
             };
             if (f.metadata.hasLookup) {
               if (f.metadata.gl) {
@@ -464,13 +456,14 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       let flds = [];
       let buttons = this.getSearchButtons();
       if (this.state && this.state.maxfields) {
-        flds = this.state.maxfields.map(f => {
+        flds = this.state.maxfields.map((f, counter) => {
           let attrs = {
             label: f.metadata.title,
             value: f.data,
             type: f.metadata.maxType,
             enabled: true,
-            listener: f.listeners["change"]
+            listener: f.listeners["change"],
+            key: f.metadata.attributeName + counter
           };
           if (f.metadata.hasLookup) {
             attrs.showLookupF = () => f.maximoField.showLookup();
