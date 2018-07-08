@@ -146,7 +146,7 @@ const QbeSection = getQbeSection(
 const tickData = data =>
   data == "Y" ? <div style="flex:1">&#x2713;</div> : <div />;
 
-const listTemplates = {
+const listTemplates = {//here o is  props from react
   porow: o => (
     <div
       style="

@@ -220,6 +220,10 @@ In case the container property is passed, we have to make sure container is avai
   }
 }
 
+const TemplateWrapper = (getListTemplate, templateid) => props => {
+  return getListTemplate(templateid)(props);
+};
+
 export function getList(getListTemplate, drawFilterButton, drawList) {
   return class extends MPlusComponent {
     initData() {
@@ -248,10 +252,13 @@ export function getList(getListTemplate, drawFilterButton, drawList) {
 
     render() {
       let drs = [];
+
       if (this.state && this.state.maxrows) {
-        let template = getListTemplate(this.props.listTemplate);
-        if (template) {
-          drs = this.state.maxrows.map(template);
+        const Template = getListTemplate(this.props.listTemplate);
+        if (Template) {
+          drs = this.state.maxrows.map(o => (
+            <Template {...o} key={o.data["_uniqueid"]} />
+          ));
         }
       }
       return drawList(drs, this.getFilterButton());
