@@ -230,9 +230,9 @@ const List = getList(
   )
 );
 
-const DialogHolder = getDialogHolder(dialog => dialogs[dialog.type](dialog));
+const DialogHolder = getDialogHolder(dialog => dialogs[dialog.type]); //this should return just hte jsx, we need to instantiate through JSX syntax in the mplus-react.js
 
-const ListDialog = getListDialog(List, list => list); //here there is no wrapper around the list, just return the list element
+const ListDialog = getListDialog(List, props => <div>{props.children}</div>); //here there is no wrapper around the list, just return the list element
 
 const FilterDialog = getFilterDialog(
   (container, dialog) => {

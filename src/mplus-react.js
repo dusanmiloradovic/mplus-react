@@ -48,7 +48,12 @@ export const openDialog = dialog => {
   if (!rootComponent) {
     return;
   }
-  let newDialogs = rootComponent.state.dialogs.slice();
+  let newDialogs;
+  if (!rootComponent.state || !rootComponent.state.dialogs) {
+    newDialogs = [];
+  } else {
+    newDialogs = rootComponent.state.dialogs.slice();
+  }
   newDialogs.push(dialog);
   rootComponent.setState({ dialogs: newDialogs });
 };
@@ -480,14 +485,18 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
 export function getDialogHolder(getDialogF) {
   return class extends React.Component {
     render() {
-      if (!this.props.dialog || !this.props.dialogs.length == 0) {
+      if (!this.props.dialogs || this.props.dialogs.length == 0) {
         return <div />;
       }
       let currDialog = this.props.dialogs[this.props.dialogs.length - 1];
       if (!currDialog) {
         return <div />;
       } else {
-        return getDialogF(currDialog);
+        const CurrDialog = getDialogF(currDialog);
+        if (CurrDialog) {
+          return <CurrDialog {...currDialog} />;
+        }
+        return <div />;
       }
     }
   };
@@ -497,8 +506,7 @@ export function getListDialog(WrappedList, drawList) {
   //HOC
   return class extends React.Component {
     render() {
-      return drawList(
-        this.props.dialog,
+      const LstD = drawList(
         <WrappedList
           norows="10"
           listTemplate={this.props.dialog.field.metadata.listTemplate}
@@ -509,6 +517,7 @@ export function getListDialog(WrappedList, drawList) {
           selectableF={this.props.dialog.defaultAction}
         />
       );
+      return <LstD {...this.props.dialog} />;
     }
   };
 }
