@@ -506,18 +506,21 @@ export function getListDialog(WrappedList, drawList) {
   //HOC
   return class extends React.Component {
     render() {
-      const LstD = drawList(
-        <WrappedList
-          norows="10"
-          listTemplate={this.props.dialog.field.metadata.listTemplate}
-          filterTemplate={this.props.dialog.field.metadata.filterTemplate}
-          maxcontainer={this.props.dialog.listContainer}
-          initdata="true"
-          columns={this.props.dialog.dialogCols}
-          selectableF={this.props.dialog.defaultAction}
-        />
+      const LstD = drawList();
+
+      return (
+        <LstD {...this.props}>
+          <WrappedList
+            norows="10"
+            listTemplate={this.props.dialog.field.metadata.listTemplate}
+            filterTemplate={this.props.dialog.field.metadata.filterTemplate}
+            maxcontainer={this.props.dialog.listContainer}
+            initdata="true"
+            columns={this.props.dialog.dialogCols}
+            selectableF={this.props.dialog.defaultAction}
+          />
+        </LstD>
       );
-      return <LstD {...this.props.dialog} />;
     }
   };
 }
