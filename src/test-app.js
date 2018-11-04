@@ -87,7 +87,7 @@ const RadioButton = getPickerList(
       objParam["checked"] = "checked";
     }
     return (
-      <label style="display:block">
+      <label className="radioButton">
         {" "}
         <input {...objParam} />
         {optionVal}
@@ -102,28 +102,49 @@ const RadioButton = getPickerList(
   )
 );
 
-class TextField extends MPlusComponent {
-  render() {
-    let lookup =
-      this.props.showLookupF && typeof this.props.showLookupF == "function" ? (
-        <span onClick={this.props.showLookupF}>&#9167;</span>
-      ) : (
-        ""
-      );
-    return (
-      <div>
-        <div class="label">{this.props.label}</div>
-        <div>
-          {lookup}
-          <input
-            value={this.props.value}
-            onChange={ev => this.props.listener(ev.target.value)}
-          />
-        </div>
-      </div>
+//class TextField extends MPlusComponent {
+//  render() {
+//    let lookup =
+//      this.props.showLookupF && typeof this.props.showLookupF == "function" ? (
+//        <span onClick={this.props.showLookupF}>&#9167;</span>
+//      ) : (
+//        ""
+//      );
+//    return (
+//      <div>
+//        <div className="label">{this.props.label}</div>
+//        <div>
+//          {lookup}
+//          <input
+//            value={this.props.value}
+//            onChange={ev => this.props.listener(ev.target.value)}
+//          />
+//        </div>
+//      </div>
+//    );
+//  }
+//}
+
+const TextField = props => {
+  let lookup =
+    props.showLookupF && typeof props.showLookupF == "function" ? (
+      <span onClick={props.showLookupF}>&#9167;</span>
+    ) : (
+      ""
     );
-  }
-}
+  return (
+    <div>
+      <div className="label">{props.label}</div>
+      <div>
+        {lookup}
+        <input
+          value={props.value ? props.value : ""}
+          onChange={ev => props.listener(ev.target.value)}
+        />
+      </div>
+    </div>
+  );
+};
 
 const Section = getSection(TextField, RadioButton, flds => <div>{flds}</div>);
 
@@ -137,27 +158,21 @@ const QbeSection = getQbeSection(
   ),
   buttons => {
     let rbs = buttons.map(button => (
-      <button onClick={button.action}>{button.label}</button>
+      <button key={button.label} onClick={button.action}>
+        {button.label}
+      </button>
     ));
     return <div>{rbs}</div>;
   }
 );
 
 const tickData = data =>
-  data == "Y" ? <div style="flex:1">&#x2713;</div> : <div />;
+  data == "Y" ? <div className="tickData">&#x2713;</div> : <div />;
 
-const listTemplates = {//here o is  props from react
+const listTemplates = {
+  //here o is  props from react
   porow: o => (
-    <div
-      style="
-    /* border-bottom: blue; */
-    border-bottom-width: 1px;
-    border-bottom-style: solid;
-    border-bottom-color: grey;
-    padding-bottom: 3px;
-"
-      onClick={o.rowSelectedAction}
-    >
+    <div className="porowtemplate" onClick={o.rowSelectedAction}>
       <div>
         {o.data.PONUM} {o.data.STATUS}
       </div>
@@ -172,9 +187,9 @@ const listTemplates = {//here o is  props from react
     </div>
   ),
   qbevaluelist: o => (
-    <div style="display:flex;flex-direction:row; align-items: center; justify-content: center;">
+    <div className="qbevaluelistemplate">
       {tickData(o.data._SELECTED)}
-      <div style="flex:5" onClick={o.rowSelectedAction}>
+      <div className="qbeval1" onClick={o.rowSelectedAction}>
         <div>{o.data.VALUE}</div>
         <div>{o.data.DESCRIPTION}</div>
       </div>
@@ -215,9 +230,11 @@ const List = getList(
   )
 );
 
-const DialogHolder = getDialogHolder(dialog => dialogs[dialog.type](dialog));
+const DialogHolder = getDialogHolder(dialog => dialogs[dialog.type]); //this should return just hte jsx, we need to instantiate through JSX syntax in the mplus-react.js
 
-const ListDialog = getListDialog(List, list => list); //here there is no wrapper around the list, just return the list element
+const ListDialog = getListDialog(List, () => props => (
+  <div>{props.children}</div>
+)); //here there is no wrapper around the list, just return the list element
 
 const FilterDialog = getFilterDialog(
   (container, dialog) => {
@@ -250,7 +267,10 @@ class AppRoot extends React.Component {
       <div key={"app-" + this.state.version}>
         {this.props.children}
         <DialogHolder dialogs={this.state.dialogs} />
-        <LoginForm visible={this.state.needsLogin} callback={this.softReload} />
+        <LoginForm
+          visible={this.state.needsLogin}
+          callback={() => this.softReload()}
+        />
       </div>
     );
   }
@@ -319,7 +339,7 @@ const App = props => (
           columns={["ponum", "description", "status"]}
           norows="20"
           initdata="true"
-          list-template="porow"
+          listTemplate="porow"
         />
       </div>
       <div className="flex-item">

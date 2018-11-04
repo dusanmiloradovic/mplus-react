@@ -30,3 +30,30 @@
     flex:1;
     padding:20px;
 }
+
+.tickData{
+    flex:1;
+}
+
+.porowtemplate{
+    /* border-bottom: blue; */
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: grey;
+    padding-bottom: 3px;
+}
+
+.qbevaluelistemplate{
+    display:flex;
+    flex-direction:row;
+    align-items: center;
+    justify-content: center;
+}
+
+.qbeval1{
+    flex:5;
+}
+
+.radiobutton{
+    display:block;
+}
