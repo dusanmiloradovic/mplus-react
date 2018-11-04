@@ -247,7 +247,32 @@ export function getList(getListTemplate, drawFilterButton, drawList) {
       if (this.props.initdata) {
         mp.initData();
       }
-      this.setState({ mp: mp });
+      this.setState({
+        mp: mp,
+        waiting: false
+      });
+    }
+
+    enableLocalWaitSpinner() {
+      //useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
+      this.mp.prepareCall = _ => {
+        this.setState({ waiting: true, startWait: Date.now() });
+      };
+      this.mp.finishCall = _ => {
+        this.setState({ waiting: false });
+      };
+    }
+
+    fetchMore(numRows) {
+      this.mp.fetchMore(numRows);
+    }
+
+    pageNext() {
+      this.mp.pageNext();
+    }
+
+    pagePrev() {
+      this.mp.pagePrev();
     }
 
     render() {
