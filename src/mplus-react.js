@@ -42,6 +42,8 @@ export const setRootComponent = root => {
   rootComponent = root;
 };
 
+export const getRootComponent = () => rootComponent;
+
 //this is going to be set from ref in the main component
 
 export const openDialog = dialog => {
