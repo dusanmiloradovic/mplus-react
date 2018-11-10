@@ -220,7 +220,8 @@ In case the container property is passed, we have to make sure container is avai
   }
 }
 
-export function getList(getListTemplate, drawFilterButton, drawList) {
+export function getList(getListTemplate, drawFilterButton, drawList, raw) {
+  //sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
   return class extends MPlusComponent {
     initData() {
       this.state.mp.initData();
@@ -277,9 +278,18 @@ export function getList(getListTemplate, drawFilterButton, drawList) {
       if (this.state && this.state.maxrows) {
         const Template = getListTemplate(this.props.listTemplate);
         if (Template) {
-          drs = this.state.maxrows.map(o => (
-            <Template {...o} key={o.data["_uniqueid"]} />
-          ));
+          //raw means don't render the row, return just the props, and parent will take care of rendering with that props
+          if (raw) {
+            drs = this.state.maxrows.map(o => {
+              let _o = Template(o);
+              _o.key = o.data["_uniqueid"];
+              return _o;
+            });
+          } else {
+            drs = this.state.maxrows.map(o => (
+              <Template {...o} key={o.data["_uniqueid"]} />
+            ));
+          }
         }
       }
       return drawList(drs, this.getFilterButton());
