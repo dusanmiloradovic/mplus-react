@@ -120,7 +120,7 @@ export class RelContainer extends React.Component {
   }
 }
 
-export class MPlusComponent extends React.Component {
+export class MPlusComponent extends React.PureComponent {
   //the following tho methods should be overriden in the concrete implementations with
   //MPlusComponent.prototype.pushDialog = function (dialog)...
 
@@ -167,16 +167,6 @@ In case the container property is passed, we have to make sure container is avai
     ) {
       this.put.container(this.props.maxcontainer);
     }
-  }
-
-  shouldComponentUpdate(nextProps, nextState) {
-    if (nextState.animating) {
-      return false;
-    }
-    return (
-      shallowDiffers(this.props, nextProps) ||
-      shallowDiffers(this.state, nextState)
-    );
   }
 
   putContainer() {
