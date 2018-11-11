@@ -1,9 +1,9 @@
 {
   "name": "mplus-react",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Basic MaximoPlus React template",
-    "main": "distrollup/bundle.js",
-    "unpkg":"distrollup/bundleweb.js",
+  "main": "distrollup/bundle.js",
+  "unpkg": "distrollup/bundleweb.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c",
@@ -13,7 +13,7 @@
   "license": "ISC",
   "peerDependencies": {
     "react": "^16.4.1",
-    "maximoplus-core": "^2.1.17"
+    "maximoplus-core": "^2.1.23"
   },
   "dependencies": {
     "flyd": "^0.2.7"
@@ -23,7 +23,7 @@
     "@babel/preset-env": "^7.0.0-beta.51",
     "@babel/preset-react": "^7.0.0-beta.51",
     "babel-plugin-transform-inline-environment-variables": "^0.4.3",
-    "maximoplus-core": "^2.1.17",
+    "maximoplus-core": "^2.1.23",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "rollup": "^0.61.2",
