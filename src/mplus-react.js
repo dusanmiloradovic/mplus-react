@@ -3,13 +3,6 @@ import flyd from "flyd";
 
 let kont = {};
 
-function shallowDiffers(a, b) {
-  if (!a && b) return true;
-  for (let i in a) if (!(i in b)) return true;
-  for (let i in b) if (a[i] !== b[i]) return true;
-  return false;
-}
-
 const resolveContainer = (contid, container) => {
   if (kont[contid]) {
     kont[contid].resolve(container);
@@ -217,6 +210,14 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       this.state.mp.initData();
     }
 
+    shouldComponentUpdate() {
+      if (this.state.fetching) {
+          return false;
+	  //performance optimization
+      }
+      return super.shouldComponentUpdate();
+    }
+      
     putContainer(mboCont) {
       let mp = new maximoplus.re.Grid(
         mboCont,
