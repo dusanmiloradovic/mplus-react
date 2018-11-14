@@ -3,12 +3,12 @@ import flyd from "flyd";
 
 let kont = {};
 
-function shallowDiffers(a, b) {
+export const shallowDiffers = (a, b) => {
   if (!a && b) return true;
   for (let i in a) if (!(i in b)) return true;
   for (let i in b) if (a[i] !== b[i]) return true;
   return false;
-}
+};
 
 const resolveContainer = (contid, container) => {
   if (kont[contid]) {
@@ -223,10 +223,28 @@ In case the container property is passed, we have to make sure container is avai
 export function getList(getListTemplate, drawFilterButton, drawList, raw) {
   //sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
   return class extends MPlusComponent {
+    constructor(props) {
+      super(props);
+      this.fetchMore = this.fetchMore.bind(this);
+      this.pageNext = this.pageNext.bind(this);
+      this.pagePrev = this.pagePrev.bind(this);
+      if (this.props.dataSetCallback && !this.state) {
+        this.props.dataSetCallback({
+          fetchMore: this.fetchMore,
+          oageNext: this.pageNext,
+          pagePrev: this.pagePrev
+        });
+      }
+      this.state = { dataSetInitialized: true };
+    }
     initData() {
       this.state.mp.initData();
     }
 
+    //    componentWillMount() {
+    //      super.componentWillMount();
+
+    //    }
     putContainer(mboCont) {
       let mp = new maximoplus.re.Grid(
         mboCont,
