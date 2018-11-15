@@ -290,16 +290,16 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       this.mp.pagePrev();
     }
 
-    componentDidUpdate(prevProps, prevState) {
-      Object.entries(this.props).forEach(
-        ([key, val]) =>
-          prevProps[key] !== val && console.log(`Prop '${key}' changed`)
-      );
-      Object.entries(this.state).forEach(
-        ([key, val]) =>
-          prevState[key] !== val && console.log(`State '${key}' changed`)
-      );
-    }
+//    componentDidUpdate(prevProps, prevState) {
+//      Object.entries(this.props).forEach(
+//        ([key, val]) =>
+//          prevProps[key] !== val && console.log(`Prop '${key}' changed`)
+//      );
+//      Object.entries(this.state).forEach(
+//        ([key, val]) =>
+//          prevState[key] !== val && console.log(`State '${key}' changed`)
+//      );
+//    }
     render() {
       let drs = [];
 
