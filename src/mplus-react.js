@@ -251,6 +251,10 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         this.props.columns,
         this.props.norows
       );
+      this.mp = mp;
+      if (this.props.showWaiting) {
+        this.enableLocalWaitSpinner.bind(this)();
+      }
       mp.renderDeferred();
       if (
         this.props.selectableF &&
@@ -290,16 +294,16 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       this.mp.pagePrev();
     }
 
-//    componentDidUpdate(prevProps, prevState) {
-//      Object.entries(this.props).forEach(
-//        ([key, val]) =>
-//          prevProps[key] !== val && console.log(`Prop '${key}' changed`)
-//      );
-//      Object.entries(this.state).forEach(
-//        ([key, val]) =>
-//          prevState[key] !== val && console.log(`State '${key}' changed`)
-//      );
-//    }
+    //    componentDidUpdate(prevProps, prevState) {
+    //      Object.entries(this.props).forEach(
+    //        ([key, val]) =>
+    //          prevProps[key] !== val && console.log(`Prop '${key}' changed`)
+    //      );
+    //      Object.entries(this.state).forEach(
+    //        ([key, val]) =>
+    //          prevState[key] !== val && console.log(`State '${key}' changed`)
+    //      );
+    //    }
     render() {
       let drs = [];
 
@@ -320,7 +324,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
           }
         }
       }
-      return drawList(drs, this.getFilterButton());
+      return drawList(drs, this.getFilterButton(), this.state.waiting);
     }
 
     showFilter() {
