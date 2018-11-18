@@ -275,7 +275,12 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     enableLocalWaitSpinner() {
       //useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
       this.mp.prepareCall = _ => {
-        this.setState({ waiting: true, startWait: Date.now() });
+        if (
+          this.state.paginator &&
+          this.state.paginator.numrows != this.state.paginator.torow
+        ) {
+          this.setState({ waiting: true, startWait: Date.now() });
+        }
       };
       this.mp.finishCall = _ => {
         this.setState({ waiting: false });
