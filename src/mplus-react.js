@@ -396,6 +396,7 @@ export function getPickerList(drawPickerOption, drawPicker) {
 }
 
 export function getSection(WrappedTextField, WrappedPicker, drawFields) {
+  //like for the list, here we also support the "raw" rendering, i.e. this HOC returns the data, and parent does the actual rendering. We don't need the raw field for this, if wrappers are null, we just return the props. For picker list,we will have to send the array of values in one field (so we need to transfer the field row state to props)
   return class extends MPlusComponent {
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
@@ -422,12 +423,31 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
 
     render() {
       let flds = [];
+      const raw = !WrappedTextField;
       if (this.state && this.state.maxfields) {
         flds = this.state.maxfields.map((f, i) => {
           let fKey = f.metadata.attributeName + i;
           if (f.metadata.picker && f.picker) {
             let lst = f.picker.list;
             if (lst) {
+              if (raw) {
+                //TODO this is not good, I want just the array of values and metadata to be passed as a value of the field to concrete implemntation
+                //we need to run the internal component and pass it. IDEA: maybe just run the getList over the list container and return the rows only inside the section implementation
+                return {
+                  label: f.metadata.title,
+                  maxcontainer: lst.listContainer,
+                  selectableF: lst.selectableF,
+                  pickercol: lst.pickerCol,
+                  pickerkeycol: lst.pickerKeyCol,
+                  columns: [lst.pickerKeyCol, lst.pickerCol],
+                  changeListener: f.listeners["change"],
+                  maxpickerfield: f.maximoField,
+                  enabled: !f.readonly,
+                  required: f.required,
+                  type: "picker",
+                  key: fKey
+                };
+              }
               return (
                 <WrappedPicker
                   label={f.metadata.title}
@@ -444,7 +464,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
                 />
               );
             } else {
-              return <div key={fKey} />;
+              return raw ? { key: fKey } : <div key={fKey} />;
             }
           } else {
             let attrs = {
@@ -462,6 +482,10 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
               } else {
                 attrs.showLookupF = () => f.maximoField.showLookup();
               }
+            }
+            if (raw) {
+              attrs.type = "field";
+              return attrs;
             }
             return <WrappedTextField {...attrs} />;
           }
