@@ -496,7 +496,12 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
   };
 }
 
-export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
+export function getQbeSection(
+  WrappedTextField,
+  drawFields,
+  drawSearchButtons,
+  postRenderCallback
+) {
   return class extends MPlusComponent {
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
@@ -529,6 +534,14 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       mp.initData();
       this.setState({ mp: mp });
     }
+
+    componentDidMount() {
+      super.componentDidMount();
+      if (postRenderCallback) {
+        postRenderCallback.bind(this)();
+      }
+    }
+
     clear() {
       this.state.mp.clearQbe();
     }
