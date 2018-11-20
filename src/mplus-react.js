@@ -572,6 +572,9 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
             attrs.showLookupF = () => f.maximoField.showLookup();
             attrs.qbe = true; //in qbe mode display only the text field, not the checkbox
           }
+          if (!WrappedTextField) {
+            return attrs;
+          }
           return <WrappedTextField {...attrs} />; //try to put this as a function, to be able to override. There is no indirection, or maybe HOC
         });
       }
