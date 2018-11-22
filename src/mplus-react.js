@@ -496,17 +496,13 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
   };
 }
 
-export function getQbeSection(
-  WrappedTextField,
-  drawFields,
-  drawSearchButtons,
-  postRenderCallback
-) {
+export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
   return class extends MPlusComponent {
     constructor(props) {
       super(props);
       this.clear = this.clear.bind(this);
       this.search = this.search.bind(this);
+      this.getControlActions = this.getControlActions.bind(this);
     }
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
@@ -537,18 +533,11 @@ export function getQbeSection(
       mp.addWrappedComponent(this);
       mp.renderDeferred();
       mp.initData();
-      console.log("putContainer");
-      console.log(this);
       this.setState({ mp: mp });
     }
 
     componentDidMount() {
       super.componentDidMount();
-      if (postRenderCallback) {
-        //the purpose is to draw the qbe section buttons somewhere outside the component
-        //in the default (raw) template the functions returning the buttons return just the button data, so we can call the getSearchButtons again
-        postRenderCallback(this.getSearchButtons());
-      }
     }
 
     clear() {
@@ -577,6 +566,11 @@ export function getQbeSection(
         });
       }
       return drawSearchButtons(buttons);
+    }
+
+    getControlActions() {
+      //this is the "interface" method - we can use it for all the types of controls
+      return this.getSearchButtons();
     }
 
     render() {
