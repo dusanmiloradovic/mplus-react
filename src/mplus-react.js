@@ -503,6 +503,11 @@ export function getQbeSection(
   postRenderCallback
 ) {
   return class extends MPlusComponent {
+    constructor(props) {
+      super(props);
+      this.clear = this.clear.bind(this);
+      this.search = this.search.bind(this);
+    }
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
@@ -532,18 +537,22 @@ export function getQbeSection(
       mp.addWrappedComponent(this);
       mp.renderDeferred();
       mp.initData();
+      console.log("putContainer");
+      console.log(this);
       this.setState({ mp: mp });
     }
 
     componentDidMount() {
       super.componentDidMount();
       if (postRenderCallback) {
-        postRenderCallback.bind(this)();
+        postRenderCallback(this.getSearchButtons());
       }
     }
 
     clear() {
-      this.state.mp.clearQbe();
+      console.log("clearing");
+      console.log(this);
+      this.clearQbe();
     }
 
     search() {
@@ -556,8 +565,8 @@ export function getQbeSection(
     getSearchButtons() {
       //this may not be necessary, it will render the search buttons for the dialog
       let buttons = [
-        { label: "Search", action: ev => this.search() },
-        { label: "Clear", action: ev => this.clear() }
+        { label: "Search", action: this.search },
+        { label: "Clear", action: this.clear }
       ];
       if (this.state && this.state.filterDialog) {
         buttons.push({
