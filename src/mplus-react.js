@@ -503,6 +503,11 @@ export function getQbeSection(
   postRenderCallback
 ) {
   return class extends MPlusComponent {
+    constructor(props) {
+      super(props);
+      this.clear = this.clear.bind(this);
+      this.search = this.search.bind(this);
+    }
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
@@ -532,6 +537,8 @@ export function getQbeSection(
       mp.addWrappedComponent(this);
       mp.renderDeferred();
       mp.initData();
+      console.log("putContainer");
+      console.log(this);
       this.setState({ mp: mp });
     }
 
@@ -540,12 +547,14 @@ export function getQbeSection(
       if (postRenderCallback) {
         //the purpose is to draw the qbe section buttons somewhere outside the component
         //in the default (raw) template the functions returning the buttons return just the button data, so we can call the getSearchButtons again
-        postRenderCallback.bind(this)(this.getSearchButtons());
+        postRenderCallback(this.getSearchButtons());
       }
     }
 
     clear() {
-      this.state.mp.clearQbe();
+      console.log("clearing");
+      console.log(this);
+      this.clearQbe();
     }
 
     search() {
@@ -558,8 +567,8 @@ export function getQbeSection(
     getSearchButtons() {
       //this may not be necessary, it will render the search buttons for the dialog
       let buttons = [
-        { label: "Search", action: ev => this.search() },
-        { label: "Clear", action: ev => this.clear() }
+        { label: "Search", action: this.search },
+        { label: "Clear", action: this.clear }
       ];
       if (this.state && this.state.filterDialog) {
         buttons.push({
