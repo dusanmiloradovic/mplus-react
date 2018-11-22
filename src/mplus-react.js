@@ -538,7 +538,9 @@ export function getQbeSection(
     componentDidMount() {
       super.componentDidMount();
       if (postRenderCallback) {
-        postRenderCallback.bind(this)();
+        //the purpose is to draw the qbe section buttons somewhere outside the component
+        //in the default (raw) template the functions returning the buttons return just the button data, so we can call the getSearchButtons again
+        postRenderCallback.bind(this)(this.getSearchButtons());
       }
     }
 
