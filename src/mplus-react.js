@@ -500,9 +500,11 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
   return class extends MPlusComponent {
     constructor(props) {
       super(props);
+
+      this.getControlActions = this.getControlActions.bind(this);
       this.clear = this.clear.bind(this);
       this.search = this.search.bind(this);
-      this.getControlActions = this.getControlActions.bind(this);
+      this.runControlAction = this.runControlAction.bind(this);
     }
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
@@ -543,7 +545,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
     clear() {
       console.log("clearing");
       console.log(this);
-      this.clearQbe();
+      this.state.mp.clearQbe();
     }
 
     search() {
@@ -556,8 +558,8 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
     getSearchButtons() {
       //this may not be necessary, it will render the search buttons for the dialog
       let buttons = [
-        { label: "Search", action: this.search },
-        { label: "Clear", action: this.clear }
+        { label: "Search", action: this.search, key: "search" },
+        { label: "Clear", action: this.clear, key: "clear" }
       ];
       if (this.state && this.state.filterDialog) {
         buttons.push({
@@ -571,6 +573,17 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
     getControlActions() {
       //this is the "interface" method - we can use it for all the types of controls
       return this.getSearchButtons();
+    }
+
+    runControlAction(actionKey) {
+      //In React, if the actions are returned directly like in getSearchButtons, the binding loses the state
+      //Insted this function called from the ref should work properly
+      if (actionKey == "clear") {
+        this.clear();
+      }
+      if (actionKey == "search") {
+        this.search();
+      }
     }
 
     render() {
