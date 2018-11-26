@@ -37,6 +37,12 @@ export const animating = flyd.stream(false);
 
 let rootComponent = null;
 
+const reactContexts = {};
+
+/*
+I will use react context to pass the data from Maximo to the components. The problem is that is difficult to control when the state is set from Maximo to the react component (if the component is mounted, not mounted, how many times the constructor is called, etc.) Instead of this, the context will be unique, based on the Maximo container of the component, and additional properties. In this way, even if the component is destroyed by React, it will still point to the same context. The key of this map is the internal Id, and the value is the context. Another thing we need is the Context Provider component, that we will call to update the state from MaximoPlus that will provide the value for the context
+*/
+
 export const setRootComponent = root => {
   //root component will be used from the layout libraries, and it is not allowed to re-assign the import
   rootComponent = root;
@@ -120,9 +126,75 @@ export class RelContainer extends React.Component {
   }
 }
 
+class MPlusContextProvider extends React.Component {
+  render() {
+    const MyContext = reactContexts[this.props.contextId];
+    return <MyContext.Provider value={this.state} />;
+  }
+  addMpWrapper(mp) {
+    mp.addWrappedComponent(this);
+  }
+  setInternalState(property, state) {
+    //called from the core library
+    this.setState((prevState, props) => {
+      if (property == "maxfields") {
+        //any field can have the new dialog added, we loop all the fields and add the dialog
+        //with this we move the dialog from the field level to the top level of the app
+        for (let j = 0; j < state.length; j++) {
+          let newDialogs = state[j].dialogs;
+          if (!newDialogs) {
+            continue;
+          }
+          let prevDialogs =
+            prevState.maxfields.length == 0 || !prevState.maxfields[j]
+              ? []
+              : prevState.maxfields[j].dialogs;
+          if (!prevDialogs) {
+            prevDialogs = [];
+          }
+          if (newDialogs.length < prevDialogs.length) {
+            this.popDialog();
+          }
+          if (newDialogs.length > prevDialogs.length) {
+            this.pushDialog(newDialogs[0]);
+          }
+        }
+      }
+      let ret = {};
+      ret[property] = state;
+      return ret;
+    });
+  }
+
+  getInternalState(property) {
+    return this.state && this.state[property];
+  }
+  pushDialog(dialog) {
+    //this indirection is necessary, becuase wh can override just the prototype function
+    openDialog(dialog);
+  }
+
+  popDialog() {
+    closeDialog();
+  }
+}
+
 export class MPlusComponent extends React.Component {
   //the following tho methods should be overriden in the concrete implementations with
   //MPlusComponent.prototype.pushDialog = function (dialog)...
+
+  constructor(props) {
+    super(props);
+    //context will be uniqueily identified by ID. To avoid user top spevify the id, we will calculate the context id
+    let cid = this.getContextID();
+    if (!reactContexts[cid]) {
+      reactContexts[cid] = React.createContext({});
+    }
+  }
+
+  getContextID() {
+    throw new Error("Context ID not defined");
+  }
 
   pushDialog(dialog) {
     //this indirection is necessary, becuase wh can override just the prototype function
@@ -216,7 +288,7 @@ In case the container property is passed, we have to make sure container is avai
   }
 
   getInternalState(property) {
-    return this.state[property];
+    return this.state && this.state[property];
   }
 }
 
@@ -548,6 +620,10 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       this.state.mp.clearQbe();
     }
 
+    componentWillUnmount() {
+      console.log("COMPONENT WILL UNMOUNT (QBE");
+    }
+
     search() {
       this.state.mp.getContainer().reset(); //i dont' directly access container, becuase it could have been passed as an attribute through HTML, or directly as an object through JSX
       if (this.state.filterDialog) {
@@ -686,7 +762,7 @@ export function getGLDialog(drawSegments, drawDialog, WrappedList) {
       this.setState({ mp: mp });
     }
     getInternalState(property) {
-      return this.state[property];
+      return this.state && this.state[property];
     }
 
     setInternalState(property, state) {
