@@ -37,10 +37,93 @@ export const animating = flyd.stream(false);
 
 let rootComponent = null;
 
-const reactContexts = {};
+const MaximoPlusContext = React.createContext({
+  wrappedMPComponents: {},
+  addWrapped: (contextId, wrapped) => {},
+  removeWrapped: contextId => {}
+});
+
+class MaximoPlusWrapper {
+  //this is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
+  constructor(contextInd, mp, provider) {
+    this.contextInd = contextInd;
+    this.mp = mp;
+    this.provider = provider;
+    mp.addWrappedComponent(this);
+  }
+
+  setInternalState(property, state) {
+    if (property == "maxfields") {
+      //any field can have the new dialog added, we loop all the fields and add the dialog
+      //with this we move the dialog from the field level to the top level of the app
+      for (let j = 0; j < state.length; j++) {
+        let newDialogs = state[j].dialogs;
+        if (!newDialogs) {
+          continue;
+        }
+        let prevDialogs =
+          this.state.maxfields.length == 0 || !this.state.maxfields[j]
+            ? []
+            : this.state.maxfields[j].dialogs;
+        if (!prevDialogs) {
+          prevDialogs = [];
+        }
+        if (newDialogs.length < prevDialogs.length) {
+          this.popDialog();
+        }
+        if (newDialogs.length > prevDialogs.length) {
+          this.pushDialog(newDialogs[0]);
+        }
+      }
+    }
+    this.setState(property, state);
+  }
+  get state() {
+    return this.provider.state.wrappedMPComponents[this.contextInd];
+  }
+  setState(property, state) {
+    let stateObj = {};
+    let ret = this.state;
+    ret[property] = state;
+    let oldState = this.provider.state.wrappedMPComponents;
+
+    let newState = { ...oldState };
+    newState[this.contextId] = ret;
+
+    this.provider.setState({ wrappedMPComponents: newState });
+  }
+}
+
+export class MaximoPlusContextProvider extends React.Component {
+  constructor(props) {
+    super(props);
+      this.wrapped = {};
+      this.addWrapped = (contextId, mp) => {
+	  let mpWrapped = new MaximoPlusWrapper(contextId,mp,this);
+	  this.wrapped[contextId]=mpWrapped;
+      };
+    this.removeWrapped = contextId => {
+      delete this.wrapped[contextId];
+    };
+    this.state = {
+      wrappedMPComponents: {},
+      addWrapped: this.addWrapped,
+      removeWrapped: this.removeWrapped
+    };
+  }
+
+  render() {
+    return (
+      <MaximoPlusContext.Provider value={this.state}>
+        {this.props.children}
+      </MaximoPlusContext.Provider>
+    );
+  }
+}
 
 /*
 I will use react context to pass the data from Maximo to the components. The problem is that is difficult to control when the state is set from Maximo to the react component (if the component is mounted, not mounted, how many times the constructor is called, etc.) Instead of this, the context will be unique, based on the Maximo container of the component, and additional properties. In this way, even if the component is destroyed by React, it will still point to the same context. The key of this map is the internal Id, and the value is the context. Another thing we need is the Context Provider component, that we will call to update the state from MaximoPlus that will provide the value for the context
+We will have only one context and context provider for the whole application, the consumers will get the data from the context based on their id.
 */
 
 export const setRootComponent = root => {
@@ -126,73 +209,15 @@ export class RelContainer extends React.Component {
   }
 }
 
-class MPlusContextProvider extends React.Component {
-  render() {
-    const MyContext = reactContexts[this.props.contextId];
-    return <MyContext.Provider value={this.state} />;
-  }
-  addMpWrapper(mp) {
-    mp.addWrappedComponent(this);
-  }
-  setInternalState(property, state) {
-    //called from the core library
-    this.setState((prevState, props) => {
-      if (property == "maxfields") {
-        //any field can have the new dialog added, we loop all the fields and add the dialog
-        //with this we move the dialog from the field level to the top level of the app
-        for (let j = 0; j < state.length; j++) {
-          let newDialogs = state[j].dialogs;
-          if (!newDialogs) {
-            continue;
-          }
-          let prevDialogs =
-            prevState.maxfields.length == 0 || !prevState.maxfields[j]
-              ? []
-              : prevState.maxfields[j].dialogs;
-          if (!prevDialogs) {
-            prevDialogs = [];
-          }
-          if (newDialogs.length < prevDialogs.length) {
-            this.popDialog();
-          }
-          if (newDialogs.length > prevDialogs.length) {
-            this.pushDialog(newDialogs[0]);
-          }
-        }
-      }
-      let ret = {};
-      ret[property] = state;
-      return ret;
-    });
-  }
-
-  getInternalState(property) {
-    return this.state && this.state[property];
-  }
-  pushDialog(dialog) {
-    //this indirection is necessary, becuase wh can override just the prototype function
-    openDialog(dialog);
-  }
-
-  popDialog() {
-    closeDialog();
-  }
-}
-
 export class MPlusComponent extends React.Component {
   //the following tho methods should be overriden in the concrete implementations with
   //MPlusComponent.prototype.pushDialog = function (dialog)...
 
   constructor(props) {
     super(props);
-    //context will be uniqueily identified by ID. To avoid user top spevify the id, we will calculate the context id
-    let cid = this.getContextID();
-    if (!reactContexts[cid]) {
-      reactContexts[cid] = React.createContext({});
-    }
   }
 
-  getContextID() {
+  get contextID() {
     throw new Error("Context ID not defined");
   }
 
