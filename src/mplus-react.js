@@ -37,7 +37,7 @@ export const animating = flyd.stream(false);
 
 let rootComponent = null;
 
-const MaximoPlusContext = React.createContext({
+export const MaximoPlusContext = React.createContext({
   wrappedMPComponents: {},
   addWrapped: (contextId, wrapped) => {},
   removeWrapped: contextId => {}
@@ -45,11 +45,15 @@ const MaximoPlusContext = React.createContext({
 
 class MaximoPlusWrapper {
   //this is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
-  constructor(contextInd, mp, provider) {
-    this.contextInd = contextInd;
+  constructor(contextId, mp, provider) {
+    this.contextId = contextId;
     this.mp = mp;
     this.provider = provider;
     mp.addWrappedComponent(this);
+  }
+
+  getInternalState(property) {
+    return this.state && this.state[property];
   }
 
   setInternalState(property, state) {
@@ -79,11 +83,11 @@ class MaximoPlusWrapper {
     this.setState(property, state);
   }
   get state() {
-    return this.provider.state.wrappedMPComponents[this.contextInd];
+    return this.provider.state.wrappedMPComponents[this.contextId];
   }
   setState(property, state) {
     let stateObj = {};
-    let ret = this.state;
+    let ret = this.state ? this.state : {};
     ret[property] = state;
     let oldState = this.provider.state.wrappedMPComponents;
 
@@ -97,11 +101,11 @@ class MaximoPlusWrapper {
 export class MaximoPlusContextProvider extends React.Component {
   constructor(props) {
     super(props);
-      this.wrapped = {};
-      this.addWrapped = (contextId, mp) => {
-	  let mpWrapped = new MaximoPlusWrapper(contextId,mp,this);
-	  this.wrapped[contextId]=mpWrapped;
-      };
+    this.wrapped = {};
+    this.addWrapped = (contextId, mp) => {
+      let mpWrapped = new MaximoPlusWrapper(contextId, mp, this);
+      this.wrapped[contextId] = mpWrapped;
+    };
     this.removeWrapped = contextId => {
       delete this.wrapped[contextId];
     };
@@ -319,7 +323,7 @@ In case the container property is passed, we have to make sure container is avai
 
 export function getList(getListTemplate, drawFilterButton, drawList, raw) {
   //sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
-  return class extends MPlusComponent {
+  let kl = class extends MPlusComponent {
     constructor(props) {
       super(props);
       this.fetchMore = this.fetchMore.bind(this);
@@ -367,6 +371,26 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         mp: mp,
         waiting: false
       });
+
+      let mp2 = new maximoplus.re.Grid(
+        mboCont,
+        this.props.columns,
+        this.props.norows
+      );
+
+      mp2.renderDeferred();
+      if (
+        this.props.selectableF &&
+        typeof this.props.selectableF == "function"
+      ) {
+        mp2.setSelectableF(this.props.selectableF);
+      }
+      if (this.context.addWrapped) {
+        this.context.addWrapped(11, mp2);
+      }
+      if (this.props.initdata) {
+        mp2.initData();
+      }
     }
 
     enableLocalWaitSpinner() {
@@ -407,6 +431,8 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     //      );
     //    }
     render() {
+      console.log("context:");
+      console.log(this.context);
       let drs = [];
 
       if (this.state && this.state.maxrows) {
@@ -448,6 +474,8 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       return <div />;
     }
   };
+  kl.contextType = MaximoPlusContext;
+  return kl;
 }
 
 export function getPickerList(drawPickerOption, drawPicker) {

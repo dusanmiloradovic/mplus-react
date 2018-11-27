@@ -15,7 +15,9 @@ import {
   getFilterDialog,
   getGLDialog,
   getWorkflowDialog,
-  openWorkflow
+  openWorkflow,
+  MaximoPlusContext,
+  MaximoPlusContextProvider
 } from "./mplus-react.js";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -230,6 +232,7 @@ const List = getList(
   )
 );
 
+
 const DialogHolder = getDialogHolder(dialog => dialogs[dialog.type]); //this should return just hte jsx, we need to instantiate through JSX syntax in the mplus-react.js
 
 const ListDialog = getListDialog(List, () => props => (
@@ -264,6 +267,7 @@ class AppRoot extends React.Component {
   }
   render() {
     return (
+      <MaximoPlusContextProvider>
         <div key={"app-" + this.state.version}>
           {this.props.children}
           <DialogHolder dialogs={this.state.dialogs} />
@@ -272,6 +276,7 @@ class AppRoot extends React.Component {
             callback={() => this.softReload()}
           />
         </div>
+      </MaximoPlusContextProvider>
     );
   }
   componentDidMount() {
