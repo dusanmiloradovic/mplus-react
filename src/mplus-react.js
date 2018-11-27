@@ -50,6 +50,7 @@ class MaximoPlusWrapper {
     this.mp = mp;
     this.provider = provider;
     mp.addWrappedComponent(this);
+    this.setState("mp", mp);
   }
 
   getInternalState(property) {
@@ -221,10 +222,6 @@ export class MPlusComponent extends React.Component {
     super(props);
   }
 
-  get contextID() {
-    throw new Error("Context ID not defined");
-  }
-
   pushDialog(dialog) {
     //this indirection is necessary, becuase wh can override just the prototype function
     openDialog(dialog);
@@ -352,7 +349,6 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         this.props.columns,
         this.props.norows
       );
-      this.mp = mp;
       if (this.props.showWaiting) {
         this.enableLocalWaitSpinner.bind(this)();
       }
@@ -367,32 +363,28 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       if (this.props.initdata) {
         mp.initData();
       }
+      if (this.context.addWrapped) {
+        this.context.addWrapped(this.contextId, mp);
+      }
       this.setState({
-        mp: mp,
         waiting: false
       });
 
-      let mp2 = new maximoplus.re.Grid(
-        mboCont,
-        this.props.columns,
-        this.props.norows
+      this.contextId = mp.getId();
+    }
+    get mp() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["mp"]
       );
-
-      mp2.renderDeferred();
-      if (
-        this.props.selectableF &&
-        typeof this.props.selectableF == "function"
-      ) {
-        mp2.setSelectableF(this.props.selectableF);
-      }
-      if (this.context.addWrapped) {
-        this.context.addWrapped(11, mp2);
-      }
-      if (this.props.initdata) {
-        mp2.initData();
-      }
     }
 
+    get maxrows() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["maxrows"]
+      );
+    }
     enableLocalWaitSpinner() {
       //useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
       this.mp.prepareCall = _ => {
@@ -431,22 +423,31 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     //      );
     //    }
     render() {
-      console.log("context:");
-      console.log(this.context);
+      if (
+        this.context.wrappedMPComponents &&
+        this.context.wrappedMPComponents[this.contextId]
+      ) {
+        let tja = this.context.wrappedMPComponents[this.contextId];
+        console.log(tja);
+          console.log(tja["mp"]);
+	  //"maxrows" is not available, check the state setting
+      }
       let drs = [];
 
-      if (this.state && this.state.maxrows) {
+      if (this.maxrows) {
+        console.log("maxrows:");
+        console.log(this.maxrows);
         const Template = getListTemplate(this.props.listTemplate);
         if (Template) {
           //raw means don't render the row, return just the props, and parent will take care of rendering with that props
           if (raw) {
-            drs = this.state.maxrows.map(o => {
+            drs = this.maxrows.map(o => {
               let _o = Template(o);
               _o.key = o.data["_uniqueid"];
               return _o;
             });
           } else {
-            drs = this.state.maxrows.map(o => (
+            drs = this.maxrows.map(o => (
               <Template {...o} key={o.data["_uniqueid"]} />
             ));
           }
