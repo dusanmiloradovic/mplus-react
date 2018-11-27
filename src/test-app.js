@@ -264,14 +264,14 @@ class AppRoot extends React.Component {
   }
   render() {
     return (
-      <div key={"app-" + this.state.version}>
-        {this.props.children}
-        <DialogHolder dialogs={this.state.dialogs} />
-        <LoginForm
-          visible={this.state.needsLogin}
-          callback={() => this.softReload()}
-        />
-      </div>
+        <div key={"app-" + this.state.version}>
+          {this.props.children}
+          <DialogHolder dialogs={this.state.dialogs} />
+          <LoginForm
+            visible={this.state.needsLogin}
+            callback={() => this.softReload()}
+          />
+        </div>
     );
   }
   componentDidMount() {
