@@ -16,7 +16,8 @@
     "maximoplus-core": "^2.1.24"
   },
   "dependencies": {
-    "flyd": "^0.2.7"
+    "flyd": "^0.2.7",
+    "rollup": "^0.61.2"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.51",
