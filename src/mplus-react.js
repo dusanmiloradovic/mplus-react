@@ -118,8 +118,6 @@ export class MaximoPlusContextProvider extends React.Component {
   }
 
   render() {
-    console.log("CONTEXT PROVIDER");
-    console.log(this.state);
     return (
       <MaximoPlusContext.Provider value={this.state}>
         {this.props.children}
@@ -338,7 +336,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       this.state = { dataSetInitialized: true };
     }
     initData() {
-      this.state.mp.initData();
+      this.mp.initData();
     }
 
     //    componentWillMount() {
@@ -362,7 +360,6 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       ) {
         mp.setSelectableF(this.props.selectableF);
       }
-      mp.addWrappedComponent(this);
       if (this.props.initdata) {
         mp.initData();
       }
@@ -387,13 +384,18 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         this.context.wrappedMPComponents[this.contextId]["maxrows"]
       );
     }
+
+    get paginator() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["paginator"]
+      );
+    }
+
     enableLocalWaitSpinner() {
       //useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
       this.mp.prepareCall = _ => {
-        if (
-          this.state.paginator &&
-          this.state.paginator.numrows != this.state.paginator.torow
-        ) {
+        if (this.paginator && this.paginator.numrows != this.paginator.torow) {
           this.setState({ waiting: true, startWait: Date.now() });
         }
       };
@@ -425,20 +427,9 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     //      );
     //    }
     render() {
-      if (
-        this.context.wrappedMPComponents &&
-        this.context.wrappedMPComponents[this.contextId]
-      ) {
-        let tja = this.context.wrappedMPComponents[this.contextId];
-        console.log(tja);
-        console.log(tja["mp"]);
-        //"maxrows" is not available, check the state setting
-      }
       let drs = [];
 
       if (this.maxrows) {
-        console.log("maxrows:");
-        console.log(this.maxrows);
         const Template = getListTemplate(this.props.listTemplate);
         if (Template) {
           //raw means don't render the row, return just the props, and parent will take care of rendering with that props
@@ -525,35 +516,47 @@ export function getPickerList(drawPickerOption, drawPicker) {
 
 export function getSection(WrappedTextField, WrappedPicker, drawFields) {
   //like for the list, here we also support the "raw" rendering, i.e. this HOC returns the data, and parent does the actual rendering. We don't need the raw field for this, if wrappers are null, we just return the props. For picker list,we will have to send the array of values in one field (so we need to transfer the field row state to props)
-  return class extends MPlusComponent {
+  let kl = class extends MPlusComponent {
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
       let mp = new maximoplus.re.Section(mboCont, this.props.columns);
-      if (this.props.metadata) {
+      this.contextId = mp.getId();
+      if (this.props.metadata) {
         mp.addColumnsMeta(this.metadata);
       }
-      mp.addWrappedComponent(this);
       mp.renderDeferred();
-      this.setState({ mp: mp });
+      if (this.context.addWrapped) {
+        this.context.addWrapped(this.contextId, mp);
+      }
     }
 
     componentDidUpdate(prevProps) {
       super.componentDidUpdate(prevProps);
-      if (
-        prevProps.metadata != this.props.metadata &&
-        this.state &&
-        this.state.mp
-      ) {
-        this.state.mp.addColumnsMeta(this.props.metadata);
+      if (prevProps.metadata != this.props.metadata && this.mp) {
+        this.mp.addColumnsMeta(this.props.metadata);
       }
+    }
+
+    get mp() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["mp"]
+      );
+    }
+
+    get maxfields() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["maxfields"]
+      );
     }
 
     render() {
       let flds = [];
       const raw = !WrappedTextField;
-      if (this.state && this.state.maxfields) {
-        flds = this.state.maxfields.map((f, i) => {
+      if (this.maxfields) {
+        flds = this.maxfields.map((f, i) => {
           let fKey = f.metadata.attributeName + i;
           if (f.metadata.picker && f.picker) {
             let lst = f.picker.list;
@@ -622,10 +625,12 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       return drawFields(flds);
     }
   };
+  kl.contextType = MaximoPlusContext;
+  return kl;
 }
 
 export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
-  return class extends MPlusComponent {
+  let kl = class extends MPlusComponent {
     constructor(props) {
       super(props);
 
@@ -638,7 +643,10 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
       let mp = new maximoplus.re.QbeSection(mboCont, this.props.columns);
-
+      this.contextId = mp.getId();
+      if (this.context.addWrapped) {
+        this.context.addWrapped(this.contextId, mp);
+      }
       /*
 	 Important.
 	 The QbeSection in MaximoPlus core library is the only component where column may be the string or the javascript object. The case for javascript object is when we want to search the range in QbeSection. For that we use the standard Maximo functionality - qbePrepend. The columns have to be registered when creating the QbeSection, and the qbePrepend data has to be sent with them, this is why we have that exception. For the case of the components registered with the markup (HTML or JSX, for the web components or React), we already have the metadata defined at the same time as the columns, so we can read this from the metadata itself, and send to the  MaximoPlus constructor.
@@ -660,30 +668,18 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
         mp.addColumnsMeta(this.props.metadata);
       }
 
-      mp.addWrappedComponent(this);
       mp.renderDeferred();
       mp.initData();
-      this.setState({ mp: mp });
-    }
-
-    componentDidMount() {
-      super.componentDidMount();
     }
 
     clear() {
-      console.log("clearing");
-      console.log(this);
-      this.state.mp.clearQbe();
-    }
-
-    componentWillUnmount() {
-      console.log("COMPONENT WILL UNMOUNT (QBE");
+      this.mp.clearQbe();
     }
 
     search() {
-      this.state.mp.getContainer().reset(); //i dont' directly access container, becuase it could have been passed as an attribute through HTML, or directly as an object through JSX
-      if (this.state.filterDialog) {
-        this.state.filterDialog.closeDialog();
+      this.mp.getContainer().reset(); //i dont' directly access container, becuase it could have been passed as an attribute through HTML, or directly as an object through JSX
+      if (this.filterDialog) {
+        this.filterDialog.closeDialog();
       }
     }
 
@@ -693,10 +689,10 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
         { label: "Search", action: this.search, key: "search" },
         { label: "Clear", action: this.clear, key: "clear" }
       ];
-      if (this.state && this.state.filterDialog) {
+      if (this.filterDialog) {
         buttons.push({
           label: "Cancel",
-          action: ev => this.state.filterDialog.closeDialog()
+          action: ev => this.filterDialog.closeDialog()
         });
       }
       return drawSearchButtons(buttons);
@@ -717,12 +713,32 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
         this.search();
       }
     }
+    get mp() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["mp"]
+      );
+    }
+
+    get maxfields() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["maxfields"]
+      );
+    }
+
+    get filterDialogs() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["filterDialogs"]
+      );
+    }
 
     render() {
       let flds = [];
       let buttons = this.getSearchButtons();
-      if (this.state && this.state.maxfields) {
-        flds = this.state.maxfields.map((f, counter) => {
+      if (this.maxfields) {
+        flds = this.maxfields.map((f, counter) => {
           let attrs = {
             label: f.metadata.title,
             value: f.data,
@@ -744,6 +760,8 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       return drawFields(flds, buttons);
     }
   };
+  kl.contextType = MaximoPlusContext;
+  return kl;
 }
 
 export function getDialogHolder(getDialogF) {
@@ -811,37 +829,52 @@ export function getGLDialog(drawSegments, drawDialog, WrappedList) {
   //drawSegments is  a function that draws all the segments into one gl (arg - array of above objects)
   //drawDialog draws the final dialog from all these
   //WrappedList - concreate List implementation
-  return class extends React.Component {
+  let kl = class extends React.Component {
     componentDidMpunt() {
       let mp = new maximoplus.re.GLDialog(this.props.field, this.props.orgid);
-      mp.addWrappedComponent(this);
-      this.setState({ mp: mp });
+      this.contextId = mp.getId();
+      if (this.context.addWrapped) {
+        this.context.addWrapped(this.contextId, mp);
+      }
     }
-    getInternalState(property) {
-      return this.state && this.state[property];
+    get segments() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["segments"]
+      );
     }
 
-    setInternalState(property, state) {
-      let st = {};
-      st[property] = state;
-      this.setState(st);
+    get pickerlist() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["pickerlist"]
+      );
+    }
+
+    get chooseF() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["chooseF"]
+      );
     }
 
     render() {
-      let segments = drawSegments(this.state.segments);
+      let segments = drawSegments(this.segments);
       let gllist = (
         <WrappedList
-          maxcontainer={this.state.pickerlist.glcontainer}
-          columns={this.state.pickerlist.pickercols}
+          maxcontainer={this.pickerlist.glcontainer}
+          columns={this.pickerlist.pickercols}
           norows="20"
           initdata="true"
           list-template="gllist"
-          selectableF={this.state.pickerlist.pickerf}
+          selectableF={this.pickerlist.pickerf}
         />
       );
-      return drawDialog(segments, gllist, this.state.chooseF, closeDialog);
+      return drawDialog(segments, gllist, this.chooseF, closeDialog);
     }
   };
+  kl.contextType = MaximoPlusContext;
+  return kl;
 }
 
 export function getWorkflowDialog(
@@ -849,27 +882,43 @@ export function getWorkflowDialog(
   WrappedActionButton,
   drawDialog
 ) {
-  return class extends MPlusComponent {
+  let kl= class extends MPlusComponent {
     putContainer(mboCont) {
       let mp = new maximoplus.re.WorkflowControl(
         mboCont,
         this.props.processname
       );
-      mp.addWrappedComponent(this);
-      this.setState({ mp: mp });
+      this.contextId = mp.getId();
+      if (this.context.addWrapped) {
+        this.context.addWrapped(this.contextId, mp);
+      }
       mp.routeWf();
+    }
+
+          get actions() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["actions"]
+      );
+	  }
+
+          get section() {
+      return (
+        this.context.wrappedMPComponents[this.contextId] &&
+        this.context.wrappedMPComponents[this.contextId]["section"]
+      );
     }
     render() {
       if (
-        !this.state.section ||
-        !this.state.section.fields ||
-        !this.state.actions
+        !this.section ||
+        !this.section.fields ||
+        !this.actions
       ) {
         return <div />;
       }
-      let actionButtons = Object.keys(this.state.actions).map(key => (
-        <WrappedActionButton onClick={this.state.actions[key].actionFunction}>
-          {this.state.actions[key].label}
+      let actionButtons = Object.keys(this.actions).map(key => (
+        <WrappedActionButton onClick={this.actions[key].actionFunction}>
+          {this.actions[key].label}
         </WrappedActionButton>
       ));
       let metadata = {
@@ -881,22 +930,24 @@ export function getWorkflowDialog(
         }
       };
 
-      if (this.state.section.objectName == "REASSIGNWF") {
+      if (this.section.objectName == "REASSIGNWF") {
         metadata = {
           ASSIGNEE: { hasLookup: "true", listTemplate: "personlist" }
         };
       }
       return drawDialog(
-        this.state.title,
+        this.title,
         <WrappedSection
-          maxcontainer={this.state.section.contaienr}
-          columns={this.state.section.fields}
+          maxcontainer={this.section.contaienr}
+          columns={this.section.fields}
           metadata={metadata}
         />,
         actionButtons
       );
     }
   };
+    kl.contextType = MaximoPlusContext;
+    return kl;
 }
 
 export function openWorkflow(container, processname) {
