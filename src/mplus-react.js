@@ -522,7 +522,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
         return;
       let mp = new maximoplus.re.Section(mboCont, this.props.columns);
       this.contextId = mp.getId();
-      if (this.props.metadata) {
+      if (this.props.metadata) {
         mp.addColumnsMeta(this.metadata);
       }
       mp.renderDeferred();
@@ -882,7 +882,7 @@ export function getWorkflowDialog(
   WrappedActionButton,
   drawDialog
 ) {
-  let kl= class extends MPlusComponent {
+  let kl = class extends MPlusComponent {
     putContainer(mboCont) {
       let mp = new maximoplus.re.WorkflowControl(
         mboCont,
@@ -895,25 +895,21 @@ export function getWorkflowDialog(
       mp.routeWf();
     }
 
-          get actions() {
+    get actions() {
       return (
         this.context.wrappedMPComponents[this.contextId] &&
         this.context.wrappedMPComponents[this.contextId]["actions"]
       );
-	  }
+    }
 
-          get section() {
+    get section() {
       return (
         this.context.wrappedMPComponents[this.contextId] &&
         this.context.wrappedMPComponents[this.contextId]["section"]
       );
     }
     render() {
-      if (
-        !this.section ||
-        !this.section.fields ||
-        !this.actions
-      ) {
+      if (!this.section || !this.section.fields || !this.actions) {
         return <div />;
       }
       let actionButtons = Object.keys(this.actions).map(key => (
@@ -946,8 +942,8 @@ export function getWorkflowDialog(
       );
     }
   };
-    kl.contextType = MaximoPlusContext;
-    return kl;
+  kl.contextType = MaximoPlusContext;
+  return kl;
 }
 
 export function openWorkflow(container, processname) {
