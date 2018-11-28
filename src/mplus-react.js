@@ -88,7 +88,7 @@ class MaximoPlusWrapper {
   }
   setState(property, state) {
     let stateObj = {};
-    let ret = this.state ? { ...this.state } : {};
+    let ret = this.state ? this.state : {};
     ret[property] = state;
     let oldState = this.provider.state.wrappedMPComponents;
 
