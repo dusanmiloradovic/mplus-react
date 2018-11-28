@@ -88,7 +88,7 @@ class MaximoPlusWrapper {
   }
   setState(property, state) {
     let stateObj = {};
-    let ret = this.state ? this.state : {};
+    let ret = this.state ? { ...this.state } : {};
     ret[property] = state;
     let oldState = this.provider.state.wrappedMPComponents;
 
@@ -118,6 +118,8 @@ export class MaximoPlusContextProvider extends React.Component {
   }
 
   render() {
+    console.log("CONTEXT PROVIDER");
+    console.log(this.state);
     return (
       <MaximoPlusContext.Provider value={this.state}>
         {this.props.children}
@@ -349,6 +351,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         this.props.columns,
         this.props.norows
       );
+      this.contextId = mp.getId();
       if (this.props.showWaiting) {
         this.enableLocalWaitSpinner.bind(this)();
       }
@@ -363,14 +366,13 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       if (this.props.initdata) {
         mp.initData();
       }
+
       if (this.context.addWrapped) {
         this.context.addWrapped(this.contextId, mp);
       }
       this.setState({
         waiting: false
       });
-
-      this.contextId = mp.getId();
     }
     get mp() {
       return (
@@ -429,8 +431,8 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       ) {
         let tja = this.context.wrappedMPComponents[this.contextId];
         console.log(tja);
-          console.log(tja["mp"]);
-	  //"maxrows" is not available, check the state setting
+        console.log(tja["mp"]);
+        //"maxrows" is not available, check the state setting
       }
       let drs = [];
 
