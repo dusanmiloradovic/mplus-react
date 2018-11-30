@@ -1,5 +1,7 @@
 import React from "react";
 import flyd from "flyd";
+import MultiContext from "react-multiple-contexts";
+import uniqid from "uniqid";
 
 let kont = {};
 
@@ -45,10 +47,10 @@ export const MaximoPlusContext = React.createContext({
 
 class MaximoPlusWrapper {
   //this is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
-  constructor(contextId, mp, provider) {
+  constructor(rootContext, contextId, mp) {
     this.contextId = contextId;
     this.mp = mp;
-    this.provider = provider;
+    this.rootContext = rootContext;
     mp.addWrappedComponent(this);
     this.setState("mp", mp);
   }
@@ -84,18 +86,13 @@ class MaximoPlusWrapper {
     this.setState(property, state);
   }
   get state() {
-    return this.provider.state.wrappedMPComponents[this.contextId];
+    return this.rootContext.getInnerState(this.contextId);
   }
   setState(property, state) {
     let stateObj = {};
-    let ret = this.state ? this.state : {};
+    let ret = this.state ? { ...this.state } : {};
     ret[property] = state;
-    let oldState = this.provider.state.wrappedMPComponents;
-
-    let newState = { ...oldState };
-    newState[this.contextId] = ret;
-
-    this.provider.setState({ wrappedMPComponents: newState });
+    this.rootContext.setInnerState(this.contextId, ret);
   }
 }
 
@@ -320,6 +317,8 @@ In case the container property is passed, we have to make sure container is avai
 
 export function getList(getListTemplate, drawFilterButton, drawList, raw) {
   //sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
+  let uid = uniqid();
+  let ListContext = MultiContext.rootContext.addInnerContext(uid);
   let kl = class extends MPlusComponent {
     constructor(props) {
       super(props);
@@ -349,7 +348,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         this.props.columns,
         this.props.norows
       );
-      this.contextId = mp.getId();
+      this.wrapper = new MaximoPlusWrapper(MultiContext.rootContext, uid, mp);
       if (this.props.showWaiting) {
         this.enableLocalWaitSpinner.bind(this)();
       }
@@ -372,24 +371,15 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       });
     }
     get mp() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["mp"]
-      );
+      return this.context["mp"];
     }
 
     get maxrows() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["maxrows"]
-      );
+      return this.context["maxrows"];
     }
 
     get paginator() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["paginator"]
-      );
+      return this.context["paginator"];
     }
 
     enableLocalWaitSpinner() {
@@ -468,7 +458,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       return <div />;
     }
   };
-  kl.contextType = MaximoPlusContext;
+  kl.contextType = ListContext;
   return kl;
 }
 
@@ -516,6 +506,8 @@ export function getPickerList(drawPickerOption, drawPicker) {
 
 export function getSection(WrappedTextField, WrappedPicker, drawFields) {
   //like for the list, here we also support the "raw" rendering, i.e. this HOC returns the data, and parent does the actual rendering. We don't need the raw field for this, if wrappers are null, we just return the props. For picker list,we will have to send the array of values in one field (so we need to transfer the field row state to props)
+  let uid = uniqid();
+  let SectionContext = MultiContext.rootContext.addInnerContext(uid);
   let kl = class extends MPlusComponent {
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
@@ -625,7 +617,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       return drawFields(flds);
     }
   };
-  kl.contextType = MaximoPlusContext;
+  kl.contextType = SectionContext;
   return kl;
 }
 

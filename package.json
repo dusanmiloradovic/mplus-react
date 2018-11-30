@@ -16,7 +16,9 @@
     "maximoplus-core": "^2.1.24"
   },
   "dependencies": {
-    "flyd": "^0.2.8"
+    "flyd": "^0.2.8",
+    "react-multiple-contexts": "^1.0.4",
+    "uniqid": "^5.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
