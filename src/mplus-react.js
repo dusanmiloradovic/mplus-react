@@ -1,7 +1,6 @@
 import React from "react";
 import flyd from "flyd";
 import MultiContext from "react-multiple-contexts";
-import uniqid from "uniqid";
 
 let kont = {};
 
@@ -14,9 +13,12 @@ export const shallowDiffers = (a, b) => {
 
 const resolveContainer = (contid, container) => {
   if (kont[contid]) {
+    if (kont[contid].resolved) return;
     kont[contid].resolve(container);
+    kont[contid].resolved = true;
   } else {
     kont[contid] = Promise.resolve(container);
+    kont[contid].resolved = true;
   }
 };
 
@@ -38,12 +40,6 @@ const getDeferredContainer = contId => {
 export const animating = flyd.stream(false);
 
 let rootComponent = null;
-
-export const MaximoPlusContext = React.createContext({
-  wrappedMPComponents: {},
-  addWrapped: (contextId, wrapped) => {},
-  removeWrapped: contextId => {}
-});
 
 class MaximoPlusWrapper {
   //this is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
@@ -96,33 +92,6 @@ class MaximoPlusWrapper {
   }
 }
 
-export class MaximoPlusContextProvider extends React.Component {
-  constructor(props) {
-    super(props);
-    this.wrapped = {};
-    this.addWrapped = (contextId, mp) => {
-      let mpWrapped = new MaximoPlusWrapper(contextId, mp, this);
-      this.wrapped[contextId] = mpWrapped;
-    };
-    this.removeWrapped = contextId => {
-      delete this.wrapped[contextId];
-    };
-    this.state = {
-      wrappedMPComponents: {},
-      addWrapped: this.addWrapped,
-      removeWrapped: this.removeWrapped
-    };
-  }
-
-  render() {
-    return (
-      <MaximoPlusContext.Provider value={this.state}>
-        {this.props.children}
-      </MaximoPlusContext.Provider>
-    );
-  }
-}
-
 /*
 I will use react context to pass the data from Maximo to the components. The problem is that is difficult to control when the state is set from Maximo to the react component (if the component is mounted, not mounted, how many times the constructor is called, etc.) Instead of this, the context will be unique, based on the Maximo container of the component, and additional properties. In this way, even if the component is destroyed by React, it will still point to the same context. The key of this map is the internal Id, and the value is the context. Another thing we need is the Context Provider component, that we will call to update the state from MaximoPlus that will provide the value for the context
 We will have only one context and context provider for the whole application, the consumers will get the data from the context based on their id.
@@ -163,10 +132,13 @@ export const closeDialog = () => {
 export class AppContainer extends React.Component {
   constructor(props) {
     super(props);
-    let mp = new maximoplus.basecontrols.AppContainer(
-      this.props.mboname,
-      this.props.appname
-    );
+
+    let mp = kont[this.props.id]
+      ? kont[this.props.id]
+      : new maximoplus.basecontrols.AppContainer(
+          this.props.mboname,
+          this.props.appname
+        );
     if (this.props.offlineenabled) {
       mp.setOfflineEnabled(true);
     }
@@ -187,10 +159,12 @@ export class AppContainer extends React.Component {
 export class RelContainer extends React.Component {
   componentWillMount() {
     getDeferredContainer(this.props.container).then(mboCont => {
-      let mp = new maximoplus.basecontrols.RelContainer(
-        mboCont,
-        this.props.relationship
-      );
+      let mp = kont[this.props.id]
+        ? kont[this.props.id]
+        : new maximoplus.basecontrols.RelContainer(
+            mboCont,
+            this.props.relationship
+          );
       this.setState({ mp: mp });
       resolveContainer(this.props.id, mp);
     });
@@ -317,8 +291,7 @@ In case the container property is passed, we have to make sure container is avai
 
 export function getList(getListTemplate, drawFilterButton, drawList, raw) {
   //sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
-  let uid = uniqid();
-  let ListContext = MultiContext.rootContext.addInnerContext(uid);
+
   let kl = class extends MPlusComponent {
     constructor(props) {
       super(props);
@@ -343,12 +316,17 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
 
     //    }
     putContainer(mboCont) {
+      if (this.state.mp) {
+        return;
+      }
       let mp = new maximoplus.re.Grid(
         mboCont,
         this.props.columns,
         this.props.norows
       );
-      this.wrapper = new MaximoPlusWrapper(MultiContext.rootContext, uid, mp);
+      this.contextId = mp.getId();
+      this.ListContext = this.context.addInnerContext(this.contextId);
+      this.wrapper = new MaximoPlusWrapper(this.context, this.contextId, mp);
       if (this.props.showWaiting) {
         this.enableLocalWaitSpinner.bind(this)();
       }
@@ -363,34 +341,30 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         mp.initData();
       }
 
-      if (this.context.addWrapped) {
-        this.context.addWrapped(this.contextId, mp);
-      }
       this.setState({
-        waiting: false
+        waiting: false,
+        mp: mp,
+        contextId: mp.getId(),
+        wrapper: this.wrapper,
+        ListContext: this.ListContext
       });
     }
     get mp() {
-      return this.context["mp"];
-    }
-
-    get maxrows() {
-      return this.context["maxrows"];
-    }
-
-    get paginator() {
-      return this.context["paginator"];
+      return this.state.mp;
     }
 
     enableLocalWaitSpinner() {
       //useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
+
       this.mp.prepareCall = _ => {
-        if (this.paginator && this.paginator.numrows != this.paginator.torow) {
-          this.setState({ waiting: true, startWait: Date.now() });
-        }
+        this.wrapper.setState("waiting", true);
+        this.wrapper.setState("startWait", Date.now());
+        //        if (this.paginator && this.paginator.numrows != this.paginator.torow) {
+        //          this.setState({ waiting: true, startWait: Date.now() });
+        //        }
       };
       this.mp.finishCall = _ => {
-        this.setState({ waiting: false });
+        this.wrapper.setState("waiting", false);
       };
     }
 
@@ -417,26 +391,36 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     //      );
     //    }
     render() {
-      let drs = [];
+      if (!this.ListContext) return <div />;
+      let Consumer = this.ListContext.Consumer;
+      return (
+        <Consumer>
+          {({ maxrows, paginator, waiting }) => {
+            let _waiting =
+              waiting && (!paginator || paginator.numrows != paginator.torow);
+            let drs = [];
 
-      if (this.maxrows) {
-        const Template = getListTemplate(this.props.listTemplate);
-        if (Template) {
-          //raw means don't render the row, return just the props, and parent will take care of rendering with that props
-          if (raw) {
-            drs = this.maxrows.map(o => {
-              let _o = Template(o);
-              _o.key = o.data["_uniqueid"];
-              return _o;
-            });
-          } else {
-            drs = this.maxrows.map(o => (
-              <Template {...o} key={o.data["_uniqueid"]} />
-            ));
-          }
-        }
-      }
-      return drawList(drs, this.getFilterButton(), this.state.waiting);
+            if (maxrows) {
+              const Template = getListTemplate(this.props.listTemplate);
+              if (Template) {
+                //raw means don't render the row, return just the props, and parent will take care of rendering with that props
+                if (raw) {
+                  drs = maxrows.map(o => {
+                    let _o = Template(o);
+                    _o.key = o.data["_uniqueid"];
+                    return _o;
+                  });
+                } else {
+                  drs = maxrows.map(o => (
+                    <Template {...o} key={o.data["_uniqueid"]} />
+                  ));
+                }
+              }
+            }
+            return drawList(drs, this.getFilterButton(), _waiting);
+          }}
+        </Consumer>
+      );
     }
 
     showFilter() {
@@ -458,7 +442,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       return <div />;
     }
   };
-  kl.contextType = ListContext;
+  kl.contextType = MultiContext.rootContext;
   return kl;
 }
 
@@ -506,8 +490,8 @@ export function getPickerList(drawPickerOption, drawPicker) {
 
 export function getSection(WrappedTextField, WrappedPicker, drawFields) {
   //like for the list, here we also support the "raw" rendering, i.e. this HOC returns the data, and parent does the actual rendering. We don't need the raw field for this, if wrappers are null, we just return the props. For picker list,we will have to send the array of values in one field (so we need to transfer the field row state to props)
-  let uid = uniqid();
-  let SectionContext = MultiContext.rootContext.addInnerContext(uid);
+  let uid = 1;
+
   let kl = class extends MPlusComponent {
     putContainer(mboCont) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
@@ -617,7 +601,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       return drawFields(flds);
     }
   };
-  kl.contextType = SectionContext;
+  kl.contextType = MultiContext.rootContext;
   return kl;
 }
 
@@ -752,7 +736,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       return drawFields(flds, buttons);
     }
   };
-  kl.contextType = MaximoPlusContext;
+  kl.contextType = MultiContext.rootContext;
   return kl;
 }
 
@@ -865,7 +849,7 @@ export function getGLDialog(drawSegments, drawDialog, WrappedList) {
       return drawDialog(segments, gllist, this.chooseF, closeDialog);
     }
   };
-  kl.contextType = MaximoPlusContext;
+  kl.contextType = MultiContext.rootContext;
   return kl;
 }
 
@@ -934,7 +918,7 @@ export function getWorkflowDialog(
       );
     }
   };
-  kl.contextType = MaximoPlusContext;
+  kl.contextType = MultiContext.rootContext;
   return kl;
 }
 

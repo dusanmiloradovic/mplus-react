@@ -17,8 +17,7 @@
   },
   "dependencies": {
     "flyd": "^0.2.8",
-    "react-multiple-contexts": "^1.0.4",
-    "uniqid": "^5.0.3"
+    "react-multiple-contexts": "^1.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",

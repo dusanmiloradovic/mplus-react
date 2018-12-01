@@ -15,11 +15,10 @@ import {
   getFilterDialog,
   getGLDialog,
   getWorkflowDialog,
-  openWorkflow,
-  MaximoPlusContext,
-  MaximoPlusContextProvider
+  openWorkflow
 } from "./mplus-react.js";
 import React from "react";
+import MultiContext from "react-multiple-contexts";
 import ReactDOM from "react-dom";
 
 //the components from the package will be used directly, they are the base for the real styled components. Still, we need to test them first. Also this serves as an implementation reference for the real cases
@@ -232,7 +231,6 @@ const List = getList(
   )
 );
 
-
 const DialogHolder = getDialogHolder(dialog => dialogs[dialog.type]); //this should return just hte jsx, we need to instantiate through JSX syntax in the mplus-react.js
 
 const ListDialog = getListDialog(List, () => props => (
@@ -267,7 +265,7 @@ class AppRoot extends React.Component {
   }
   render() {
     return (
-      <MaximoPlusContextProvider>
+      <MultiContext>
         <div key={"app-" + this.state.version}>
           {this.props.children}
           <DialogHolder dialogs={this.state.dialogs} />
@@ -276,7 +274,7 @@ class AppRoot extends React.Component {
             callback={() => this.softReload()}
           />
         </div>
-      </MaximoPlusContextProvider>
+      </MultiContext>
     );
   }
   componentDidMount() {
@@ -333,6 +331,86 @@ class LoginForm extends React.Component {
   }
 }
 
+//const App = props => (
+//  <AppRoot>
+//    <AppContainer mboname="po" appname="po" id="pocont" wfprocess="postatus" />
+//    <RelContainer container="pocont" relationship="poline" id="polinecont" />
+//    <div className="flex">
+//      <div className="flex-item">
+//        <List
+//          container="pocont"
+//          columns={["ponum", "description", "status"]}
+//          norows="20"
+//          initdata="true"
+//          listTemplate="porow"
+//        />
+//      </div>
+//      <div className="flex-item">
+//        <Section
+//          container="pocont"
+//          columns={["ponum", "description", "status", "shipvia", "orderdate"]}
+//          metadata={{
+//            STATUS: {
+//              picker: "true",
+//              pickerkeycol: "value",
+//              pickercol: "description",
+//              pickerrows: "10"
+//            },
+//            SHIPVIA: {
+//              hasLookup: "true",
+//              listTemplate: "valuelist",
+//              filterTemplate: "valuelist"
+//            }
+//          }}
+//        />
+//      </div>
+//      <div className="flex-item">
+//        <QbeSection
+//          container="pocont"
+//          columns={["ponum", "description", "status", "shipvia"]}
+//          qbePrepends={[
+//            {
+//              virtualName: "from_orderdate",
+//              qbePrepend: ">=",
+//              attributeName: "orderdate",
+//              title: "Order Date From",
+//              position: "4"
+//            },
+//            {
+//              virtualName: "to_orderdate",
+//              qbePrepend: "<=",
+//              attributeName: "orderdate",
+//              title: "Order Date To",
+//              position: "5"
+//            }
+//          ]}
+//          metadata={{
+//            SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
+//            STATUS: {
+//              hasLookup: "true",
+//              listTemplate: "qbevaluelist",
+//              filterTemplate: "valuelist"
+//            }
+//          }}
+//        />
+//      </div>
+//      <div className="flex-item">
+//        <Section
+//          container="polinecont"
+//          columns={[
+//            "polinenum",
+//            "itemnum",
+//            "orderqty",
+//            "orderunit",
+//            "gldebitacct"
+//          ]}
+//          metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
+//        />
+//      </div>
+//    </div>
+//  </AppRoot>
+//);
+
 const App = props => (
   <AppRoot>
     <AppContainer mboname="po" appname="po" id="pocont" wfprocess="postatus" />
@@ -347,68 +425,9 @@ const App = props => (
           listTemplate="porow"
         />
       </div>
-      <div className="flex-item">
-        <Section
-          container="pocont"
-          columns={["ponum", "description", "status", "shipvia", "orderdate"]}
-          metadata={{
-            STATUS: {
-              picker: "true",
-              pickerkeycol: "value",
-              pickercol: "description",
-              pickerrows: "10"
-            },
-            SHIPVIA: {
-              hasLookup: "true",
-              listTemplate: "valuelist",
-              filterTemplate: "valuelist"
-            }
-          }}
-        />
-      </div>
-      <div className="flex-item">
-        <QbeSection
-          container="pocont"
-          columns={["ponum", "description", "status", "shipvia"]}
-          qbePrepends={[
-            {
-              virtualName: "from_orderdate",
-              qbePrepend: ">=",
-              attributeName: "orderdate",
-              title: "Order Date From",
-              position: "4"
-            },
-            {
-              virtualName: "to_orderdate",
-              qbePrepend: "<=",
-              attributeName: "orderdate",
-              title: "Order Date To",
-              position: "5"
-            }
-          ]}
-          metadata={{
-            SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
-            STATUS: {
-              hasLookup: "true",
-              listTemplate: "qbevaluelist",
-              filterTemplate: "valuelist"
-            }
-          }}
-        />
-      </div>
-      <div className="flex-item">
-        <Section
-          container="polinecont"
-          columns={[
-            "polinenum",
-            "itemnum",
-            "orderqty",
-            "orderunit",
-            "gldebitacct"
-          ]}
-          metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
-        />
-      </div>
+      <div className="flex-item" />
+      <div className="flex-item" />
+      <div className="flex-item" />
     </div>
   </AppRoot>
 );
