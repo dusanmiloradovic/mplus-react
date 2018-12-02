@@ -1,6 +1,7 @@
 import React from "react";
 import flyd from "flyd";
 import MultiContext from "react-multiple-contexts";
+import md5 from "js-md5";
 
 let kont = {};
 
@@ -9,6 +10,10 @@ export const shallowDiffers = (a, b) => {
   for (let i in a) if (!(i in b)) return true;
   for (let i in b) if (a[i] !== b[i]) return true;
   return false;
+};
+
+const hash = value => {
+  return md5(JSON.stringify(value));
 };
 
 const resolveContainer = (contid, container) => {
@@ -40,6 +45,9 @@ const getDeferredContainer = contId => {
 export const animating = flyd.stream(false);
 
 let rootComponent = null;
+
+const innerContexts = {};
+//to simplify the things, we will calculate the id based on the props of the components, and then create theinner context. This will separate completely Maximoplus components from react components
 
 class MaximoPlusWrapper {
   //this is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
@@ -88,7 +96,7 @@ class MaximoPlusWrapper {
     let stateObj = {};
     let ret = this.state ? { ...this.state } : {};
     ret[property] = state;
-    this.rootContext.setInnerState(this.contextId, ret);
+    this.rootContext.setInnerState(this.contextId, _ => ret);
   }
 }
 
@@ -305,6 +313,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
           pagePrev: this.pagePrev
         });
       }
+      this.oid = hash(this.props);
       this.state = { dataSetInitialized: true };
     }
     initData() {
@@ -316,17 +325,17 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
 
     //    }
     putContainer(mboCont) {
-      if (this.state.mp) {
+      if (this.mp) {
         return;
       }
+      let context = this.context.addInnerContext(this.oid);
       let mp = new maximoplus.re.Grid(
         mboCont,
         this.props.columns,
         this.props.norows
       );
-      this.contextId = mp.getId();
-      this.ListContext = this.context.addInnerContext(this.contextId);
-      this.wrapper = new MaximoPlusWrapper(this.context, this.contextId, mp);
+
+      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       if (this.props.showWaiting) {
         this.enableLocalWaitSpinner.bind(this)();
       }
@@ -341,18 +350,14 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         mp.initData();
       }
 
-      this.setState({
-        waiting: false,
-        mp: mp,
-        contextId: mp.getId(),
-        wrapper: this.wrapper,
-        ListContext: this.ListContext
-      });
+      let iic = (innerContexts[this.oid] = { wrapper, mp, context });
     }
     get mp() {
-      return this.state.mp;
+      return innerContexts[this.oid] && innerContexts[this.oid].mp;
     }
-
+    get wrapper() {
+      return innerContexts[this.oid] && innerContexts[this.oid].wrapper;
+    }
     enableLocalWaitSpinner() {
       //useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
 
@@ -380,6 +385,14 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       this.mp.pagePrev();
     }
 
+    removeContext() {
+      //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
+      delete innerContexts[this.oid];
+    }
+
+    get Context() {
+      return innerContexts[this.oid] && innerContexts[this.oid].context;
+    }
     //    componentDidUpdate(prevProps, prevState) {
     //      Object.entries(this.props).forEach(
     //        ([key, val]) =>
@@ -391,8 +404,8 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     //      );
     //    }
     render() {
-      if (!this.ListContext) return <div />;
-      let Consumer = this.ListContext.Consumer;
+      if (!this.Context) return <div />;
+      let Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {({ maxrows, paginator, waiting }) => {

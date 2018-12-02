@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "flyd": "^0.2.8",
-    "react-multiple-contexts": "^1.0.4"
+    "js-md5": "^0.7.3",
+    "react-multiple-contexts": "^1.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.1.6",
