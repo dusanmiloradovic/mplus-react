@@ -350,7 +350,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         mp.initData();
       }
 
-      let iic = (innerContexts[this.oid] = { wrapper, mp, context });
+      innerContexts[this.oid] = { wrapper, mp, context };
     }
     get mp() {
       return innerContexts[this.oid] && innerContexts[this.oid].mp;
