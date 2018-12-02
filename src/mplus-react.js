@@ -328,7 +328,8 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       if (this.mp) {
         return;
       }
-      let context = this.context.addInnerContext(this.oid);
+
+      console.log(innerContexts);
       let mp = new maximoplus.re.Grid(
         mboCont,
         this.props.columns,
@@ -336,6 +337,8 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       );
 
       let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      innerContexts[this.oid].mp = mp;
+      innerContexts[this.oid].wrapper = wrapper;
       if (this.props.showWaiting) {
         this.enableLocalWaitSpinner.bind(this)();
       }
@@ -349,8 +352,6 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       if (this.props.initdata) {
         mp.initData();
       }
-
-      innerContexts[this.oid] = { wrapper, mp, context };
     }
     get mp() {
       return innerContexts[this.oid] && innerContexts[this.oid].mp;
@@ -404,11 +405,21 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     //      );
     //    }
     render() {
+      console.log("Render");
+
       if (!this.Context) return <div />;
       let Consumer = this.Context.Consumer;
       return (
         <Consumer>
-          {({ maxrows, paginator, waiting }) => {
+          {value => {
+            console.log("render consumer, value=");
+            console.log(value);
+            if (!value) {
+              return <div />;
+            }
+            let waiting = value.waiting;
+            let paginator = value.paginator;
+            let maxrows = value.maxrows;
             let _waiting =
               waiting && (!paginator || paginator.numrows != paginator.torow);
             let drs = [];
@@ -434,6 +445,15 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
           }}
         </Consumer>
       );
+    }
+
+    componentDidUpdate(prevProps) {
+      super.componentDidUpdate(prevProps);
+      if (!innerContexts[this.oid]) {
+        innerContexts[this.oid] = {
+          context: this.context.addInnerContext(this.oid)
+        };
+      }
     }
 
     showFilter() {
