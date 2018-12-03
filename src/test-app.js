@@ -262,6 +262,7 @@ class AppRoot extends React.Component {
     this.setState({
       version: this.state && this.state.version ? this.state.version + 1 : 0
     });
+    document.location.reload(); //temp
   }
   render() {
     return (
@@ -431,7 +432,12 @@ const App = props => (
           columns={["ponum", "description", "status", "shipvia", "orderdate"]}
         />
       </div>
-      <div className="flex-item" />
+      <div className="flex-item">
+        <QbeSection
+          container="pocont"
+          columns={["ponum", "description", "status", "shipvia"]}
+        />
+      </div>
       <div className="flex-item" />
     </div>
   </AppRoot>

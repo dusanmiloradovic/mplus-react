@@ -418,8 +418,6 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       return (
         <Consumer>
           {value => {
-            console.log("render consumer, value=");
-            console.log(value);
             if (!value) {
               return <div />;
             }
@@ -725,6 +723,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       //Don't forget about filter dialogs
       if (!this.Context) return <div />;
       let Consumer = this.Context.Consumer;
+      console.log("rendering qbe:");
       return (
         <Consumer>
           {value => {
