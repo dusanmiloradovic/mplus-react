@@ -425,7 +425,12 @@ const App = props => (
           listTemplate="porow"
         />
       </div>
-      <div className="flex-item" />
+      <div className="flex-item">
+        <Section
+          container="pocont"
+          columns={["ponum", "description", "status", "shipvia", "orderdate"]}
+        />
+      </div>
       <div className="flex-item" />
       <div className="flex-item" />
     </div>

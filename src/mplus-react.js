@@ -158,7 +158,8 @@ export class AppContainer extends React.Component {
     return <div mboname={this.props.mboname} appname={this.props.appname} />;
   }
 
-  componentWillUnmount() {
+  dispose() {
+    //we will explicitely delete the cotnainer, and that will happen only for dynamic pages (dialogs)
     this.state.mp.dispose();
     delete kont[this.props.id];
   }
@@ -187,7 +188,7 @@ export class RelContainer extends React.Component {
     );
   }
 
-  compnentWillUnmount() {
+  dispose() {
     this.state.mp.dispose();
     delete kont[this.props.id];
   }
@@ -199,6 +200,7 @@ export class MPlusComponent extends React.Component {
 
   constructor(props) {
     super(props);
+    this.oid = hash(this.props);
   }
 
   pushDialog(dialog) {
@@ -210,12 +212,32 @@ export class MPlusComponent extends React.Component {
     closeDialog();
   }
 
+  get mp() {
+    return innerContexts[this.oid] && innerContexts[this.oid].mp;
+  }
+  get wrapper() {
+    return innerContexts[this.oid] && innerContexts[this.oid].wrapper;
+  }
+  removeContext() {
+    //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
+    delete innerContexts[this.oid];
+  }
+
+  get Context() {
+    return innerContexts[this.oid] && innerContexts[this.oid].context;
+  }
+
   componentDidMount() {
     /*
 The components that sub-class this component may have the property container or maxcontainer (but not both).
 container is string referencing the container (AppContainer, RelContainer...), maxcontainer is the container itself (usually called from the library code).
 In case the container property is passed, we have to make sure container is available (promise is resolved), before we initiate the MaximoPlus library component (section, list...)
     */
+    if (!innerContexts[this.oid]) {
+      innerContexts[this.oid] = {
+        context: this.context.addInnerContext(this.oid)
+      };
+    }
     if (this.props.container && this.props.maxcontainer) {
       throw Error("can't have both container and maxcontainer as properties");
     }
@@ -313,7 +335,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
           pagePrev: this.pagePrev
         });
       }
-      this.oid = hash(this.props);
+
       this.state = { dataSetInitialized: true };
     }
     initData() {
@@ -329,7 +351,6 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         return;
       }
 
-      console.log(innerContexts);
       let mp = new maximoplus.re.Grid(
         mboCont,
         this.props.columns,
@@ -353,12 +374,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         mp.initData();
       }
     }
-    get mp() {
-      return innerContexts[this.oid] && innerContexts[this.oid].mp;
-    }
-    get wrapper() {
-      return innerContexts[this.oid] && innerContexts[this.oid].wrapper;
-    }
+
     enableLocalWaitSpinner() {
       //useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
 
@@ -386,14 +402,6 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       this.mp.pagePrev();
     }
 
-    removeContext() {
-      //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
-      delete innerContexts[this.oid];
-    }
-
-    get Context() {
-      return innerContexts[this.oid] && innerContexts[this.oid].context;
-    }
     //    componentDidUpdate(prevProps, prevState) {
     //      Object.entries(this.props).forEach(
     //        ([key, val]) =>
@@ -405,8 +413,6 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     //      );
     //    }
     render() {
-      console.log("Render");
-
       if (!this.Context) return <div />;
       let Consumer = this.Context.Consumer;
       return (
@@ -445,15 +451,6 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
           }}
         </Consumer>
       );
-    }
-
-    componentDidUpdate(prevProps) {
-      super.componentDidUpdate(prevProps);
-      if (!innerContexts[this.oid]) {
-        innerContexts[this.oid] = {
-          context: this.context.addInnerContext(this.oid)
-        };
-      }
     }
 
     showFilter() {
@@ -523,21 +520,24 @@ export function getPickerList(drawPickerOption, drawPicker) {
 
 export function getSection(WrappedTextField, WrappedPicker, drawFields) {
   //like for the list, here we also support the "raw" rendering, i.e. this HOC returns the data, and parent does the actual rendering. We don't need the raw field for this, if wrappers are null, we just return the props. For picker list,we will have to send the array of values in one field (so we need to transfer the field row state to props)
-  let uid = 1;
 
   let kl = class extends MPlusComponent {
     putContainer(mboCont) {
+      if (this.mp) {
+        return;
+      }
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
       let mp = new maximoplus.re.Section(mboCont, this.props.columns);
-      this.contextId = mp.getId();
+
       if (this.props.metadata) {
         mp.addColumnsMeta(this.metadata);
       }
       mp.renderDeferred();
-      if (this.context.addWrapped) {
-        this.context.addWrapped(this.contextId, mp);
-      }
+
+      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      innerContexts[this.oid].mp = mp;
+      innerContexts[this.oid].wrapper = wrapper;
     }
 
     componentDidUpdate(prevProps) {
@@ -547,93 +547,88 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       }
     }
 
-    get mp() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["mp"]
-      );
-    }
-
-    get maxfields() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["maxfields"]
-      );
-    }
-
     render() {
-      let flds = [];
-      const raw = !WrappedTextField;
-      if (this.maxfields) {
-        flds = this.maxfields.map((f, i) => {
-          let fKey = f.metadata.attributeName + i;
-          if (f.metadata.picker && f.picker) {
-            let lst = f.picker.list;
-            if (lst) {
-              if (raw) {
-                //TODO this is not good, I want just the array of values and metadata to be passed as a value of the field to concrete implemntation
-                //we need to run the internal component and pass it. IDEA: maybe just run the getList over the list container and return the rows only inside the section implementation
-                return {
-                  label: f.metadata.title,
-                  maxcontainer: lst.listContainer,
-                  selectableF: lst.selectableF,
-                  pickercol: lst.pickerCol,
-                  pickerkeycol: lst.pickerKeyCol,
-                  columns: [lst.pickerKeyCol, lst.pickerCol],
-                  changeListener: f.listeners["change"],
-                  maxpickerfield: f.maximoField,
-                  enabled: !f.readonly,
-                  required: f.required,
-                  type: "picker",
-                  key: fKey
-                };
-              }
-              return (
-                <WrappedPicker
-                  label={f.metadata.title}
-                  maxcontainer={lst.listContainer}
-                  selectableF={lst.selectableF}
-                  pickercol={lst.pickerCol}
-                  pickerkeycol={lst.pickerKeyCol}
-                  columns={[lst.pickerKeyCol, lst.pickerCol]}
-                  changeListener={f.listeners["change"]}
-                  maxpickerfield={f.maximoField}
-                  enabled={!f.readonly}
-                  required={f.required}
-                  key={fKey}
-                />
-              );
-            } else {
-              return raw ? { key: fKey } : <div key={fKey} />;
+      if (!this.Context) return <div />;
+      let Consumer = this.Context.Consumer;
+      return (
+        <Consumer>
+          {value => {
+            let flds = [];
+            const raw = !WrappedTextField;
+            if (value && value.maxfields) {
+              flds = value.maxfields.map((f, i) => {
+                let fKey = f.metadata.attributeName + i;
+                if (f.metadata.picker && f.picker) {
+                  let lst = f.picker.list;
+                  if (lst) {
+                    if (raw) {
+                      //TODO this is not good, I want just the array of values and metadata to be passed as a value of the field to concrete implemntation
+                      //we need to run the internal component and pass it. IDEA: maybe just run the getList over the list container and return the rows only inside the section implementation
+                      return {
+                        label: f.metadata.title,
+                        maxcontainer: lst.listContainer,
+                        selectableF: lst.selectableF,
+                        pickercol: lst.pickerCol,
+                        pickerkeycol: lst.pickerKeyCol,
+                        columns: [lst.pickerKeyCol, lst.pickerCol],
+                        changeListener: f.listeners["change"],
+                        maxpickerfield: f.maximoField,
+                        enabled: !f.readonly,
+                        required: f.required,
+                        type: "picker",
+                        key: fKey
+                      };
+                    }
+                    return (
+                      <WrappedPicker
+                        label={f.metadata.title}
+                        maxcontainer={lst.listContainer}
+                        selectableF={lst.selectableF}
+                        pickercol={lst.pickerCol}
+                        pickerkeycol={lst.pickerKeyCol}
+                        columns={[lst.pickerKeyCol, lst.pickerCol]}
+                        changeListener={f.listeners["change"]}
+                        maxpickerfield={f.maximoField}
+                        enabled={!f.readonly}
+                        required={f.required}
+                        key={fKey}
+                      />
+                    );
+                  } else {
+                    return raw ? { key: fKey } : <div key={fKey} />;
+                  }
+                } else {
+                  let attrs = {
+                    label: f.metadata.title,
+                    value: f.data,
+                    type: f.metadata.maxType,
+                    listener: f.listeners["change"],
+                    enabled: !f.readonly,
+                    required: f.required,
+                    key: fKey
+                  };
+                  if (f.metadata.hasLookup) {
+                    if (f.metadata.gl) {
+                      attrs.showLookupF = () => f.maximoField.showGlLookup();
+                    } else {
+                      attrs.showLookupF = () => f.maximoField.showLookup();
+                    }
+                  }
+                  if (raw) {
+                    attrs.type = "field";
+                    return attrs;
+                  }
+                  return <WrappedTextField {...attrs} />;
+                }
+              });
             }
-          } else {
-            let attrs = {
-              label: f.metadata.title,
-              value: f.data,
-              type: f.metadata.maxType,
-              listener: f.listeners["change"],
-              enabled: !f.readonly,
-              required: f.required,
-              key: fKey
-            };
-            if (f.metadata.hasLookup) {
-              if (f.metadata.gl) {
-                attrs.showLookupF = () => f.maximoField.showGlLookup();
-              } else {
-                attrs.showLookupF = () => f.maximoField.showLookup();
-              }
-            }
-            if (raw) {
-              attrs.type = "field";
-              return attrs;
-            }
-            return <WrappedTextField {...attrs} />;
-          }
-        });
-      }
-      return drawFields(flds);
+            return drawFields(flds);
+          }}
+        </Consumer>
+      );
     }
   };
+
   kl.contextType = MultiContext.rootContext;
   return kl;
 }
@@ -649,13 +644,13 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       this.runControlAction = this.runControlAction.bind(this);
     }
     putContainer(mboCont) {
+      if (this.mp) {
+        return;
+      }
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
       let mp = new maximoplus.re.QbeSection(mboCont, this.props.columns);
-      this.contextId = mp.getId();
-      if (this.context.addWrapped) {
-        this.context.addWrapped(this.contextId, mp);
-      }
+
       /*
 	 Important.
 	 The QbeSection in MaximoPlus core library is the only component where column may be the string or the javascript object. The case for javascript object is when we want to search the range in QbeSection. For that we use the standard Maximo functionality - qbePrepend. The columns have to be registered when creating the QbeSection, and the qbePrepend data has to be sent with them, this is why we have that exception. For the case of the components registered with the markup (HTML or JSX, for the web components or React), we already have the metadata defined at the same time as the columns, so we can read this from the metadata itself, and send to the  MaximoPlus constructor.
@@ -679,6 +674,9 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
 
       mp.renderDeferred();
       mp.initData();
+      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      innerContexts[this.oid].mp = mp;
+      innerContexts[this.oid].wrapper = wrapper;
     }
 
     clear() {
@@ -722,51 +720,40 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
         this.search();
       }
     }
-    get mp() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["mp"]
-      );
-    }
-
-    get maxfields() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["maxfields"]
-      );
-    }
-
-    get filterDialogs() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["filterDialogs"]
-      );
-    }
 
     render() {
-      let flds = [];
-      let buttons = this.getSearchButtons();
-      if (this.maxfields) {
-        flds = this.maxfields.map((f, counter) => {
-          let attrs = {
-            label: f.metadata.title,
-            value: f.data,
-            type: f.metadata.maxType,
-            enabled: true,
-            listener: f.listeners["change"],
-            key: f.metadata.attributeName + counter
-          };
-          if (f.metadata.hasLookup) {
-            attrs.showLookupF = () => f.maximoField.showLookup();
-            attrs.qbe = true; //in qbe mode display only the text field, not the checkbox
-          }
-          if (!WrappedTextField) {
-            return attrs;
-          }
-          return <WrappedTextField {...attrs} />; //try to put this as a function, to be able to override. There is no indirection, or maybe HOC
-        });
-      }
-      return drawFields(flds, buttons);
+      //Don't forget about filter dialogs
+      if (!this.Context) return <div />;
+      let Consumer = this.Context.Consumer;
+      return (
+        <Consumer>
+          {value => {
+            let flds = [];
+            let buttons = this.getSearchButtons();
+            if (value && value.maxfields) {
+              flds = value.maxfields.map((f, counter) => {
+                let attrs = {
+                  label: f.metadata.title,
+                  value: f.data,
+                  type: f.metadata.maxType,
+                  enabled: true,
+                  listener: f.listeners["change"],
+                  key: f.metadata.attributeName + counter
+                };
+                if (f.metadata.hasLookup) {
+                  attrs.showLookupF = () => f.maximoField.showLookup();
+                  attrs.qbe = true; //in qbe mode display only the text field, not the checkbox
+                }
+                if (!WrappedTextField) {
+                  return attrs;
+                }
+                return <WrappedTextField {...attrs} />; //try to put this as a function, to be able to override. There is no indirection, or maybe HOC
+              });
+            }
+            return drawFields(flds, buttons);
+          }}
+        </Consumer>
+      );
     }
   };
   kl.contextType = MultiContext.rootContext;
