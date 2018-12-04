@@ -63,40 +63,47 @@ class MaximoPlusWrapper {
     return this.state && this.state[property];
   }
 
-  setInternalState(property, state) {
-    if (property == "maxfields") {
-      //any field can have the new dialog added, we loop all the fields and add the dialog
-      //with this we move the dialog from the field level to the top level of the app
-      for (let j = 0; j < state.length; j++) {
-        let newDialogs = state[j].dialogs;
-        if (!newDialogs) {
-          continue;
-        }
-        let prevDialogs =
-          this.state.maxfields.length == 0 || !this.state.maxfields[j]
-            ? []
-            : this.state.maxfields[j].dialogs;
-        if (!prevDialogs) {
-          prevDialogs = [];
-        }
-        if (newDialogs.length < prevDialogs.length) {
-          this.popDialog();
-        }
-        if (newDialogs.length > prevDialogs.length) {
-          this.pushDialog(newDialogs[0]);
+  setInternalState(stateF) {
+    let innerStateF = state => {
+      //cam\t ise directly stateF, in case of the dialogs, we need to move the dialog to the upper leel
+      let newState = stateF(state);
+      let mfs = newState && newState["maxfields"];
+      if (mfs) {
+        for (let j = 0; j < mfs.length; j++) {
+          let newDialogs = state[j].dialogs;
+          if (!newDialogs) {
+            continue;
+          }
+          let prevDialogs =
+            state.maxfields.length == 0 || !state.maxfields[j]
+              ? []
+              : state.maxfields[j].dialogs;
+          if (!prevDialogs) {
+            prevDialogs = [];
+          }
+          if (newDialogs.length < prevDialogs.length) {
+            this.popDialog();
+          }
+          if (newDialogs.length > prevDialogs.length) {
+            this.pushDialog(newDialogs[0]);
+          }
         }
       }
-    }
-    this.setState(property, state);
+      //this sets the Context, not the state, we need to return the full state, not just the chenge
+      return Object.assign({}, state, newState);
+    };
+    this.rootContext.setInnerState(this.contextId, innerStateF);
   }
+
   get state() {
     return this.rootContext.getInnerState(this.contextId);
   }
   setState(property, state) {
-    let stateObj = {};
-    let ret = this.state ? { ...this.state } : {};
-    ret[property] = state;
-    this.rootContext.setInnerState(this.contextId, _ => ret);
+    this.rootContext.setInnerState(this.contextId, _state => {
+      let ret = _state ? { ..._state } : {};
+      ret[property] = state;
+      return ret;
+    });
   }
 }
 
@@ -280,42 +287,6 @@ In case the container property is passed, we have to make sure container is avai
 
   putContainer() {
     throw Error("should override");
-  }
-
-  setInternalState(property, state) {
-    //called from the core library
-    this.setState((prevState, props) => {
-      if (property == "maxfields") {
-        //any field can have the new dialog added, we loop all the fields and add the dialog
-        //with this we move the dialog from the field level to the top level of the app
-        for (let j = 0; j < state.length; j++) {
-          let newDialogs = state[j].dialogs;
-          if (!newDialogs) {
-            continue;
-          }
-          let prevDialogs =
-            prevState.maxfields.length == 0 || !prevState.maxfields[j]
-              ? []
-              : prevState.maxfields[j].dialogs;
-          if (!prevDialogs) {
-            prevDialogs = [];
-          }
-          if (newDialogs.length < prevDialogs.length) {
-            this.popDialog();
-          }
-          if (newDialogs.length > prevDialogs.length) {
-            this.pushDialog(newDialogs[0]);
-          }
-        }
-      }
-      let ret = {};
-      ret[property] = state;
-      return ret;
-    });
-  }
-
-  getInternalState(property) {
-    return this.state && this.state[property];
   }
 }
 
