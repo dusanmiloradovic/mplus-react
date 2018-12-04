@@ -70,7 +70,7 @@ class MaximoPlusWrapper {
       let mfs = newState && newState["maxfields"];
       if (mfs) {
         for (let j = 0; j < mfs.length; j++) {
-          let newDialogs = state[j].dialogs;
+          let newDialogs = mfs[j].dialogs;
           if (!newDialogs) {
             continue;
           }
