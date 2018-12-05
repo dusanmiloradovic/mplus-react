@@ -332,86 +332,6 @@ class LoginForm extends React.Component {
   }
 }
 
-//const App = props => (
-//  <AppRoot>
-//    <AppContainer mboname="po" appname="po" id="pocont" wfprocess="postatus" />
-//    <RelContainer container="pocont" relationship="poline" id="polinecont" />
-//    <div className="flex">
-//      <div className="flex-item">
-//        <List
-//          container="pocont"
-//          columns={["ponum", "description", "status"]}
-//          norows="20"
-//          initdata="true"
-//          listTemplate="porow"
-//        />
-//      </div>
-//      <div className="flex-item">
-//        <Section
-//          container="pocont"
-//          columns={["ponum", "description", "status", "shipvia", "orderdate"]}
-//          metadata={{
-//            STATUS: {
-//              picker: "true",
-//              pickerkeycol: "value",
-//              pickercol: "description",
-//              pickerrows: "10"
-//            },
-//            SHIPVIA: {
-//              hasLookup: "true",
-//              listTemplate: "valuelist",
-//              filterTemplate: "valuelist"
-//            }
-//          }}
-//        />
-//      </div>
-//      <div className="flex-item">
-//        <QbeSection
-//          container="pocont"
-//          columns={["ponum", "description", "status", "shipvia"]}
-//          qbePrepends={[
-//            {
-//              virtualName: "from_orderdate",
-//              qbePrepend: ">=",
-//              attributeName: "orderdate",
-//              title: "Order Date From",
-//              position: "4"
-//            },
-//            {
-//              virtualName: "to_orderdate",
-//              qbePrepend: "<=",
-//              attributeName: "orderdate",
-//              title: "Order Date To",
-//              position: "5"
-//            }
-//          ]}
-//          metadata={{
-//            SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
-//            STATUS: {
-//              hasLookup: "true",
-//              listTemplate: "qbevaluelist",
-//              filterTemplate: "valuelist"
-//            }
-//          }}
-//        />
-//      </div>
-//      <div className="flex-item">
-//        <Section
-//          container="polinecont"
-//          columns={[
-//            "polinenum",
-//            "itemnum",
-//            "orderqty",
-//            "orderunit",
-//            "gldebitacct"
-//          ]}
-//          metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
-//        />
-//      </div>
-//    </div>
-//  </AppRoot>
-//);
-
 const App = props => (
   <AppRoot>
     <AppContainer mboname="po" appname="po" id="pocont" wfprocess="postatus" />
@@ -430,18 +350,68 @@ const App = props => (
         <Section
           container="pocont"
           columns={["ponum", "description", "status", "shipvia", "orderdate"]}
+          metadata={{
+            STATUS: {
+              picker: "true",
+              pickerkeycol: "value",
+              pickercol: "description",
+              pickerrows: "10"
+            },
+            SHIPVIA: {
+              hasLookup: "true",
+              listTemplate: "valuelist",
+              filterTemplate: "valuelist"
+            }
+          }}
         />
       </div>
       <div className="flex-item">
         <QbeSection
           container="pocont"
           columns={["ponum", "description", "status", "shipvia"]}
+          qbePrepends={[
+            {
+              virtualName: "from_orderdate",
+              qbePrepend: ">=",
+              attributeName: "orderdate",
+              title: "Order Date From",
+              position: "4"
+            },
+            {
+              virtualName: "to_orderdate",
+              qbePrepend: "<=",
+              attributeName: "orderdate",
+              title: "Order Date To",
+              position: "5"
+            }
+          ]}
+          metadata={{
+            SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
+            STATUS: {
+              hasLookup: "true",
+              listTemplate: "qbevaluelist",
+              filterTemplate: "valuelist"
+            }
+          }}
         />
       </div>
-      <div className="flex-item" />
+      <div className="flex-item">
+        <Section
+          container="polinecont"
+          columns={[
+            "polinenum",
+            "itemnum",
+            "orderqty",
+            "orderunit",
+            "gldebitacct"
+          ]}
+          metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
+        />
+      </div>
     </div>
   </AppRoot>
 );
+
 
 maximoplus.net.globalFunctions.serverRoot = function() {
   return "http://localhost:8080";

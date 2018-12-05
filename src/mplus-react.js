@@ -121,27 +121,28 @@ export const getRootComponent = () => rootComponent;
 
 //this is going to be set from ref in the main component
 
-export const openDialog = dialog => {
-  if (!rootComponent) {
+//Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context
+export const openDialog = (rootContext, dialog) => {
+  if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
-  let newDialogs;
-  if (!rootComponent.state || !rootComponent.state.dialogs) {
-    newDialogs = [];
-  } else {
-    newDialogs = rootComponent.state.dialogs.slice();
-  }
-  newDialogs.push(dialog);
-  rootComponent.setState({ dialogs: newDialogs });
-};
 
-export const closeDialog = () => {
-  if (!rootComponent) {
+  rootContext.setInnerState("dialogs", dialogs => {
+    if (!dialogs) {
+      return [dialog];
+    }
+    return [...dialogs, dialog];
+  });
+};
+export const closeDialog = rootContext => {
+  if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
-  let newDialogs = rootComponent.state.dialogs.slice();
-  newDialogs.pop();
-  rootComponent.setState({ dialogs: newDialogs });
+  rootContext.setInnerState("dialogs", dialogs => {
+    let newDialogs = [...dialogs];
+    newDialogs.pop();
+    return newDialogs;
+  });
 };
 
 export class AppContainer extends React.Component {
@@ -207,7 +208,8 @@ export class MPlusComponent extends React.Component {
 
   constructor(props) {
     super(props);
-    this.oid = hash(this.props);
+      this.oid = hash(this.props);
+      this.removeContext = this.removeContext.bind(this);
   }
 
   pushDialog(dialog) {
@@ -730,8 +732,13 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
   return kl;
 }
 
-export function getDialogHolder(getDialogF) {
+export function getDialogWrapper(getDialogF) {
   return class extends React.Component {
+    shouldComponentUpdate(props, state) {
+      if (!props.dialogs || props.dialogs.length == this.props.dialogs.length)
+        return false;
+      return true;
+    }
     render() {
       if (!this.props.dialogs || this.props.dialogs.length == 0) {
         return <div />;
@@ -749,6 +756,39 @@ export function getDialogHolder(getDialogF) {
     }
   };
 }
+
+//Every MaximoPlus component will create the context. The dialog wrapper should remove the context once the dialog is closed.
+//If the getDialogF returns directly the MaximoPlus components, it will have the oid property. DialogWrapper should remove thiat context
+//If there is no oid, the dialog should have the cleanContext, that should clean context on each MaximoPlus component
+
+export function getDialogHolder(DialogWrapper) {
+  let dkl = class extends React.Component {
+    get Context() {
+      return innerContexts["dialogs"];
+    }
+    render() {
+      if (!this.Context) return <div />;
+      let Consumer = this.Context.Consumer;
+      return (
+        <Consumer>
+          {dialogs => {
+            if (!dialogs) return <div />;
+            return <DialogWrapper dialogs={dialogs} />;
+          }}
+        </Consumer>
+      );
+    }
+    componentDidMount() {
+      if (!innerContexts["dialogs"]) {
+        innerContexts["dialogs"] = this.context.addInnerContext("dialogs");
+      }
+    }
+  };
+  dkl.contextType = MultiContext.rootContext;
+  return dkl;
+}
+
+//TODO !!!! When the dialog is closed, all the elements contanied should temove their own context
 
 export function getListDialog(WrappedList, drawList) {
   //HOC
