@@ -228,7 +228,8 @@ export class MPlusComponent extends React.Component {
     return innerContexts[this.oid] && innerContexts[this.oid].wrapper;
   }
   removeContext() {
-    //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
+      //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
+      
     delete innerContexts[this.oid];
   }
 
