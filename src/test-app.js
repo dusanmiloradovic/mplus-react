@@ -231,7 +231,21 @@ const List = getList(
   )
 );
 
-const DialogHolder = getDialogHolder(dialog => dialogs[dialog.type]); //this should return just hte jsx, we need to instantiate through JSX syntax in the mplus-react.js
+const DialogWrapper = props => {
+  if (!props || props.length == 0) {
+    return <div />;
+  }
+  return (
+    <div className="fadeMe">
+      <div className="popup">{props.children}</div>
+    </div>
+  );
+};
+
+const DialogHolder = getDialogHolder(
+  DialogWrapper,
+  dialog => dialogs[dialog.type]
+); //this should return just hte jsx, we need to instantiate through JSX syntax in the mplus-react.js
 
 const ListDialog = getListDialog(List, () => props => (
   <div>{props.children}</div>
@@ -411,7 +425,6 @@ const App = props => (
     </div>
   </AppRoot>
 );
-
 
 maximoplus.net.globalFunctions.serverRoot = function() {
   return "http://localhost:8080";

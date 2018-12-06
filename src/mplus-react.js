@@ -208,8 +208,8 @@ export class MPlusComponent extends React.Component {
 
   constructor(props) {
     super(props);
-      this.oid = hash(this.props);
-      this.removeContext = this.removeContext.bind(this);
+    this.oid = hash(this.props);
+    this.removeContext = this.removeContext.bind(this);
   }
 
   pushDialog(dialog) {
@@ -228,8 +228,8 @@ export class MPlusComponent extends React.Component {
     return innerContexts[this.oid] && innerContexts[this.oid].wrapper;
   }
   removeContext() {
-      //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
-      
+    //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
+    this.context.removeInnerContext(this.oid);
     delete innerContexts[this.oid];
   }
 
@@ -290,6 +290,11 @@ In case the container property is passed, we have to make sure container is avai
 
   putContainer() {
     throw Error("should override");
+  }
+
+  componentWillUnmount() {
+    //CHECK is this working as intended(not removing the static contexts during navigation. If not find an alternative solution
+    this.removeContext();
   }
 }
 
@@ -733,7 +738,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
   return kl;
 }
 
-export function getDialogWrapper(getDialogF) {
+function getDialog(DialogWrapper, getDialogF) {
   return class extends React.Component {
     shouldComponentUpdate(props, state) {
       if (!props.dialogs || props.dialogs.length == this.props.dialogs.length)
@@ -750,7 +755,11 @@ export function getDialogWrapper(getDialogF) {
       } else {
         const CurrDialog = getDialogF(currDialog);
         if (CurrDialog) {
-          return <CurrDialog {...currDialog} />;
+          return (
+            <DialogWrapper>
+              <CurrDialog {...currDialog} />
+            </DialogWrapper>
+          );
         }
         return <div />;
       }
@@ -762,7 +771,7 @@ export function getDialogWrapper(getDialogF) {
 //If the getDialogF returns directly the MaximoPlus components, it will have the oid property. DialogWrapper should remove thiat context
 //If there is no oid, the dialog should have the cleanContext, that should clean context on each MaximoPlus component
 
-export function getDialogHolder(DialogWrapper) {
+export function getDialogHolder(DialogWrapper, getDialogF) {
   let dkl = class extends React.Component {
     get Context() {
       return innerContexts["dialogs"];
@@ -770,11 +779,12 @@ export function getDialogHolder(DialogWrapper) {
     render() {
       if (!this.Context) return <div />;
       let Consumer = this.Context.Consumer;
+      let Dialog = getDialog(DialogWrapper, getDialogF);
       return (
         <Consumer>
           {dialogs => {
             if (!dialogs) return <div />;
-            return <DialogWrapper dialogs={dialogs} />;
+            return <Dialog dialogs={dialogs} />;
           }}
         </Consumer>
       );
