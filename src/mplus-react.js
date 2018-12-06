@@ -824,8 +824,8 @@ export function getListDialog(WrappedList, drawList) {
         <LstD {...this.props}>
           <WrappedList
             norows="10"
-            listTemplate={this.props.dialog.field.metadata.listTemplate}
-            filterTemplate={this.props.dialog.field.metadata.filterTemplate}
+            listTemplate={this.props.dialog.field.getMetadata().listTemplate}
+            filterTemplate={this.props.dialog.field.getMetadata().filterTemplate}
             maxcontainer={this.props.dialog.listContainer}
             initdata="true"
             columns={this.props.dialog.dialogCols}

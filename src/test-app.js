@@ -245,7 +245,7 @@ const DialogWrapper = props => {
 const DialogHolder = getDialogHolder(
   DialogWrapper,
   dialog => dialogs[dialog.type]
-); //this should return just hte jsx, we need to instantiate through JSX syntax in the mplus-react.js
+); //this should return just hte jsx, we need to instantiate through JSX syntax in the mplus-react.js3
 
 const ListDialog = getListDialog(List, () => props => (
   <div>{props.children}</div>
