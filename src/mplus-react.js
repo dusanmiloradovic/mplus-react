@@ -13,7 +13,20 @@ export const shallowDiffers = (a, b) => {
 };
 
 const hash = value => {
-  return md5(JSON.stringify(value));
+  let _value = [];
+  for (let k in value) {
+    if (typeof value[k] == "undefined" || typeof value[k] == "function")
+      continue;
+    if (typeof value[k] == "object" && value[k].getId) {
+      _value.push(k);
+      _value.push(value[k].getId()); //MaximoPlus object
+    } else {
+      _value.push(k);
+      _value.push(value[k]);
+    }
+  }
+
+  return md5(JSON.stringify(_value));
 };
 
 const resolveContainer = (contid, container) => {
@@ -82,10 +95,10 @@ class MaximoPlusWrapper {
             prevDialogs = [];
           }
           if (newDialogs.length < prevDialogs.length) {
-            this.popDialog();
+            closeDialog(this.rootContext);
           }
           if (newDialogs.length > prevDialogs.length) {
-            this.pushDialog(newDialogs[0]);
+            openDialog(this.rootContext, newDialogs[0]);
           }
         }
       }
@@ -294,7 +307,7 @@ In case the container property is passed, we have to make sure container is avai
 
   componentWillUnmount() {
     //CHECK is this working as intended(not removing the static contexts during navigation. If not find an alternative solution
-    this.removeContext();
+    //    this.removeContext();
   }
 }
 
