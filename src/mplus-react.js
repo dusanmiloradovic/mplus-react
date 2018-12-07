@@ -732,7 +732,6 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       //Don't forget about filter dialogs
       if (!this.Context) return <div />;
       let Consumer = this.Context.Consumer;
-      console.log("rendering qbe:");
       return (
         <Consumer>
           {value => {
@@ -931,62 +930,63 @@ export function getWorkflowDialog(
 ) {
   let kl = class extends MPlusComponent {
     putContainer(mboCont) {
+      if (this.mp) {
+        return;
+      }
       let mp = new maximoplus.re.WorkflowControl(
         mboCont,
         this.props.processname
       );
-      this.contextId = mp.getId();
-      if (this.context.addWrapped) {
-        this.context.addWrapped(this.contextId, mp);
-      }
+
       mp.routeWf();
+      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      innerContexts[this.oid].mp = mp;
+      innerContexts[this.oid].wrapper = wrapper;
     }
 
-    get actions() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["actions"]
-      );
-    }
-
-    get section() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["section"]
-      );
-    }
     render() {
-      if (!this.section || !this.section.fields || !this.actions) {
-        return <div />;
-      }
-      let actionButtons = Object.keys(this.actions).map(key => (
-        <WrappedActionButton onClick={this.actions[key].actionFunction}>
-          {this.actions[key].label}
-        </WrappedActionButton>
-      ));
-      let metadata = {
-        ACTIONID: {
-          picker: "true",
-          pickerkeycol: "actionid",
-          pickercol: "instruction",
-          pickerrows: "10"
-        }
-      };
+      if (!this.Context) return <div />;
+      let Consumer = this.Context.Consumer;
+      return (
+        <Consumer>
+          {value => {
+            let section = value && value.section;
+            let actions = value && value.actions;
+            if (section || !section.fields || !actions) {
+              return <div />;
+            }
+            let actionButtons = Object.keys(actions).map(key => (
+              <WrappedActionButton onClick={actions[key].actionFunction}>
+                {actions[key].label}
+              </WrappedActionButton>
+            ));
+            let metadata = {
+              ACTIONID: {
+                picker: "true",
+                pickerkeycol: "actionid",
+                pickercol: "instruction",
+                pickerrows: "10"
+              }
+            };
 
-      if (this.section.objectName == "REASSIGNWF") {
-        metadata = {
-          ASSIGNEE: { hasLookup: "true", listTemplate: "personlist" }
-        };
-      }
-      return drawDialog(
-        this.title,
-        <WrappedSection
-          maxcontainer={this.section.contaienr}
-          columns={this.section.fields}
-          metadata={metadata}
-        />,
-        actionButtons
+            if (section.objectName == "REASSIGNWF") {
+              metadata = {
+                ASSIGNEE: { hasLookup: "true", listTemplate: "personlist" }
+              };
+            }
+            return drawDialog(
+              value.title,
+              <WrappedSection
+                maxcontainer={section.contaienr}
+                columns={section.fields}
+                metadata={metadata}
+              />,
+              actionButtons
+            );
+          }}
+        </Consumer>
       );
+      //
     }
   };
   kl.contextType = MultiContext.rootContext;
