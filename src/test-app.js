@@ -237,7 +237,10 @@ const DialogWrapper = props => {
   }
   return (
     <div className="fadeMe">
-      <div className="popup">{props.children}</div>
+      <div className="popup">
+        {props.children}
+        <button onClick={props.closeAction}>Close</button>
+      </div>
     </div>
   );
 };

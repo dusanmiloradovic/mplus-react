@@ -161,18 +161,16 @@ export const closeDialog = rootContext => {
 export class AppContainer extends React.Component {
   constructor(props) {
     super(props);
-
-    let mp = kont[this.props.id]
-      ? kont[this.props.id]
-      : new maximoplus.basecontrols.AppContainer(
-          this.props.mboname,
-          this.props.appname
-        );
+    if (kont[this.props.id] && kont[this.props.id].resolved) return;
+    let mp = new maximoplus.basecontrols.AppContainer(
+      this.props.mboname,
+      this.props.appname
+    );
     if (this.props.offlineenabled) {
       mp.setOfflineEnabled(true);
     }
+    this.mp = mp;
     resolveContainer(this.props.id, mp);
-    this.state = { mp: mp };
   }
 
   render() {
@@ -181,21 +179,22 @@ export class AppContainer extends React.Component {
 
   dispose() {
     //we will explicitely delete the cotnainer, and that will happen only for dynamic pages (dialogs)
-    this.state.mp.dispose();
+    this.mp.dispose();
     delete kont[this.props.id];
   }
 }
 
 export class RelContainer extends React.Component {
-  componentWillMount() {
-    getDeferredContainer(this.props.container).then(mboCont => {
-      let mp = kont[this.props.id]
-        ? kont[this.props.id]
-        : new maximoplus.basecontrols.RelContainer(
-            mboCont,
-            this.props.relationship
-          );
-      this.setState({ mp: mp });
+  constructor(props) {
+    super(props);
+    if (kont[this.props.id] && kont[this.props.id].resolved) return;
+    getDeferredContainer(this.props.id);
+    kont[this.props.container].then(mboCont => {
+      let mp = new maximoplus.basecontrols.RelContainer(
+        mboCont,
+        this.props.relationship
+      );
+      this.mp = mp;
       resolveContainer(this.props.id, mp);
     });
   }
@@ -210,7 +209,9 @@ export class RelContainer extends React.Component {
   }
 
   dispose() {
-    this.state.mp.dispose();
+    if (this.mp) {
+      this.mp.dispose();
+    }
     delete kont[this.props.id];
   }
 }
@@ -769,7 +770,10 @@ function getDialog(DialogWrapper, getDialogF) {
         const CurrDialog = getDialogF(currDialog);
         if (CurrDialog) {
           return (
-            <DialogWrapper>
+            <DialogWrapper
+              defaultAction={currDialog.defaultAction}
+              closeAction={currDialog.closeAction}
+            >
               <CurrDialog {...currDialog} />
             </DialogWrapper>
           );
@@ -825,7 +829,9 @@ export function getListDialog(WrappedList, drawList) {
           <WrappedList
             norows="10"
             listTemplate={this.props.dialog.field.getMetadata().listTemplate}
-            filterTemplate={this.props.dialog.field.getMetadata().filterTemplate}
+            filterTemplate={
+              this.props.dialog.field.getMetadata().filterTemplate
+            }
             maxcontainer={this.props.dialog.listContainer}
             initdata="true"
             columns={this.props.dialog.dialogCols}
