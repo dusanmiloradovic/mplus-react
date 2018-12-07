@@ -468,13 +468,16 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
 }
 
 export function getPickerList(drawPickerOption, drawPicker) {
-  return class extends MPlusComponent {
+  let kl = class extends MPlusComponent {
     putContainer(mboCont) {
       let mp = new maximoplus.re.Grid(
         mboCont,
         this.props.columns,
         this.props.norows
       );
+      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      innerContexts[this.oid].mp = mp;
+      innerContexts[this.oid].wrapper = wrapper;
       mp.renderDeferred();
       if (
         this.props.selectableF &&
@@ -482,31 +485,42 @@ export function getPickerList(drawPickerOption, drawPicker) {
       ) {
         mp.setSelectableF(this.props.selectableF);
       }
-      mp.addWrappedComponent(this);
 
       mp.initData();
       this.props.maxpickerfield.addPickerList(mp);
-      this.setState({ mp: mp });
     }
     render() {
-      let drs = [];
-      if (this.state.maxrows) {
-        drs = this.state.maxrows.map((object, i) => {
-          let selected = object.picked;
-          let optionKey = object.data[this.props.pickerkeycol.toUpperCase()];
-          let optionVal = object.data[this.props.pickercol.toUpperCase()];
-          return drawPickerOption(
-            this.props.label,
-            selected,
-            optionKey,
-            optionVal,
-            this.props.changeListener
-          );
-        });
-      }
-      return drawPicker(this.props.label, this.props.changeListener, drs);
+      if (!this.Context) return <div />;
+      let Consumer = this.Context.Consumer;
+      return (
+        <Consumer>
+          {value => {
+            if (!value) return <div />;
+            let maxrows = value.maxrows;
+            let drs = [];
+            if (maxrows) {
+              drs = maxrows.map((object, i) => {
+                let selected = object.picked;
+                let optionKey =
+                  object.data[this.props.pickerkeycol.toUpperCase()];
+                let optionVal = object.data[this.props.pickercol.toUpperCase()];
+                return drawPickerOption(
+                  this.props.label,
+                  selected,
+                  optionKey,
+                  optionVal,
+                  this.props.changeListener
+                );
+              });
+            }
+            return drawPicker(this.props.label, this.props.changeListener, drs);
+          }}
+        </Consumer>
+      );
     }
   };
+  kl.contextType = MultiContext.rootContext;
+  return kl;
 }
 
 export function getSection(WrappedTextField, WrappedPicker, drawFields) {
@@ -522,7 +536,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       let mp = new maximoplus.re.Section(mboCont, this.props.columns);
 
       if (this.props.metadata) {
-        mp.addColumnsMeta(this.metadata);
+        mp.addColumnsMeta(this.props.metadata);
       }
       mp.renderDeferred();
 
@@ -566,6 +580,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
                         maxpickerfield: f.maximoField,
                         enabled: !f.readonly,
                         required: f.required,
+                        norows: f.metadata.pickerrows,
                         type: "picker",
                         key: fKey
                       };
@@ -582,6 +597,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
                         maxpickerfield={f.maximoField}
                         enabled={!f.readonly}
                         required={f.required}
+                        norows={f.metadata.pickerrows}
                         key={fKey}
                       />
                     );

@@ -88,17 +88,18 @@ const RadioButton = getPickerList(
       objParam["checked"] = "checked";
     }
     return (
-      <label className="radioButton">
-        {" "}
-        <input {...objParam} />
-        {optionVal}
-      </label>
+      <div>
+        <label className="radioButton">
+          <input {...objParam} />
+          {optionVal}
+        </label>
+      </div>
     );
   },
   (label, changeListener, rows) => (
     <fieldset>
       <legend>{label}</legend>
-      {rows}>
+      {rows}
     </fieldset>
   )
 );
