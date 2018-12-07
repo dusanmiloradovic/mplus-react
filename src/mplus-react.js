@@ -881,50 +881,45 @@ export function getGLDialog(drawSegments, drawDialog, WrappedList) {
   //drawSegments is  a function that draws all the segments into one gl (arg - array of above objects)
   //drawDialog draws the final dialog from all these
   //WrappedList - concreate List implementation
-  let kl = class extends React.Component {
-    componentDidMpunt() {
-      let mp = new maximoplus.re.GLDialog(this.props.field, this.props.orgid);
-      this.contextId = mp.getId();
-      if (this.context.addWrapped) {
-        this.context.addWrapped(this.contextId, mp);
+  let kl = class extends MPlusComponent {
+    componentDidMount() {
+      if (this.mp) {
+        return;
       }
-    }
-    get segments() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["segments"]
-      );
-    }
 
-    get pickerlist() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["pickerlist"]
-      );
-    }
-
-    get chooseF() {
-      return (
-        this.context.wrappedMPComponents[this.contextId] &&
-        this.context.wrappedMPComponents[this.contextId]["chooseF"]
-      );
+      let mp = new maximoplus.re.GLDialog(this.props.field, this.props.orgid);
+      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      innerContexts[this.oid].mp = mp;
+      innerContexts[this.oid].wrapper = wrapper;
     }
 
     render() {
-      let segments = drawSegments(this.segments);
-      let gllist = (
-        <WrappedList
-          maxcontainer={this.pickerlist.glcontainer}
-          columns={this.pickerlist.pickercols}
-          norows="20"
-          initdata="true"
-          list-template="gllist"
-          selectableF={this.pickerlist.pickerf}
-        />
+      if (!this.Context) return <div />;
+      let Consumer = this.Cotext.Consumer;
+      return (
+        <Consumer>
+          {value => {
+            if (!value) return <div />;
+            let segments = value.segments;
+            let pickerList = value.pickerList;
+            let choseF = value.chooseF;
+            let gllist = (
+              <WrappedList
+                maxcontainer={this.pickerlist.glcontainer}
+                columns={this.pickerlist.pickercols}
+                norows="20"
+                initdata="true"
+                list-template="gllist"
+                selectableF={this.pickerlist.pickerf}
+              />
+            );
+            return drawDialog(segments, gllist, this.chooseF, closeDialog);
+          }}
+        </Consumer>
       );
-      return drawDialog(segments, gllist, this.chooseF, closeDialog);
     }
   };
+
   kl.contextType = MultiContext.rootContext;
   return kl;
 }
