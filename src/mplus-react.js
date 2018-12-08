@@ -884,7 +884,7 @@ export function getFilterDialog(getFilter, drawFilter) {
   };
 }
 
-export function getGLDialog(drawSegments, drawDialog, WrappedList) {
+export function getGLDialog(drawDialog, WrappedList) {
   //glindividualsegment is a function of object with the following keys:
   //- listener
   //- segmentName
@@ -921,11 +921,11 @@ export function getGLDialog(drawSegments, drawDialog, WrappedList) {
                 columns={this.pickerlist.pickercols}
                 norows="20"
                 initdata="true"
-                list-template="gllist"
+                listTemplate="gllist"
                 selectableF={this.pickerlist.pickerf}
               />
             );
-            return drawDialog(segments, gllist, this.chooseF, closeDialog);
+            return drawDialog(segments, gllist, this.chooseF);
           }}
         </Consumer>
       );

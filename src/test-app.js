@@ -261,11 +261,33 @@ const FilterDialog = getFilterDialog(
   },
   filter => (
     <div>
-      <div class="fadeMe" />
-      <div class="popup">{filter}</div>
+      <div className="fadeMe" />
+      <div className="popup">{filter}</div>
     </div>
   )
 );
+
+const GlSegments = props => {
+  let segments = props.segments.map(
+    ({ listener, segmentName, segmentValue, segmentDelimiter }) => (
+      <div style="display:inline-block;margin-right:3px;" onClick={listener}>
+        <div style="font-size:8px">{segmentName}</div>
+        <div style="font-size:15px">{segmentValue + segmentDelimiter}</div>
+      </div>
+    )
+  );
+  return <div>{segments}</div>;
+};
+
+const GLDialog = getGLDialog((segments, gllist, chooseF) => {
+  return (
+    <div>
+      <GlSegments segments={segments} />
+      {gllist}
+      <button onClick={chooseF}>OK</button>
+    </div>
+  );
+}, List);
 
 class AppRoot extends React.Component {
   constructor(props) {
