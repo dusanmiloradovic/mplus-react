@@ -164,8 +164,8 @@ export const closeDialog = rootContext => {
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
-  console.log("Close dialog diff");
-  console.log(difference(Object.keys(innerContexts), dialogRefInnerIds));
+  let dff = difference(Object.keys(innerContexts), dialogRefInnerIds);
+  rootContext.removeMultipleInnerContexts(dff);
   rootContext.setInnerState("dialogs", dialogs => {
     let newDialogs = [...dialogs];
     newDialogs.pop();
@@ -319,13 +319,6 @@ In case the container property is passed, we have to make sure container is avai
 
   putContainer() {
     throw Error("should override");
-  }
-
-  componentWillUnmount() {
-    //CHECK is this working as intended(not removing the static contexts during navigation. If not find an alternative solution
-    //    this.removeContext();
-    console.log("unmounting");
-    console.log(this);
   }
 }
 

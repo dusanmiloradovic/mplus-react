@@ -369,12 +369,6 @@ const App = props => (
           container="pocont"
           columns={["ponum", "description", "status", "shipvia", "orderdate"]}
           metadata={{
-            STATUS: {
-              picker: "true",
-              pickerkeycol: "value",
-              pickercol: "description",
-              pickerrows: "10"
-            },
             SHIPVIA: {
               hasLookup: "true",
               listTemplate: "valuelist",
