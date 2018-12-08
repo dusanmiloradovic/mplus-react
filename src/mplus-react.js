@@ -39,7 +39,10 @@ function difference(a1, a2) {
   return result;
 }
 
-let dialogRefInnerIds = null;
+let dialogRefInnerIds = [];
+//when the dialog opens it will open the inner contexts for the MaximoPlus controls inside the dialog. Once it
+//closes we need to clean up that. We will simply see the difference at the time of closing and remove these contexts.
+//We need this to be an array, because we may open the dialog from another dialog , like the stack, we need to record the contexts  at the time of opening the dialog
 
 const resolveContainer = (contid, container) => {
   if (kont[contid]) {
@@ -152,7 +155,7 @@ export const openDialog = (rootContext, dialog) => {
     return;
   }
 
-  dialogRefInnerIds = Object.keys(innerContexts);
+  dialogRefInnerIds.push(Object.keys(innerContexts));
   rootContext.setInnerState("dialogs", dialogs => {
     if (!dialogs) {
       return [dialog];
@@ -164,7 +167,7 @@ export const closeDialog = rootContext => {
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
-  let dff = difference(Object.keys(innerContexts), dialogRefInnerIds);
+  let dff = difference(Object.keys(innerContexts), dialogRefInnerIds.pop());
   rootContext.removeMultipleInnerContexts(dff);
   rootContext.setInnerState("dialogs", dialogs => {
     let newDialogs = [...dialogs];
