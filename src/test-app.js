@@ -270,9 +270,15 @@ const FilterDialog = getFilterDialog(
 const GlSegments = props => {
   let segments = props.segments.map(
     ({ listener, segmentName, segmentValue, segmentDelimiter }) => (
-      <div style="display:inline-block;margin-right:3px;" onClick={listener}>
-        <div style="font-size:8px">{segmentName}</div>
-        <div style="font-size:15px">{segmentValue + segmentDelimiter}</div>
+      <div
+        style={{ display: "inline-block", marginRight: "3px" }}
+        onClick={listener}
+        key={segmentName}
+      >
+        <div style={{ fontSize: "8px" }}>{segmentName}</div>
+        <div style={{ fontSize: "15px" }}>
+          {segmentValue + segmentDelimiter}
+        </div>
       </div>
     )
   );

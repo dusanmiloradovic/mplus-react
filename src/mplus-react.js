@@ -895,6 +895,7 @@ export function getGLDialog(drawDialog, WrappedList) {
   //WrappedList - concreate List implementation
   let kl = class extends MPlusComponent {
     componentDidMount() {
+      super.componentDidMount();
       if (this.mp) {
         return;
       }
@@ -903,26 +904,27 @@ export function getGLDialog(drawDialog, WrappedList) {
       let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
+      mp.renderDeferred();
     }
 
     render() {
       if (!this.Context) return <div />;
-      let Consumer = this.Cotext.Consumer;
+      let Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
-            if (!value) return <div />;
+            if (!value || !value.segments || !value.pickerlist) return <div />;
             let segments = value.segments;
-            let pickerList = value.pickerList;
+            let pickerList = value.pickerlist;
             let choseF = value.chooseF;
             let gllist = (
               <WrappedList
-                maxcontainer={this.pickerlist.glcontainer}
-                columns={this.pickerlist.pickercols}
+                maxcontainer={pickerList.glcontainer}
+                columns={pickerList.pickercols}
                 norows="20"
                 initdata="true"
                 listTemplate="gllist"
-                selectableF={this.pickerlist.pickerf}
+                selectableF={pickerList.pickerf}
               />
             );
             return drawDialog(segments, gllist, this.chooseF);
