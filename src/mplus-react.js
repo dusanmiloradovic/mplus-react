@@ -916,7 +916,7 @@ export function getGLDialog(drawDialog, WrappedList) {
             if (!value || !value.segments || !value.pickerlist) return <div />;
             let segments = value.segments;
             let pickerList = value.pickerlist;
-            let choseF = value.chooseF;
+            let chooseF = value.chooseF;
             let gllist = (
               <WrappedList
                 maxcontainer={pickerList.glcontainer}
@@ -927,7 +927,7 @@ export function getGLDialog(drawDialog, WrappedList) {
                 selectableF={pickerList.pickerf}
               />
             );
-            return drawDialog(segments, gllist, this.chooseF);
+            return drawDialog(segments, gllist, chooseF);
           }}
         </Consumer>
       );
