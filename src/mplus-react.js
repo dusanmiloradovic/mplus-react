@@ -780,7 +780,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
   return kl;
 }
 
-function getDialog(DialogWrapper, getDialogF) {
+function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
   return class extends React.Component {
     shouldComponentUpdate(props, state) {
       if (!props.dialogs || props.dialogs.length == this.props.dialogs.length)
@@ -800,7 +800,11 @@ function getDialog(DialogWrapper, getDialogF) {
           return (
             <DialogWrapper
               defaultAction={currDialog.defaultAction}
-              closeAction={currDialog.closeAction}
+              closeAction={
+                currDialog.closeAction
+                  ? currDialog.closeAction
+                  : defaultCloseDialogAction
+              }
             >
               <CurrDialog {...currDialog} />
             </DialogWrapper>
@@ -824,7 +828,9 @@ export function getDialogHolder(DialogWrapper, getDialogF) {
     render() {
       if (!this.Context) return <div />;
       let Consumer = this.Context.Consumer;
-      let Dialog = getDialog(DialogWrapper, getDialogF);
+      let Dialog = getDialog(DialogWrapper, getDialogF, _ =>
+        closeDialog(this.context)
+      );
       return (
         <Consumer>
           {dialogs => {
