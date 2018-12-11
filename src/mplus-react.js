@@ -140,17 +140,8 @@ I will use react context to pass the data from Maximo to the components. The pro
 We will have only one context and context provider for the whole application, the consumers will get the data from the context based on their id.
 */
 
-export const setRootComponent = root => {
-  //root component will be used from the layout libraries, and it is not allowed to re-assign the import
-  rootComponent = root;
-};
-
-export const getRootComponent = () => rootComponent;
-
-//this is going to be set from ref in the main component
-
-//Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context
-export const openDialog = (rootContext, dialog) => {
+//Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context. The method from opeing and closing the dialog will be in the dialogcontext, and it will call this functions
+const openDialog = (rootContext, dialog) => {
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
@@ -163,7 +154,7 @@ export const openDialog = (rootContext, dialog) => {
     return [...dialogs, dialog];
   });
 };
-export const closeDialog = rootContext => {
+const closeDialog = rootContext => {
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
@@ -822,8 +813,21 @@ function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
 
 export function getDialogHolder(DialogWrapper, getDialogF) {
   let dkl = class extends React.Component {
+    constructor(props) {
+      super(props);
+      this.openDialog = this.openDialog.bind(this);
+      this.closeDialog = this.closeDialog.bind(this);
+    }
     get Context() {
       return innerContexts["dialogs"];
+    }
+    openDialog(dialog) {
+      //can't access the openDialog and closeDialog functions directlry, becaise of the contexts
+      //the dialogholder will have to be reffed from the main template, and there we can call this functions
+      openDialog(this.context, dialog);
+    }
+    closeDialog() {
+      closeDialog(this.context);
     }
     render() {
       if (!this.Context) return <div />;
@@ -1014,10 +1018,4 @@ export function getWorkflowDialog(
   return kl;
 }
 
-export function openWorkflow(container, processname) {
-  openDialog({
-    type: "workflow",
-    processname: processname,
-    container: container
-  });
-}
+

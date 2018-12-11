@@ -1,10 +1,7 @@
 import {
   AppContainer,
   RelContainer,
-  setRootComponent,
   animating,
-  openDialog,
-  closeDialog,
   getPickerList,
   MPlusComponent,
   getList,
@@ -14,8 +11,7 @@ import {
   getListDialog,
   getFilterDialog,
   getGLDialog,
-  getWorkflowDialog,
-  openWorkflow
+  getWorkflowDialog
 } from "./mplus-react.js";
 import React from "react";
 import MultiContext from "react-multiple-contexts";
@@ -295,6 +291,12 @@ const GLDialog = getGLDialog((segments, gllist, chooseF) => {
   );
 }, List);
 
+const DialogContext = React.createContext({
+  openDialog: dialog => {},
+  closeDialog: () => {},
+  openWorkflow: (container, processname) => {}
+});
+
 class AppRoot extends React.Component {
   constructor(props) {
     super(props);
@@ -303,6 +305,21 @@ class AppRoot extends React.Component {
     maximoplus.core.globalFunctions.global_login_function = err => {
       this.setState({ needsLogin: true });
     };
+    this.dialogHolderRef = React.createRef();
+  }
+  openDialog(dialog) {
+    this.dialogHolderRef.current.openDialog(dialog);
+  }
+  closeDialog() {
+    this.dialogHolderRef.current.closeDialog();
+  }
+  openWorkflow(container, processname) {
+    this.openDialog({
+      type: "workflow",
+      processname: processname,
+      container,
+      container
+    });
   }
   softReload() {
     this.setState({
@@ -312,21 +329,27 @@ class AppRoot extends React.Component {
   }
   render() {
     return (
-      <MultiContext>
-        <div key={"app-" + this.state.version}>
-          {this.props.children}
-          <DialogHolder dialogs={this.state.dialogs} />
-          <LoginForm
-            visible={this.state.needsLogin}
-            callback={() => this.softReload()}
-          />
-        </div>
-      </MultiContext>
+      <DialogContext.Provider
+        value={{
+          openDialog: this.openDialog,
+          closeDialog: this.closeDialog,
+          openWorkflow: this.openWorkflow
+        }}
+      >
+        <MultiContext>
+          <div key={"app-" + this.state.version}>
+            {this.props.children}
+            <DialogHolder ref={this.dialogHolderRef} />
+            <LoginForm
+              visible={this.state.needsLogin}
+              callback={() => this.softReload()}
+            />
+          </div>
+        </MultiContext>
+      </DialogContext.Provider>
     );
   }
-  componentDidMount() {
-    setRootComponent(this);
-  }
+
 }
 
 class LoginForm extends React.Component {
