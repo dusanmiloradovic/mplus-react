@@ -291,6 +291,25 @@ const GLDialog = getGLDialog((segments, gllist, chooseF) => {
   );
 }, List);
 
+const WorkflowDialog = getWorkflowDialog(
+  Section,
+  props => <button {...props} />,
+  (title, section, actions) => {
+    let buttons = Object.keys(actions).map(key => (
+      <button onClick={actions[key].actionFunction}>
+        {actions[key].label}
+      </button>
+    ));
+    return (
+      <div>
+        {title}
+        {section}
+        {buttons}
+      </div>
+    );
+  }
+);
+
 const DialogContext = React.createContext({
   openDialog: dialog => {},
   closeDialog: () => {},

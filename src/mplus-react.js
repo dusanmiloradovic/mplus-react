@@ -980,11 +980,11 @@ export function getWorkflowDialog(
             if (section || !section.fields || !actions) {
               return <div />;
             }
-            let actionButtons = Object.keys(actions).map(key => (
-              <WrappedActionButton onClick={actions[key].actionFunction}>
-                {actions[key].label}
-              </WrappedActionButton>
-            ));
+//            let actionButtons = Object.keys(actions).map(key => (
+//              <WrappedActionButton onClick={actions[key].actionFunction}>
+//                {actions[key].label}
+//              </WrappedActionButton>
+//            ));
             let metadata = {
               ACTIONID: {
                 picker: "true",
@@ -1006,7 +1006,7 @@ export function getWorkflowDialog(
                 columns={section.fields}
                 metadata={metadata}
               />,
-              actionButtons
+              actions
             );
           }}
         </Consumer>
