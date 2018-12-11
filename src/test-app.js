@@ -306,6 +306,9 @@ class AppRoot extends React.Component {
       this.setState({ needsLogin: true });
     };
     this.dialogHolderRef = React.createRef();
+    this.openDialog = this.openDialog.bind(this);
+    this.closeDialog = this.closeDialog.bind(this);
+    this.openWorkflow = this.openWorkflow.bind(this);
   }
   openDialog(dialog) {
     this.dialogHolderRef.current.openDialog(dialog);
@@ -349,7 +352,6 @@ class AppRoot extends React.Component {
       </DialogContext.Provider>
     );
   }
-
 }
 
 class LoginForm extends React.Component {
@@ -427,6 +429,11 @@ const App = props => (
             }
           }}
         />
+        <DialogContext.Consumer>
+          {({ openWorkflow }) => {
+            return <button onClick={openWorkflow}>Open Workflow</button>;
+          }}
+        </DialogContext.Consumer>
       </div>
       <div className="flex-item">
         <QbeSection
