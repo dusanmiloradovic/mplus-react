@@ -424,7 +424,7 @@ class LoginForm extends React.Component {
 
 const App = props => (
   <AppRoot>
-    <AppContainer mboname="postd" appname="po" id="pocont" wfprocess="postatus" />
+    <AppContainer mboname="po" appname="po" id="pocont" wfprocess="postatus" />
     <RelContainer container="pocont" relationship="poline" id="polinecont" />
     <div className="flex">
       <div className="flex-item">
@@ -451,7 +451,7 @@ const App = props => (
         <DialogContext.Consumer>
           {({ openWorkflow }) => {
             return (
-              <button onClick={ev => openWorkflow("pocont", "POMAIN")}>
+              <button onClick={ev => openWorkflow("pocont", "POSTATUS")}>
                 Open Workflow
               </button>
             );

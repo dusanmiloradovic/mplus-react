@@ -1008,7 +1008,7 @@ export function getWorkflowDialog(
             return drawDialog(
               value.title,
               <WrappedSection
-                maxcontainer={section.contaienr}
+                maxcontainer={section.container}
                 columns={section.fields}
                 metadata={metadata}
               />,
