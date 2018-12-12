@@ -509,7 +509,7 @@ export function getPickerList(drawPickerOption, drawPicker) {
             let drs = [];
             if (maxrows) {
               drs = maxrows.map((object, i) => {
-                let selected = object.picked;
+                let selected = object.picked || object.selected;
                 let optionKey =
                   object.data[this.props.pickerkeycol.toUpperCase()];
                 let optionVal = object.data[this.props.pickercol.toUpperCase()];
