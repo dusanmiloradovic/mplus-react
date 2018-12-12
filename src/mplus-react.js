@@ -158,7 +158,12 @@ const closeDialog = rootContext => {
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
+
   let dff = difference(Object.keys(innerContexts), dialogRefInnerIds.pop());
+
+  for (let j of dff) {
+    delete innerContexts[j];
+  }
   rootContext.removeMultipleInnerContexts(dff);
   rootContext.setInnerState("dialogs", dialogs => {
     let newDialogs = [...dialogs];
@@ -980,11 +985,11 @@ export function getWorkflowDialog(
             if (!section || !section.fields || !actions) {
               return <div />;
             }
-//            let actionButtons = Object.keys(actions).map(key => (
-//              <WrappedActionButton onClick={actions[key].actionFunction}>
-//                {actions[key].label}
-//              </WrappedActionButton>
-//            ));
+            //            let actionButtons = Object.keys(actions).map(key => (
+            //              <WrappedActionButton onClick={actions[key].actionFunction}>
+            //                {actions[key].label}
+            //              </WrappedActionButton>
+            //            ));
             let metadata = {
               ACTIONID: {
                 picker: "true",
@@ -1017,5 +1022,3 @@ export function getWorkflowDialog(
   kl.contextType = MultiContext.rootContext;
   return kl;
 }
-
-
