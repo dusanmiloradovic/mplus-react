@@ -977,7 +977,7 @@ export function getWorkflowDialog(
           {value => {
             let section = value && value.section;
             let actions = value && value.actions;
-            if (section || !section.fields || !actions) {
+            if (!section || !section.fields || !actions) {
               return <div />;
             }
 //            let actionButtons = Object.keys(actions).map(key => (
