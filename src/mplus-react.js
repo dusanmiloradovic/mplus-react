@@ -548,6 +548,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
         mp.addColumnsMeta(this.props.metadata);
       }
       mp.renderDeferred();
+      mp.initData();
 
       let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
