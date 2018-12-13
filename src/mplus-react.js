@@ -302,7 +302,7 @@ In case the container property is passed, we have to make sure container is avai
       this.props.maxcontainer &&
       this.props.maxcontainer != prevProps.maxcontainer
     ) {
-      this.put.container(this.props.maxcontainer);
+      this.putContainer(this.props.maxcontainer);
     }
   }
 
