@@ -75,7 +75,7 @@ export const animating = flyd.stream(false);
 let rootComponent = null;
 
 const innerContexts = {};
-//to simplify the things, we will calculate the id based on the props of the components, and then create theinner context. This will separate completely Maximoplus components from react components
+//to simplify the things, we will calculate the id based on the props of the components, and then create the inner context. This will separate completely Maximoplus components from react components
 
 class MaximoPlusWrapper {
   //this is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
@@ -123,6 +123,11 @@ class MaximoPlusWrapper {
     this.rootContext.setInnerState(this.contextId, innerStateF);
   }
 
+  closeDialog() {
+    //this will be called only from the workflow dialog
+    //we will ignore it and depend on the finished value
+    closeDialog(this.rootContext);
+  }
   get state() {
     return this.rootContext.getInnerState(this.contextId);
   }
@@ -158,16 +163,20 @@ const closeDialog = rootContext => {
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
-
+  if (dialogRefInnerIds.length == 0) {
+    //closing from outsid
+    console.log(rootContext.dialogs);
+    return;
+  }
   let dff = difference(Object.keys(innerContexts), dialogRefInnerIds.pop());
 
-  for (let j of dff) {
-    delete innerContexts[j];
-  }
-  rootContext.removeMultipleInnerContexts(dff);
   rootContext.setInnerState("dialogs", dialogs => {
     let newDialogs = [...dialogs];
     newDialogs.pop();
+    for (let j of dff) {
+      delete innerContexts[j];
+    }
+    rootContext.removeMultipleInnerContexts(dff);
     return newDialogs;
   });
 };
@@ -960,6 +969,10 @@ export function getWorkflowDialog(
   drawDialog
 ) {
   let kl = class extends MPlusComponent {
+    constructor(props) {
+      super(props);
+      this.state = { finished: false };
+    }
     putContainer(mboCont) {
       if (this.mp) {
         return;
@@ -986,6 +999,7 @@ export function getWorkflowDialog(
             if (!section || !section.fields || !actions) {
               return <div />;
             }
+
             //            let actionButtons = Object.keys(actions).map(key => (
             //              <WrappedActionButton onClick={actions[key].actionFunction}>
             //                {actions[key].label}
