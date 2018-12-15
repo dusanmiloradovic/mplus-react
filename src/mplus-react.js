@@ -164,13 +164,12 @@ const closeDialog = rootContext => {
     return;
   }
   if (dialogRefInnerIds.length == 0) {
-    //closing from outsid
-    console.log(rootContext.dialogs);
     return;
   }
   let dff = difference(Object.keys(innerContexts), dialogRefInnerIds.pop());
 
   rootContext.setInnerState("dialogs", dialogs => {
+    if (dialogs.length == 0) return [];
     let newDialogs = [...dialogs];
     newDialogs.pop();
     for (let j of dff) {
@@ -247,15 +246,6 @@ export class MPlusComponent extends React.Component {
     super(props);
     this.oid = hash(this.props);
     this.removeContext = this.removeContext.bind(this);
-  }
-
-  pushDialog(dialog) {
-    //this indirection is necessary, becuase wh can override just the prototype function
-    openDialog(dialog);
-  }
-
-  popDialog() {
-    closeDialog();
   }
 
   get mp() {
@@ -339,6 +329,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       this.fetchMore = this.fetchMore.bind(this);
       this.pageNext = this.pageNext.bind(this);
       this.pagePrev = this.pagePrev.bind(this);
+      this.showFilter = this.showFilter.bind(this);
       if (this.props.dataSetCallback && !this.state) {
         this.props.dataSetCallback({
           fetchMore: this.fetchMore,
@@ -466,7 +457,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       let container = this.props.maxcontainer
         ? this.props.maxcontainer
         : kont[this.props.container];
-      this.pushDialog({
+      openDialog(this.context, {
         type: "filter",
         maxcontainer: container,
         filtername: this.props.filterTemplate
@@ -700,6 +691,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
 
       mp.renderDeferred();
       mp.initData();
+
       let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
@@ -709,10 +701,16 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       this.mp.clearQbe();
     }
 
+    componentWillUnmount() {
+      //      if (this.mp) this.mp.clearQbe();
+    }
+
     search() {
-      this.mp.getContainer().reset(); //i dont' directly access container, becuase it could have been passed as an attribute through HTML, or directly as an object through JSX
-      if (this.filterDialog) {
-        this.filterDialog.closeDialog();
+      this.mp.getContainer().reset();
+      if (this.props.indialog) {
+        //should not do this for the static qbe section
+        this.mp.getParent().removeChild(this.mp); // MaximoPlus will try to send data on reset finish to this component
+        closeDialog(this.context); //dialogs will be modal. If i can access the search, and there are dialogs, that means I clicked search from the dialog. If there are no dialogs, this command doesn't do anything
       }
     }
 
@@ -893,20 +891,17 @@ export function getListDialog(WrappedList, drawList) {
         </LstD>
       );
     }
+    componentWillUnmount() {
+      if (this.props.dialog.listContainer) {
+        //  this.props.dialog.listContainer.reset();
+        //clear the filter (check unmount from qbesection
+      }
+    }
   };
 }
 
 export function getFilterDialog(getFilter, drawFilter) {
-  return class extends React.Component {
-    render() {
-      let kont = this.props.maxcontainer;
-
-      return drawFilter(getFilter(kont, this.props.dialog));
-    }
-    closeDialog() {
-      closeDialog();
-    }
-  };
+  return props => drawFilter(getFilter(props.dialog));
 }
 
 export function getGLDialog(drawDialog, WrappedList) {

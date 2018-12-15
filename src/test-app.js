@@ -41,11 +41,11 @@ const dialogs = {
 };
 
 const filterTemplates = {
-  valuelist: (cont, dialog) => (
+  valuelist: dialog => (
     <QbeSection
-      maxcontainer={cont}
-      filterDialog={dialog}
+      maxcontainer={dialog.maxcontainer}
       columns={["value", "description"]}
+      indialog={true}
     />
   )
 }; //also in separated file and generated from the tool
@@ -219,7 +219,7 @@ const listTemplates = {
 
 const List = getList(
   templateId => listTemplates[templateId],
-  showFilterF => <button onClick={ev => showFilterF()}>Filter</button>,
+  showFilterF => <button onClick={showFilterF}>Filter</button>,
   (rows, filterButton) => (
     <div>
       {rows}
@@ -252,15 +252,10 @@ const ListDialog = getListDialog(List, () => props => (
 )); //here there is no wrapper around the list, just return the list element
 
 const FilterDialog = getFilterDialog(
-  (container, dialog) => {
-    return filterTemplates[dialog.filterName](container, dialog);
+  dialog => {
+    return filterTemplates[dialog.filtername](dialog);
   },
-  filter => (
-    <div>
-      <div className="fadeMe" />
-      <div className="popup">{filter}</div>
-    </div>
-  )
+  filter => <div>{filter}</div>
 );
 
 const GlSegments = props => {
