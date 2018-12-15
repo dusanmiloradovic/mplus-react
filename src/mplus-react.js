@@ -1026,7 +1026,8 @@ export function getWorkflowDialog(
                 columns={section.fields}
                 metadata={metadata}
               />,
-              actions
+              actions,
+              value.warnings
             );
           }}
         </Consumer>

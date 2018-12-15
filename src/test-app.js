@@ -294,14 +294,16 @@ const GLDialog = getGLDialog((segments, gllist, chooseF) => {
 const WorkflowDialog = getWorkflowDialog(
   Section,
   props => <button {...props} />,
-  (title, section, actions) => {
+  (title, section, actions, warnings) => {
     let buttons = Object.keys(actions).map(key => (
       <button onClick={actions[key].actionFunction}>
         {actions[key].label}
       </button>
     ));
+    let wfwarnings = warnings.map(w => <div>{w}</div>);
     return (
       <div>
+        {wfwarnings}
         {title}
         {section}
         {buttons}
