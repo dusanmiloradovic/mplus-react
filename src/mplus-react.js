@@ -146,7 +146,7 @@ We will have only one context and context provider for the whole application, th
 */
 
 //Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context. The method from opeing and closing the dialog will be in the dialogcontext, and it will call this functions
-const openDialog = (rootContext, dialog) => {
+export const openDialog = (rootContext, dialog) => {
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
@@ -159,7 +159,7 @@ const openDialog = (rootContext, dialog) => {
     return [...dialogs, dialog];
   });
 };
-const closeDialog = rootContext => {
+export const closeDialog = rootContext => {
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
