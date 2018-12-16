@@ -204,6 +204,22 @@ export class AppContainer extends React.Component {
     this.mp.dispose();
     delete kont[this.props.id];
   }
+
+  save() {
+    this.mp.save();
+  }
+
+  rollback() {
+    this.mp.rollback();
+  }
+
+  mboCommand(command) {
+    this.mp.mboCommand(command);
+  }
+
+  mboSetCommand(command) {
+    this.mp.mboSetCommand(command);
+  }
 }
 
 export class RelContainer extends React.Component {
@@ -235,6 +251,14 @@ export class RelContainer extends React.Component {
       this.mp.dispose();
     }
     delete kont[this.props.id];
+  }
+
+  mboCommand(command) {
+    this.mp.mboCommand(command);
+  }
+
+  mboSetCommand(command) {
+    this.mp.mboSetCommand(command);
   }
 }
 
