@@ -1,39 +1,38 @@
 {
-    "name": "mplus-react",
-    "version": "1.0.10",
-    "description": "Basic MaximoPlus React template",
-    "main": "distrollup/bundle.js",
-    "unpkg": "distrollup/bundleweb.js",
-    "scripts": {
-	"test": "echo \"Error: no test specified\" && exit 1",
-	"build": "rollup -c",
-	"buildweb": "rollup -c rollup.config.testweb.js"
-    },
-    "author": "Dusan Miloradovic",
-    "license": "ISC",
-    "peerDependencies": {
-	"react": "^16.4.1",
-	"maximoplus-core": "^2.1.24",
-	"react-multiple-contexts": "^1.0.10"
-    },
-    "dependencies": {
-	"flyd": "^0.2.8",
-	"js-md5": "^0.7.3"
-
-    },
-    "devDependencies": {
-	"@babel/core": "^7.1.6",
-	"@babel/preset-env": "^7.1.6",
-	"@babel/preset-react": "^7.0.0",
-	"babel-plugin-transform-inline-environment-variables": "^0.4.3",
-	"maximoplus-core": "^2.1.24",
-	"react": "^16.6.3",
-	"react-dom": "^16.6.3",
-	"rollup": "^0.67.3",
-	"rollup-plugin-babel": "^4.0.3",
-	"rollup-plugin-commonjs": "^9.2.0",
-	"rollup-plugin-node-resolve": "^3.4.0",
-	"rollup-plugin-replace": "^2.1.0",
-	"react-multiple-contexts": "^1.0.10"
-    }
+			"name": "mplus-react",
+			"version": "1.0.10",
+			"description": "Basic MaximoPlus React template",
+			"main": "distrollup/bundle.js",
+			"unpkg": "distrollup/bundleweb.js",
+			"scripts": {
+						"test": "echo \"Error: no test specified\" && exit 1",
+						"build": "rollup -c",
+						"buildweb": "rollup -c rollup.config.testweb.js"
+			},
+			"author": "Dusan Miloradovic",
+			"license": "ISC",
+			"peerDependencies": {
+						"react": "^16.4.1",
+						"maximoplus-core": "^2.1.24",
+						"react-multiple-contexts": "^1.0.11"
+			},
+			"dependencies": {
+						"flyd": "^0.2.8",
+						"js-md5": "^0.7.3"
+			},
+			"devDependencies": {
+						"@babel/core": "^7.1.6",
+						"@babel/preset-env": "^7.1.6",
+						"@babel/preset-react": "^7.0.0",
+						"babel-plugin-transform-inline-environment-variables": "^0.4.3",
+						"maximoplus-core": "^2.1.24",
+						"react": "^16.6.3",
+						"react-dom": "^16.6.3",
+						"react-multiple-contexts": "^1.0.11",
+						"rollup": "^0.67.3",
+						"rollup-plugin-babel": "^4.0.3",
+						"rollup-plugin-commonjs": "^9.2.0",
+						"rollup-plugin-node-resolve": "^3.4.0",
+						"rollup-plugin-replace": "^2.1.0"
+			}
 }
