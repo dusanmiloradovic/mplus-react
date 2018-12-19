@@ -413,14 +413,14 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       this.mp.prepareCall = _ => {
         this.wrapper.setState("waiting", true);
         this.wrapper.setState("startWait", Date.now());
-        this.setState({ waiting: true });
+        //        this.setState({ waiting: true });
         //        if (this.paginator && this.paginator.numrows != this.paginator.torow) {
         //          this.setState({ waiting: true, startWait: Date.now() });
         //        }
       };
       this.mp.finishCall = _ => {
         this.wrapper.setState("waiting", false);
-        this.setState({ waiting: false });
+        //      this.setState({ waiting: false });
       };
     }
 

@@ -422,13 +422,24 @@ class LoginForm extends React.Component {
   }
 }
 
+class TestList extends React.Component {
+  render() {
+    return (
+      <div>
+        <List ref={el => (this.list = el)} {...this.props} />
+        <button onClick={ev => this.list.fetchMore(5)}>Load More</button>
+      </div>
+    );
+  }
+}
+
 const App = props => (
   <AppRoot>
     <AppContainer mboname="po" appname="po" id="pocont" wfprocess="postatus" />
     <RelContainer container="pocont" relationship="poline" id="polinecont" />
     <div className="flex">
       <div className="flex-item">
-        <List
+        <TestList
           container="pocont"
           columns={["ponum", "description", "status"]}
           norows="20"
