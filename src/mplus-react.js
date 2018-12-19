@@ -43,6 +43,12 @@ let dialogRefInnerIds = [];
 //when the dialog opens it will open the inner contexts for the MaximoPlus controls inside the dialog. Once it
 //closes we need to clean up that. We will simply see the difference at the time of closing and remove these contexts.
 //We need this to be an array, because we may open the dialog from another dialog , like the stack, we need to record the contexts  at the time of opening the dialog
+let externalRootContext = {};
+export const setExternalRootContext = rootContext => {
+  externalRootContext.ctx = rootContext;
+};
+
+const getRootContext = () => externalRootContext.ctx;
 
 const resolveContainer = (contid, container) => {
   if (kont[contid]) {
@@ -347,7 +353,7 @@ In case the container property is passed, we have to make sure container is avai
 export function getList(getListTemplate, drawFilterButton, drawList, raw) {
   //sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
 
-  let kl = class extends MPlusComponent {
+  return class MPList extends MPlusComponent {
     constructor(props) {
       super(props);
       this.fetchMore = this.fetchMore.bind(this);
@@ -497,13 +503,15 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       }
       return <div />;
     }
+
+    static get contextType() {
+      return getRootContext();
+    }
   };
-  kl.contextType = MultiContext.rootContext;
-  return kl;
 }
 
 export function getPickerList(drawPickerOption, drawPicker) {
-  let kl = class extends MPlusComponent {
+  return class MPPickerList extends MPlusComponent {
     putContainer(mboCont) {
       let mp = new maximoplus.re.Grid(
         mboCont,
@@ -553,15 +561,16 @@ export function getPickerList(drawPickerOption, drawPicker) {
         </Consumer>
       );
     }
+    static get contextType() {
+      return getRootContext();
+    }
   };
-  kl.contextType = MultiContext.rootContext;
-  return kl;
 }
 
 export function getSection(WrappedTextField, WrappedPicker, drawFields) {
   //like for the list, here we also support the "raw" rendering, i.e. this HOC returns the data, and parent does the actual rendering. We don't need the raw field for this, if wrappers are null, we just return the props. For picker list,we will have to send the array of values in one field (so we need to transfer the field row state to props)
 
-  let kl = class extends MPlusComponent {
+  return class MPSection extends MPlusComponent {
     putContainer(mboCont) {
       if (this.mp) {
         return;
@@ -670,14 +679,14 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
         </Consumer>
       );
     }
+    static get contextType() {
+      return getRootContext();
+    }
   };
-
-  kl.contextType = MultiContext.rootContext;
-  return kl;
 }
 
 export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
-  let kl = class extends MPlusComponent {
+  return class MPQbeSection extends MPlusComponent {
     constructor(props) {
       super(props);
 
@@ -805,9 +814,10 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
         </Consumer>
       );
     }
+    static get contextType() {
+      return getRootContext();
+    }
   };
-  kl.contextType = MultiContext.rootContext;
-  return kl;
 }
 
 function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
@@ -851,7 +861,7 @@ function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
 //If there is no oid, the dialog should have the cleanContext, that should clean context on each MaximoPlus component
 
 export function getDialogHolder(DialogWrapper, getDialogF) {
-  let dkl = class extends React.Component {
+  return class MPDialogHolder extends React.Component {
     constructor(props) {
       super(props);
       this.openDialog = this.openDialog.bind(this);
@@ -888,16 +898,18 @@ export function getDialogHolder(DialogWrapper, getDialogF) {
         innerContexts["dialogs"] = this.context.addInnerContext("dialogs");
       }
     }
+
+    static get contextType() {
+      return getRootContext();
+    }
   };
-  dkl.contextType = MultiContext.rootContext;
-  return dkl;
 }
 
 //TODO !!!! When the dialog is closed, all the elements contanied should temove their own context
 
 export function getListDialog(WrappedList, drawList) {
   //HOC
-  return class extends React.Component {
+  return class MPListDialog extends React.Component {
     render() {
       const LstD = drawList();
 
@@ -939,7 +951,7 @@ export function getGLDialog(drawDialog, WrappedList) {
   //drawSegments is  a function that draws all the segments into one gl (arg - array of above objects)
   //drawDialog draws the final dialog from all these
   //WrappedList - concreate List implementation
-  let kl = class extends MPlusComponent {
+  return class MPGLDialog extends MPlusComponent {
     componentDidMount() {
       super.componentDidMount();
       if (this.mp) {
@@ -978,10 +990,10 @@ export function getGLDialog(drawDialog, WrappedList) {
         </Consumer>
       );
     }
+    static get contextType() {
+      return getRootContext();
+    }
   };
-
-  kl.contextType = MultiContext.rootContext;
-  return kl;
 }
 
 export function getWorkflowDialog(
@@ -989,7 +1001,7 @@ export function getWorkflowDialog(
   WrappedActionButton,
   drawDialog
 ) {
-  let kl = class extends MPlusComponent {
+  return class MPWorkflowDialog extends MPlusComponent {
     constructor(props) {
       super(props);
       this.state = { finished: false };
@@ -1055,7 +1067,8 @@ export function getWorkflowDialog(
       );
       //
     }
+    static get contextType() {
+      return getRootContext();
+    }
   };
-  kl.contextType = MultiContext.rootContext;
-  return kl;
 }

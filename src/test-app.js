@@ -11,13 +11,16 @@ import {
   getListDialog,
   getFilterDialog,
   getGLDialog,
-  getWorkflowDialog
+  getWorkflowDialog,
+  setExternalRootContext
 } from "./mplus-react.js";
 import React from "react";
 import MultiContext from "react-multiple-contexts";
 import ReactDOM from "react-dom";
 
 //the components from the package will be used directly, they are the base for the real styled components. Still, we need to test them first. Also this serves as an implementation reference for the real cases
+const rootContext = React.createContext({ dusan: "test" });
+setExternalRootContext(rootContext);
 
 const dialogs = {
   list: dialog => <ListDialog dialog={dialog} />,
@@ -355,7 +358,7 @@ class AppRoot extends React.Component {
           openWorkflow: this.openWorkflow
         }}
       >
-        <MultiContext>
+        <MultiContext rootContext={rootContext}>
           <div key={"app-" + this.state.version}>
             {this.props.children}
             <DialogHolder ref={this.dialogHolderRef} />
