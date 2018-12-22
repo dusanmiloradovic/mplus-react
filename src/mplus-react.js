@@ -905,8 +905,6 @@ export function getDialogHolder(DialogWrapper, getDialogF) {
   };
 }
 
-//TODO !!!! When the dialog is closed, all the elements contanied should temove their own context
-
 export function getListDialog(WrappedList, drawList) {
   //HOC
   return class MPListDialog extends React.Component {
