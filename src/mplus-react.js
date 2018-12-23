@@ -860,7 +860,7 @@ function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
 //If the getDialogF returns directly the MaximoPlus components, it will have the oid property. DialogWrapper should remove thiat context
 //If there is no oid, the dialog should have the cleanContext, that should clean context on each MaximoPlus component
 
-export function getDialogHolder(DialogWrapper, getDialogF) {
+export function getDialogHolder(DialogWrapper, getDialogF, raw) {
   return class MPDialogHolder extends React.Component {
     constructor(props) {
       super(props);
@@ -885,7 +885,7 @@ If both dialogwrapper and getdialogf is null, let the implementation manage the 
       if (!this.Context) return <div />;
       let Consumer = this.Context.Consumer;
       let Dialog = null;
-      if (DialogWrapper && getDialogF) {
+      if (!raw) {
         Dialog = getDialog(DialogWrapper, getDialogF, _ =>
           closeDialog(this.context)
         );
@@ -899,12 +899,14 @@ If both dialogwrapper and getdialogf is null, let the implementation manage the 
         );
       } else {
         let ff = _ => closeDialog(this.context);
+        //in this case the implementation will take care of the dialog openings and closing
         return (
           <Consumer>
             {dialogs => {
               let dials = dialogs.map(d => {
                 d.closeTheDialog = ff;
               });
+              return <DialogWrapper dialogs={dials} />;
             }}
           </Consumer>
         );
