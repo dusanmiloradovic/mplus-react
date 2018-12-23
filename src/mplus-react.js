@@ -903,9 +903,11 @@ If both dialogwrapper and getdialogf is null, let the implementation manage the 
         return (
           <Consumer>
             {dialogs => {
-              let dials = dialogs.map(d => {
-                d.closeTheDialog = ff;
-              });
+              let dials = dialogs
+                ? dialogs.map(d => {
+                    d.closeTheDialog = ff;
+                  })
+                : null;
               return <DialogWrapper dialogs={dials} />;
             }}
           </Consumer>
