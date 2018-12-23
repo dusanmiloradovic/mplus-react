@@ -879,19 +879,36 @@ export function getDialogHolder(DialogWrapper, getDialogF) {
       closeDialog(this.context);
     }
     render() {
+      /*
+If both dialogwrapper and getdialogf is null, let the implementation manage the dialogs on itself
+*/
       if (!this.Context) return <div />;
       let Consumer = this.Context.Consumer;
-      let Dialog = getDialog(DialogWrapper, getDialogF, _ =>
-        closeDialog(this.context)
-      );
-      return (
-        <Consumer>
-          {dialogs => {
-            if (!dialogs) return <div />;
-            return <Dialog dialogs={dialogs} />;
-          }}
-        </Consumer>
-      );
+      let Dialog = null;
+      if (DialogWrapper && getDialogF) {
+        Dialog = getDialog(DialogWrapper, getDialogF, _ =>
+          closeDialog(this.context)
+        );
+        return (
+          <Consumer>
+            {dialogs => {
+              if (!dialogs) return <div />;
+              return <Dialog dialogs={dialogs} />;
+            }}
+          </Consumer>
+        );
+      } else {
+        let ff = _ => closeDialog(this.context);
+        return (
+          <Consumer>
+            {dialogs => {
+              let dials = dialogs.map(d => {
+                d.closeTheDialog = ff;
+              });
+            }}
+          </Consumer>
+        );
+      }
     }
     componentDidMount() {
       if (!innerContexts["dialogs"]) {
