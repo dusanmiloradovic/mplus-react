@@ -15,8 +15,7 @@ import {
   setExternalRootContext
 } from "./mplus-react.js";
 import React from "react";
-//import MultiContext from "react-multiple-contexts";
-import ContextPool from "./ContextPool";
+import { ContextPool } from "react-multiple-contexts";
 import ReactDOM from "react-dom";
 
 //the components from the package will be used directly, they are the base for the real styled components. Still, we need to test them first. Also this serves as an implementation reference for the real cases

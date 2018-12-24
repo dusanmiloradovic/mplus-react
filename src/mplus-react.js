@@ -1,7 +1,6 @@
 import React from "react";
 import flyd from "flyd";
-//import MultiContext from "react-multiple-contexts";
-import ContextPool from "./ContextPool.js";
+import { ContextPool } from "react-multiple-contexts";
 import md5 from "js-md5";
 
 let kont = {};
