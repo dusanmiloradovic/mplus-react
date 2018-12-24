@@ -82,6 +82,7 @@ export default class extends React.Component {
     return this.innerContexts[this.occupied[contextId]];
   }
   removeInnerContext(contextId) {
+    this.setInnerState(contextId, _ => null);
     let innerId = this.occupied[contextId];
     delete this.occupied[contextId];
     this.free.push(innerId);
