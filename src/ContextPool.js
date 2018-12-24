@@ -23,13 +23,13 @@ export default class extends React.Component {
     );
   }
   render() {
+    let Provider = this.props.rootContext.Provider;
     return (
-      <MultiContext
-        rootContext={this.props.rootContext}
-        ref={ctx => (this.ctx = ctx)}
-      >
-        {this.props.children}
-      </MultiContext>
+      <Provider value={this}>
+        <MultiContext ref={ctx => (this.ctx = ctx)}>
+          {this.props.children}
+        </MultiContext>
+      </Provider>
     );
   }
 
@@ -94,10 +94,6 @@ export default class extends React.Component {
   }
 
   get rootContext() {
-    return this.ctx.rootContext;
-  }
-
-  static get rootContext() {
-    return MultiContext.rootContext;
+    return this.props.rootContext;
   }
 }
