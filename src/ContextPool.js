@@ -43,7 +43,8 @@ export default class extends React.Component {
       this.occupied[pendingKeys[j]] = j;
     }
     this.idCounter = this.props.initialSize + pendingKeys.length;
-    this.free = [...ids].splice(0, pendingKeys.length);
+    this.free = [...ids];
+    this.free.splice(0, pendingKeys.length);
     for (let id of this.free) {
       this.innerContexts[id] = React.createContext(null);
     }
@@ -73,7 +74,7 @@ export default class extends React.Component {
       return retCtx;
     }
     this.checkFree();
-    let innerId = this.free.splice(0, 1); //remove first free
+    let innerId = this.free.splice(0, 1)[0]; //remove first free
     this.occupied[contextId] = innerId;
     return this.innerContexts[innerId];
   }
