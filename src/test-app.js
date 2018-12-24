@@ -15,7 +15,8 @@ import {
   setExternalRootContext
 } from "./mplus-react.js";
 import React from "react";
-import MultiContext from "react-multiple-contexts";
+//import MultiContext from "react-multiple-contexts";
+import ContextPool from "./ContextPool";
 import ReactDOM from "react-dom";
 
 //the components from the package will be used directly, they are the base for the real styled components. Still, we need to test them first. Also this serves as an implementation reference for the real cases
@@ -358,7 +359,7 @@ class AppRoot extends React.Component {
           openWorkflow: this.openWorkflow
         }}
       >
-        <MultiContext rootContext={rootContext}>
+        <ContextPool rootContext={rootContext} initialSize={10} minimumFree={3}>
           <div key={"app-" + this.state.version}>
             {this.props.children}
             <DialogHolder ref={this.dialogHolderRef} />
@@ -367,7 +368,7 @@ class AppRoot extends React.Component {
               callback={() => this.softReload()}
             />
           </div>
-        </MultiContext>
+        </ContextPool>
       </DialogContext.Provider>
     );
   }

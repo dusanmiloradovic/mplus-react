@@ -12,6 +12,7 @@ export default class extends React.Component {
     this.free = [];
     this.idCounter = 0;
     this.innerContexts = [];
+    this.pending = {}; //adding inner contexts may happen before the actual inner context is ready, here we store the pending contexts
     this.addInnerContext = this.addInnerContext.bind(this);
     this.getInnerContext = this.getInnerContext.bind(this);
     this.setInnerState = this.setInnerState.bind(this);
@@ -35,16 +36,22 @@ export default class extends React.Component {
 
   componentDidMount() {
     //add initial number of contexts as defined in the properties
-    let ids = [...Array(this.props.initialSize).keys()];
-    this.idCounter = this.props.initialSize;
-    this.free = ids;
-    for (let id of ids) {
+    let pendingKeys = Object.keys(this.pending);
+    let ids = [...Array(this.props.initialSize + pendingKeys.length).keys()];
+    for (let j = 0; j < pendingKeys.length; j++) {
+      this.innerContexts[j] = this.pending[pendingKeys[j]];
+      this.occupied[pendingKeys[j]] = j;
+    }
+    this.idCounter = this.props.initialSize + pendingKeys.length;
+    this.free = [...ids].splice(0, pendingKeys.length);
+    for (let id of this.free) {
       this.innerContexts[id] = React.createContext(null);
     }
+    this.pending = {};
     this.ctx.addMultipleInnerContexts(ids, this.innerContexts);
   }
   checkFree() {
-    if (this.free.count() < this.props.minimumFree) {
+    if (this.free.length < this.props.minimumFree) {
       let newIdCounter = this.idCounter + this.props.minimumFree;
       let newIds = [...Array(newIdCounter).keys()];
       newIds.splice(0, this.props.idCounter);
@@ -60,24 +67,29 @@ export default class extends React.Component {
     }
   }
   addInnerContext(contextId) {
+    if (!this.ctx) {
+      let retCtx = React.createContext(null);
+      this.pending[contextId] = retCtx;
+      return retCtx;
+    }
     this.checkFree();
     let innerId = this.free.splice(0, 1); //remove first free
-    this.occupied.contextId = innerId;
+    this.occupied[contextId] = innerId;
     return this.innerContexts[innerId];
   }
   getInnerContext(contextId) {
-    return this.innerContexts[this.occupied.contextId];
+    return this.innerContexts[this.occupied[contextId]];
   }
   removeInnerContext(contextId) {
-    let innerId = this.occupied.contextId;
-    delete this.occupied.contextId;
+    let innerId = this.occupied[contextId];
+    delete this.occupied[contextId];
     this.free.push(innerId);
   }
   setInnerState(contextId, stateF) {
-    this.ctx.setInnerState(this.occupied.contextId, stateF);
+    this.ctx.setInnerState(this.occupied[contextId], stateF);
   }
   getInnerState(contextId) {
-    return this.ctx.getInnerState(this.occupied.contextId);
+    return this.ctx.getInnerState(this.occupied[contextId]);
   }
   addMultipleInnerContexts(contextIds) {
     let rez = [];

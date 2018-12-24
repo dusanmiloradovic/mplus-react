@@ -1,6 +1,7 @@
 import React from "react";
 import flyd from "flyd";
-import MultiContext from "react-multiple-contexts";
+//import MultiContext from "react-multiple-contexts";
+import ContextPool from "./ContextPool.js";
 import md5 from "js-md5";
 
 let kont = {};
@@ -906,7 +907,7 @@ If both dialogwrapper and getdialogf is null, let the implementation manage the 
               let dials = dialogs
                 ? dialogs.map(d => {
                     d.closeTheDialog = ff;
-		    return d;
+                    return d;
                   })
                 : null;
               return <DialogWrapper dialogs={dials} />;
