@@ -126,7 +126,9 @@ class MaximoPlusWrapper {
       //this sets the Context, not the state, we need to return the full state, not just the chenge
       return Object.assign({}, state, newState);
     };
-    this.rootContext.setInnerState(this.contextId, innerStateF);
+    if (this.rootContext.getInnerState(this.contextId)) {
+      this.rootContext.setInnerState(this.contextId, innerStateF);
+    }
   }
 
   closeDialog() {
@@ -179,6 +181,9 @@ export const closeDialog = rootContext => {
     let newDialogs = [...dialogs];
     newDialogs.pop();
     for (let j of dff) {
+      if (innerContexts[j].mp && innerContexts[j].mp.dispose) {
+        innerContexts[j].mp.dispose();
+      }
       delete innerContexts[j];
     }
     rootContext.removeMultipleInnerContexts(dff);
