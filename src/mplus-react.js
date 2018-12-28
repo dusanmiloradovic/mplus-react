@@ -204,6 +204,10 @@ export class AppContainer extends React.Component {
     }
     this.mp = mp;
     resolveContainer(this.props.id, mp);
+    this.save = this.save.bind(this);
+    this.rollback = this.rollback.bind(this);
+    this.mboCommand = this.mboCommand.bind(this);
+    this.mboSetCommand = this.mboSetCommand.bind(this);
   }
 
   render() {
@@ -225,53 +229,69 @@ export class AppContainer extends React.Component {
   }
 
   mboCommand(command) {
-    this.mp.mboCommand(command);
+    return this.mp.mboCommand(command);
   }
 
   mboSetCommand(command) {
-    this.mp.mboSetCommand(command);
+    return this.mp.mboSetCommand(command);
   }
 }
 
-export class RelContainer extends React.Component {
-  constructor(props) {
-    super(props);
-    if (kont[this.props.id] && kont[this.props.id].resolved) return;
-    getDeferredContainer(this.props.id);
-    kont[this.props.container].then(mboCont => {
-      let mp = new maximoplus.basecontrols.RelContainer(
-        mboCont,
-        this.props.relationship
-      );
-      this.mp = mp;
-      resolveContainer(this.props.id, mp);
-    });
-  }
-
-  render() {
-    return (
-      <div
-        container={this.props.container}
-        relationship={this.props.relationship}
-      />
-    );
-  }
-
-  dispose() {
-    if (this.mp) {
-      this.mp.dispose();
+const getDepContainer = containerConstF => {
+  return class extends React.Component {
+    constructor(props) {
+      super(props);
+      if (kont[this.props.id] && kont[this.props.id].resolved) return;
+      getDeferredContainer(this.props.id);
+      this.mboCommand = this.mboCommand.bind(this);
+      this.mboSetCommand = this.mboSetCommand.bind(this);
     }
-    delete kont[this.props.id];
-  }
 
-  mboCommand(command) {
-    this.mp.mboCommand(command);
-  }
+    get mp() {
+      return this.state.mp;
+    }
 
-  mboSetCommand(command) {
-    this.mp.mboSetCommand(command);
-  }
-}
+    componentDidMount() {
+      if (kont[this.props.id] && kont[this.props.id].resolved) {
+        kont[this.props.id].then(mp => this.setState({ mp: mp }));
+        return;
+      }
+
+      kont[this.props.container].then(mboCont => {
+        let mp = containerConstF(mboCont, this.props);
+        this.setState({ mp: mp });
+        resolveContainer(this.props.id, mp);
+      });
+    }
+
+    render() {
+      return null;
+    }
+
+    dispose() {
+      if (this.mp) {
+        this.mp.dispose();
+      }
+      delete kont[this.props.id];
+    }
+
+    mboCommand(command) {
+      return this.mp.mboCommand(command);
+    }
+
+    mboSetCommand(command) {
+      return this.mp.mbosetCommand(command);
+    }
+  };
+};
+
+export const RelContainer = getDepContainer((mboCont, props) => {
+  return new maximoplus.basecontrols.RelContainer(mboCont, props.relationship);
+});
+
+export const SingleMboContainer = getDepContainer(
+  (mboCont, props) => new maximoplus.basecontrols.SingleMboContainer(mboCont)
+);
 
 export class MPlusComponent extends React.Component {
   //the following tho methods should be overriden in the concrete implementations with
@@ -1097,3 +1117,10 @@ export function getWorkflowDialog(
     }
   };
 }
+
+export const reload = contid => {
+  kont[contid].then(mp => {
+    mp.reset();
+    mp.moveTo(0);
+  });
+};
