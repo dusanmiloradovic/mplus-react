@@ -139,8 +139,9 @@ const TextField = props => {
       <div>
         {lookup}
         <input
-          defaultValue={props.value ? props.value : ""}
+          value={props.value ? props.value : ""}
           onChange={ev => props.listener(ev.target.value)}
+          onBlur={ev => props.changeListener()}
         />
       </div>
     </div>

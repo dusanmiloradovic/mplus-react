@@ -596,6 +596,11 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
   //like for the list, here we also support the "raw" rendering, i.e. this HOC returns the data, and parent does the actual rendering. We don't need the raw field for this, if wrappers are null, we just return the props. For picker list,we will have to send the array of values in one field (so we need to transfer the field row state to props)
 
   return class MPSection extends MPlusComponent {
+    constructor(props) {
+      super(props);
+      this.changeInternalFieldValue = this.changeInternalFieldValue.bind(this);
+      this.state = { fieldValues: {} };
+    }
     putContainer(mboCont) {
       if (this.mp) {
         return;
@@ -613,8 +618,17 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
+
+      /*
+If we call the maximo change handler for every field, Maximo may change the values, while the user is typing (it is trimming the spaces for example). We will keep the values internally in the state, and pass 2 functions to the field: 1) function that changes this state that is called from onChange field handler, and 2) Maximo change function that is called from onblur
+*/
     }
 
+    changeInternalFieldValue(fieldKey, value) {
+      let newFieldValues = Object.assign({}, this.state.fieldValues);
+      newFieldValues[fieldKey] = value;
+      this.setState({ fieldValues: newFieldValues });
+    }
     componentDidUpdate(prevProps) {
       super.componentDidUpdate(prevProps);
       if (prevProps.metadata != this.props.metadata && this.mp) {
@@ -675,11 +689,25 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
                     return raw ? { key: fKey } : <div key={fKey} />;
                   }
                 } else {
+                  let _val = this.state.fieldValues[fKey]
+                    ? this.state.fieldValues[fKey]
+                    : f.data;
                   let attrs = {
                     label: f.metadata.title,
-                    value: f.data,
+                    value: _val,
                     type: f.metadata.maxType,
-                    listener: f.listeners["change"],
+                    listener: value =>
+                      this.changeInternalFieldValue(fKey, value),
+                    changeListener: () => {
+                      let newFst = Object.assign({}, this.state.fieldValues);
+                      let __vval = newFst[fKey];
+                      if (__vval) {
+                        //post the change only if there was change
+                        delete newFst[fKey];
+                        this.setState({ fieldValues: newFst });
+                        f.listeners["change"](_val);
+                      }
+                    },
                     enabled: !f.readonly,
                     required: f.required,
                     key: fKey
