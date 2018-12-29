@@ -134,14 +134,19 @@ const TextField = props => {
       ""
     );
   return (
-    <div>
+    <div key={props.fieldKey}>
       <div className="label">{props.label}</div>
       <div>
         {lookup}
         <input
           value={props.value ? props.value : ""}
           onChange={ev => props.listener(ev.target.value)}
-          onBlur={ev => props.changeListener()}
+          onBlur={ev => {
+            //for qbe no changeLstener
+            if (props.changeListener) {
+              props.changeListener();
+            }
+          }}
         />
       </div>
     </div>

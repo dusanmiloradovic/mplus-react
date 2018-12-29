@@ -710,7 +710,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                     },
                     enabled: !f.readonly,
                     required: f.required,
-                    key: fKey
+                    fieldKey: fKey
                   };
                   if (f.metadata.hasLookup) {
                     if (f.metadata.gl) {
@@ -850,7 +850,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
                   type: f.metadata.maxType,
                   enabled: true,
                   listener: f.listeners["change"],
-                  key: f.metadata.attributeName + counter
+                  fieldKey: f.metadata.attributeName + counter
                 };
                 if (f.metadata.hasLookup) {
                   attrs.showLookupF = () => f.maximoField.showLookup();
