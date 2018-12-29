@@ -139,7 +139,7 @@ const TextField = props => {
       <div>
         {lookup}
         <input
-          value={props.value ? props.value : ""}
+          defaultValue={props.value ? props.value : ""}
           onChange={ev => props.listener(ev.target.value)}
         />
       </div>
