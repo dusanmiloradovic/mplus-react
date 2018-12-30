@@ -377,6 +377,10 @@ In case the container property is passed, we have to make sure container is avai
 
 export function getComponentAdapter(Adapter) {
   return class MPAdapter extends MPlusComponent {
+    constructor(props) {
+      super(props);
+      this.setMaxValue = this.setMaxValue.bind(this);
+    }
     initData() {
       this.mp.initData();
     }
@@ -412,6 +416,9 @@ export function getComponentAdapter(Adapter) {
           }}
         </Consumer>
       );
+    }
+    setMaxValue(column, value) {
+      this.mp.setMaxValue(column, value);
     }
     static get contextType() {
       return getRootContext();
