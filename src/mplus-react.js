@@ -375,6 +375,50 @@ In case the container property is passed, we have to make sure container is avai
   }
 }
 
+export function getComponentAdapter(Adapter) {
+  return class MPAdapter extends MPlusComponent {
+    initData() {
+      this.mp.initData();
+    }
+    putContainer(mboCont) {
+      if (this.mp) {
+        return;
+      }
+      let mp = new maximoplus.re.ComponentAdapter(
+        mboCont,
+        this.props.columns,
+        this.props.norows ? this.props.norows : 1
+      );
+      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      innerContexts[this.oid].mp = mp;
+      innerContexts[this.oid].wrapper = wrapper;
+
+      mp.initData();
+    }
+    render() {
+      if (!this.Context) return null;
+      let Consumer = this.Context.Consumer;
+      return (
+        <Consumer>
+          {value => {
+            if (!value) return null;
+            let rownum = value.currow;
+            let maxrows = value.maxrows;
+            let rowValue = maxrows ? maxrows[rownum] : {}; //for the sake of simplicity, by default return only one object
+            if (this.props.norows && this.props.norows > 1) {
+              return <Adapter maxrows={maxrows} />;
+            }
+            return <Adapter {...rowValue} />;
+          }}
+        </Consumer>
+      );
+    }
+    static get contextType() {
+      return getRootContext();
+    }
+  };
+}
+
 export function getList(getListTemplate, drawFilterButton, drawList, raw) {
   //sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
 

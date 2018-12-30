@@ -12,7 +12,8 @@ import {
   getFilterDialog,
   getGLDialog,
   getWorkflowDialog,
-  setExternalRootContext
+  setExternalRootContext,
+  getComponentAdapter
 } from "./mplus-react.js";
 import React from "react";
 import { ContextPool } from "react-multiple-contexts";
@@ -322,6 +323,17 @@ const DialogContext = React.createContext({
   openWorkflow: (container, processname) => {}
 });
 
+const TestComponentAdapter = getComponentAdapter(props => {
+  if (!props || !props.data) return null;
+  return (
+    <div>
+      {props.data.PONUM}
+      ....
+      {props.data.STATUS}
+    </div>
+  );
+});
+
 class AppRoot extends React.Component {
   constructor(props) {
     super(props);
@@ -464,6 +476,10 @@ const App = props => (
               filterTemplate: "valuelist"
             }
           }}
+        />
+        <TestComponentAdapter
+          container="pocont"
+          columns={["ponum", "status"]}
         />
         <DialogContext.Consumer>
           {({ openWorkflow }) => {
