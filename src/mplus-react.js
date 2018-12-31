@@ -1203,3 +1203,88 @@ export const reload = contid => {
     mp.moveTo(0);
   });
 };
+
+//the functions for attaching, etc. should be accessed from ref. Wrapper will be there just to display the currently attached files and errors
+export function getDoclinkUpload(Wrapper) {
+  return class DoclinksUpload extends React.Component {
+    constructor(props) {
+      super(props);
+      this.inputRef = React.createRef();
+      this.state = { files: [] };
+      this.addFiles = this.addFiles.bind(this);
+      this.attachFiles = this.attachFiles.bind(this);
+      this.removeFile = this.removeFile.bind(this);
+      this.uploadFies = this.uploadFiles.bind(this);
+    }
+    attachFiles() {
+      this.inputRef.current.click();
+    }
+    addFiles(files) {
+      this.setState((state, props) => {
+        return { files: [...state.files, ...files] };
+      });
+    }
+    removeFile(index) {
+      this.setSate((state, props) => {
+        let fls = state.files;
+        return {
+          files: fls.slice(0, index - 1).concat(fls.slice(index, fls.length))
+        };
+      });
+    }
+    uploadFile(file, doctype) {
+      let uploadMethod = this.props.uploadMethod
+        ? this.props.uploadMethod
+        : "doclinks";
+      let fd = new FormData();
+      fd.append("docname", file.name);
+      fd.append("doctype", doctype);
+      fd.append("file", file);
+      kont[this.props.container].then(mbocont => {
+        return new Promise((resolve, reject) => {
+          maximoplus.net.upload(
+            mbocont,
+            uploadMethod,
+            null,
+            fd,
+            function(ok) {
+              resolve(ok);
+            },
+            function(err) {
+              reject(err);
+            },
+            function(loaded, total) {
+              file.percloaded = Math.round(loaded / total);
+            }
+          );
+        });
+      });
+    }
+    async uploadFiles(doctype) {
+      let errors = {};
+      for (let j = 0; j < this.state.files.length; j++) {
+        try {
+          await this.uploadFile(this.state.files[j], doctype);
+        } catch (err) {
+          errors[j] = err;
+        }
+      }
+      this.setState({ errors: errors });
+    }
+    render() {
+      return (
+        <div>
+          <Wrapper {...this.state} />
+          <input
+            ref={this.inputRef}
+            type="file"
+            style="display:none"
+            multiple
+            onChange={ev => this.addFiles(ev.target.files)}
+            id="filehidden"
+          />
+        </div>
+      );
+    }
+  };
+}
