@@ -13,7 +13,9 @@ import {
   getGLDialog,
   getWorkflowDialog,
   setExternalRootContext,
-  getComponentAdapter
+  getComponentAdapter,
+  getDoclinksUpload,
+  save
 } from "./mplus-react.js";
 import React from "react";
 import { ContextPool } from "react-multiple-contexts";
@@ -41,7 +43,13 @@ const dialogs = {
       processname={dialog.processname}
     />
   ),
-  login: dialog => <login-dialog />
+  login: dialog => <login-dialog />,
+  fileupload: dialog => (
+    <DoclinksUploadDialog
+      container={dialog.container}
+      doctype={dialog.doctype}
+    />
+  )
 };
 
 const filterTemplates = {
@@ -451,92 +459,172 @@ class TestList extends React.Component {
   }
 }
 
-const App = props => (
-  <AppRoot>
-    <AppContainer mboname="po" appname="po" id="pocont" wfprocess="postatus" />
-    <RelContainer container="pocont" relationship="poline" id="polinecont" />
-    <div className="flex">
-      <div className="flex-item">
-        <TestList
-          container="pocont"
-          columns={["ponum", "description", "status"]}
-          norows="20"
-          initdata="true"
-          listTemplate="porow"
-        />
-      </div>
-      <div className="flex-item">
-        <Section
-          container="pocont"
-          columns={["ponum", "description", "status", "shipvia", "orderdate"]}
-          metadata={{
-            SHIPVIA: {
-              hasLookup: "true",
-              listTemplate: "valuelist",
-              filterTemplate: "valuelist"
-            }
-          }}
-        />
-        <TestComponentAdapter
-          container="pocont"
-          columns={["ponum", "status"]}
-        />
-        <DialogContext.Consumer>
-          {({ openWorkflow }) => {
-            return (
-              <button onClick={ev => openWorkflow("pocont", "POSTATUS")}>
-                Open Workflow
-              </button>
-            );
-          }}
-        </DialogContext.Consumer>
-      </div>
-      <div className="flex-item">
-        <QbeSection
-          container="pocont"
-          columns={["ponum", "description", "status", "shipvia"]}
-          qbePrepends={[
-            {
-              virtualName: "from_orderdate",
-              qbePrepend: ">=",
-              attributeName: "orderdate",
-              title: "Order Date From",
-              position: "4"
-            },
-            {
-              virtualName: "to_orderdate",
-              qbePrepend: "<=",
-              attributeName: "orderdate",
-              title: "Order Date To",
-              position: "5"
-            }
-          ]}
-          metadata={{
-            SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
-            STATUS: {
-              hasLookup: "true",
-              listTemplate: "qbevaluelist",
-              filterTemplate: "valuelist"
-            }
-          }}
-        />
-      </div>
-      <div className="flex-item">
-        <Section
-          container="polinecont"
-          columns={[
-            "polinenum",
-            "itemnum",
-            "orderqty",
-            "orderunit",
-            "gldebitacct"
-          ]}
-          metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
-        />
-      </div>
+const DoclinksUpload = getDoclinksUpload(props => {
+  let fileNames = props.files.map(f => <div>{f.name}</div>);
+  let errors = props.errors ? Object.values(props.errors) : [];
+  let errDisp = errors.lenght > 0 ? "Errors" : "";
+  let errArr = errors.map(e => <div>e</div>);
+
+  return (
+    <div>
+      <div>Files:</div>
+      <div>{fileNames}</div>
+      <div>{errDisp}</div>
+      <div>{errArr}</div>;
     </div>
-  </AppRoot>
-);
+  );
+});
+
+class DoclinksUploadDialog extends React.Component {
+  constructor(props) {
+    super(props);
+    this.uploadRef = React.createRef();
+  }
+  render() {
+    return (
+      <div>
+        <DoclinksUpload {...this.props} ref={this.uploadRef} />
+        <div>
+          <button onClick={ev => this.uploadRef.current.attachFiles()}>
+            Attach
+          </button>
+          <button
+            onClick={ev =>
+              this.uploadRef.current.uploadFiles(this.props.doctype)
+            }
+          >
+            Upload
+          </button>
+        </div>
+      </div>
+    );
+  }
+}
+
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.containerRef = React.createRef();
+  }
+  render() {
+    return (
+      <AppRoot>
+        <AppContainer
+          mboname="po"
+          appname="po"
+          id="pocont"
+          wfprocess="postatus"
+          ref={this.containerRef}
+        />
+        <RelContainer
+          container="pocont"
+          relationship="poline"
+          id="polinecont"
+        />
+        <div className="flex">
+          <div className="flex-item">
+            <TestList
+              container="pocont"
+              columns={["ponum", "description", "status"]}
+              norows="20"
+              initdata="true"
+              listTemplate="porow"
+            />
+          </div>
+          <div className="flex-item">
+            <Section
+              container="pocont"
+              columns={[
+                "ponum",
+                "description",
+                "status",
+                "shipvia",
+                "orderdate"
+              ]}
+              metadata={{
+                SHIPVIA: {
+                  hasLookup: "true",
+                  listTemplate: "valuelist",
+                  filterTemplate: "valuelist"
+                }
+              }}
+            />
+            <TestComponentAdapter
+              container="pocont"
+              columns={["ponum", "status"]}
+            />
+            <DialogContext.Consumer>
+              {({ openWorkflow, openDialog }) => {
+                return (
+                  <>
+                    <button onClick={ev => openWorkflow("pocont", "POSTATUS")}>
+                      Open Workflow
+                    </button>
+                    <button
+                      onClick={ev =>
+                        openDialog({
+                          type: "fileupload",
+                          container: "pocont",
+                          doctype: "Attachments"
+                        })
+                      }
+                    >
+                      Upload Files
+                    </button>
+                    <button onClick={ev => save("pocont")}>Save</button>
+                  </>
+                );
+              }}
+            </DialogContext.Consumer>
+          </div>
+          <div className="flex-item">
+            <QbeSection
+              container="pocont"
+              columns={["ponum", "description", "status", "shipvia"]}
+              qbePrepends={[
+                {
+                  virtualName: "from_orderdate",
+                  qbePrepend: ">=",
+                  attributeName: "orderdate",
+                  title: "Order Date From",
+                  position: "4"
+                },
+                {
+                  virtualName: "to_orderdate",
+                  qbePrepend: "<=",
+                  attributeName: "orderdate",
+                  title: "Order Date To",
+                  position: "5"
+                }
+              ]}
+              metadata={{
+                SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
+                STATUS: {
+                  hasLookup: "true",
+                  listTemplate: "qbevaluelist",
+                  filterTemplate: "valuelist"
+                }
+              }}
+            />
+          </div>
+          <div className="flex-item">
+            <Section
+              container="polinecont"
+              columns={[
+                "polinenum",
+                "itemnum",
+                "orderqty",
+                "orderunit",
+                "gldebitacct"
+              ]}
+              metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
+            />
+          </div>
+        </div>
+      </AppRoot>
+    );
+  }
+}
 
 maximoplus.net.globalFunctions.serverRoot = function() {
   return "http://localhost:8080";

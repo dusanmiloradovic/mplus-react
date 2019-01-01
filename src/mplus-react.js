@@ -202,12 +202,15 @@ export class AppContainer extends React.Component {
     if (this.props.offlineenabled) {
       mp.setOfflineEnabled(true);
     }
-    this.mp = mp;
     resolveContainer(this.props.id, mp);
+    this.state = { mp: mp };
     this.save = this.save.bind(this);
     this.rollback = this.rollback.bind(this);
     this.mboCommand = this.mboCommand.bind(this);
     this.mboSetCommand = this.mboSetCommand.bind(this);
+  }
+  get mp() {
+    return this.state.mp;
   }
 
   render() {
@@ -221,7 +224,7 @@ export class AppContainer extends React.Component {
   }
 
   save() {
-    this.mp.save();
+    this.state.mp.save();
   }
 
   rollback() {
@@ -1204,8 +1207,12 @@ export const reload = contid => {
   });
 };
 
+export const save = contid => {
+  kont[contid].then(mp => mp.save());
+};
+
 //the functions for attaching, etc. should be accessed from ref. Wrapper will be there just to display the currently attached files and errors
-export function getDoclinkUpload(Wrapper) {
+export function getDoclinksUpload(Wrapper) {
   return class DoclinksUpload extends React.Component {
     constructor(props) {
       super(props);
@@ -1278,7 +1285,7 @@ export function getDoclinkUpload(Wrapper) {
           <input
             ref={this.inputRef}
             type="file"
-            style="display:none"
+            style={{ display: "none" }}
             multiple
             onChange={ev => this.addFiles(ev.target.files)}
             id="filehidden"
