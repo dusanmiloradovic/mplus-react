@@ -17,8 +17,10 @@
 						"react-multiple-contexts": "^1.0.12"
 			},
 			"dependencies": {
+						"base64-arraybuffer": "^0.1.5",
 						"flyd": "^0.2.8",
-						"js-md5": "^0.7.3"
+						"js-md5": "^0.7.3",
+						"react-webcam": "^1.0.4"
 			},
 			"devDependencies": {
 						"react-multiple-contexts": "^1.0.12",

@@ -2,6 +2,8 @@ import React from "react";
 import flyd from "flyd";
 import { ContextPool } from "react-multiple-contexts";
 import md5 from "js-md5";
+import { decode } from "base64-arraybuffer";
+import WebCam from "react-webcam";
 
 let kont = {};
 
@@ -1211,6 +1213,31 @@ export const save = contid => {
   kont[contid].then(mp => mp.save());
 };
 
+const _uploadFile = (container, uploadMethod, file, doctype) => {
+  let fd = new FormData();
+  fd.append("docname", file.name);
+  fd.append("doctype", doctype);
+  fd.append("file", file);
+  kont[container].then(mbocont => {
+    return new Promise((resolve, reject) => {
+      maximoplus.net.upload(
+        mbocont,
+        uploadMethod,
+        null,
+        fd,
+        function(ok) {
+          resolve(ok);
+        },
+        function(err) {
+          reject(err);
+        },
+        function(loaded, total) {
+          file.percloaded = Math.round(loaded / total);
+        }
+      );
+    });
+  });
+};
 //the functions for attaching, etc. should be accessed from ref. Wrapper will be there just to display the currently attached files and errors
 export function getDoclinksUpload(Wrapper) {
   return class DoclinksUpload extends React.Component {
@@ -1243,29 +1270,7 @@ export function getDoclinksUpload(Wrapper) {
       let uploadMethod = this.props.uploadMethod
         ? this.props.uploadMethod
         : "doclinks";
-      let fd = new FormData();
-      fd.append("docname", file.name);
-      fd.append("doctype", doctype);
-      fd.append("file", file);
-      kont[this.props.container].then(mbocont => {
-        return new Promise((resolve, reject) => {
-          maximoplus.net.upload(
-            mbocont,
-            uploadMethod,
-            null,
-            fd,
-            function(ok) {
-              resolve(ok);
-            },
-            function(err) {
-              reject(err);
-            },
-            function(loaded, total) {
-              file.percloaded = Math.round(loaded / total);
-            }
-          );
-        });
-      });
+      return _uploadFile(this.props.container, uploadMethod, file, doctype);
     }
     async uploadFiles(doctype) {
       let errors = {};
@@ -1291,6 +1296,42 @@ export function getDoclinksUpload(Wrapper) {
             id="filehidden"
           />
         </div>
+      );
+    }
+  };
+}
+
+export function getPhotoUpload(Wrapper) {
+  return class PhotoUpload extends React.Component {
+    constructor(props) {
+      super(props);
+      this.webcamRef = React.createRef();
+      this.uploadPhoto = this.uploadPhoto.bind(this);
+    }
+    uploadPhoto() {
+      let img64 = this.webcamRef.current.getScreenShot();
+      let arrayBuf = decode(img64);
+      let fileName = "IMG-" + new Date().valueOf() + ".jpg";
+      let f = new File([arrayBuf], fileName, { type: "image/jpeg" });
+      let uploadMethod = this.props.uploadMethod
+        ? this.props.uploadMethod
+        : "doclinks";
+      return _uploadFile(
+        this.props.container,
+        uploadMethod,
+        f,
+        this.props.doctype
+      );
+    }
+    render() {
+      return (
+        <Wrapper photoUploafF={this.uploadPhoto}>
+          <WebCam
+            ref={this.webcamRef}
+            screenshotFormat="image/jpeg"
+            audio={false}
+          />
+        </Wrapper>
       );
     }
   };

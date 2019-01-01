@@ -15,6 +15,7 @@ import {
   setExternalRootContext,
   getComponentAdapter,
   getDoclinksUpload,
+  getPhotoUpload,
   save
 } from "./mplus-react.js";
 import React from "react";
@@ -49,6 +50,9 @@ const dialogs = {
       container={dialog.container}
       doctype={dialog.doctype}
     />
+  ),
+  photoUpload: dialog => (
+    <PhotoUploadDialog container={dialog.container} doctype={dialog.doctype} />
   )
 };
 
@@ -501,6 +505,13 @@ class DoclinksUploadDialog extends React.Component {
   }
 }
 
+const PhotoUploadDialog = getPhotoUpload(props => (
+  <div>
+    {props.children}
+    <button onClick={props.photoUploadF}>Shoot</button>
+  </div>
+));
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -571,6 +582,18 @@ class App extends React.Component {
                     >
                       Upload Files
                     </button>
+                    <button
+                      onClick={ev =>
+                        openDialog({
+                          type: "photoupload",
+                          container: "pocont",
+                          doctype: "Attachments"
+                        })
+                      }
+                    >
+                      Take Photo
+                    </button>
+
                     <button onClick={ev => save("pocont")}>Save</button>
                   </>
                 );
