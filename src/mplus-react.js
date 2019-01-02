@@ -2,6 +2,8 @@ import React from "react";
 import flyd from "flyd";
 import { ContextPool } from "react-multiple-contexts";
 import md5 from "js-md5";
+import { decode } from "base64-arraybuffer";
+import WebCam from "react-webcam";
 
 let kont = {};
 
@@ -202,12 +204,15 @@ export class AppContainer extends React.Component {
     if (this.props.offlineenabled) {
       mp.setOfflineEnabled(true);
     }
-    this.mp = mp;
     resolveContainer(this.props.id, mp);
+    this.state = { mp: mp };
     this.save = this.save.bind(this);
     this.rollback = this.rollback.bind(this);
     this.mboCommand = this.mboCommand.bind(this);
     this.mboSetCommand = this.mboSetCommand.bind(this);
+  }
+  get mp() {
+    return this.state.mp;
   }
 
   render() {
@@ -221,7 +226,7 @@ export class AppContainer extends React.Component {
   }
 
   save() {
-    this.mp.save();
+    this.state.mp.save();
   }
 
   rollback() {
@@ -1256,3 +1261,131 @@ export const reload = contid => {
     mp.moveTo(0);
   });
 };
+
+export const save = contid => {
+  kont[contid].then(mp => mp.save());
+};
+
+const _uploadFile = (container, uploadMethod, file, doctype) => {
+  let fd = new FormData();
+  fd.append("docname", file.name);
+  fd.append("doctype", doctype);
+  fd.append("file", file);
+  kont[container].then(mbocont => {
+    return new Promise((resolve, reject) => {
+      maximoplus.net.upload(
+        mbocont,
+        uploadMethod,
+        null,
+        fd,
+        function(ok) {
+          resolve(ok);
+        },
+        function(err) {
+          reject(err);
+        },
+        function(loaded, total) {
+          file.percloaded = Math.round(loaded / total);
+        }
+      );
+    });
+  });
+};
+//the functions for attaching, etc. should be accessed from ref. Wrapper will be there just to display the currently attached files and errors
+export function getDoclinksUpload(Wrapper) {
+  return class DoclinksUpload extends React.Component {
+    constructor(props) {
+      super(props);
+      this.inputRef = React.createRef();
+      this.state = { files: [] };
+      this.addFiles = this.addFiles.bind(this);
+      this.attachFiles = this.attachFiles.bind(this);
+      this.removeFile = this.removeFile.bind(this);
+      this.uploadFies = this.uploadFiles.bind(this);
+    }
+    attachFiles() {
+      this.inputRef.current.click();
+    }
+    addFiles(files) {
+      this.setState((state, props) => {
+        return { files: [...state.files, ...files] };
+      });
+    }
+    removeFile(index) {
+      this.setSate((state, props) => {
+        let fls = state.files;
+        return {
+          files: fls.slice(0, index - 1).concat(fls.slice(index, fls.length))
+        };
+      });
+    }
+    uploadFile(file, doctype) {
+      let uploadMethod = this.props.uploadMethod
+        ? this.props.uploadMethod
+        : "doclinks";
+      return _uploadFile(this.props.container, uploadMethod, file, doctype);
+    }
+    async uploadFiles(doctype) {
+      let errors = {};
+      for (let j = 0; j < this.state.files.length; j++) {
+        try {
+          await this.uploadFile(this.state.files[j], doctype);
+        } catch (err) {
+          errors[j] = err;
+        }
+      }
+      this.setState({ errors: errors });
+    }
+    render() {
+      return (
+        <div>
+          <Wrapper {...this.state} />
+          <input
+            ref={this.inputRef}
+            type="file"
+            style={{ display: "none" }}
+            multiple
+            onChange={ev => this.addFiles(ev.target.files)}
+            id="filehidden"
+          />
+        </div>
+      );
+    }
+  };
+}
+
+export function getPhotoUpload(Wrapper) {
+  return class PhotoUpload extends React.Component {
+    constructor(props) {
+      super(props);
+      this.webcamRef = React.createRef();
+      this.uploadPhoto = this.uploadPhoto.bind(this);
+    }
+    uploadPhoto() {
+      let img64 = this.webcamRef.current.getScreenShot();
+      let arrayBuf = decode(img64);
+      let fileName = "IMG-" + new Date().valueOf() + ".jpg";
+      let f = new File([arrayBuf], fileName, { type: "image/jpeg" });
+      let uploadMethod = this.props.uploadMethod
+        ? this.props.uploadMethod
+        : "doclinks";
+      return _uploadFile(
+        this.props.container,
+        uploadMethod,
+        f,
+        this.props.doctype
+      );
+    }
+    render() {
+      return (
+        <Wrapper photoUploafF={this.uploadPhoto}>
+          <WebCam
+            ref={this.webcamRef}
+            screenshotFormat="image/jpeg"
+            audio={false}
+          />
+        </Wrapper>
+      );
+    }
+  };
+}
