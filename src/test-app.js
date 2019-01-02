@@ -17,6 +17,7 @@ import {
   getAppDocTypesPicker,
   getDoclinksUpload,
   getPhotoUpload,
+  getDoclinksViewer,
   save
 } from "./mplus-react.js";
 import React from "react";
@@ -494,6 +495,9 @@ class TestList extends React.Component {
     );
   }
 }
+const DoclinksViewer = getDoclinksViewer(props => (
+    <list {...props} listTemplate="doclinks" />
+));
 
 const DoclinksUpload = getDoclinksUpload(props => {
   let fileNames = props.files.map((f, i) => {

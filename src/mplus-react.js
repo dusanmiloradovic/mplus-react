@@ -41,6 +41,8 @@ function difference(a1, a2) {
   return result;
 }
 
+let isCordovaApp = !!window.cordova;
+
 let dialogRefInnerIds = [];
 //when the dialog opens it will open the inner contexts for the MaximoPlus controls inside the dialog. Once it
 //closes we need to clean up that. We will simply see the difference at the time of closing and remove these contexts.
@@ -435,6 +437,62 @@ export function getComponentAdapter(Adapter) {
     }
     static get contextType() {
       return getRootContext();
+    }
+  };
+}
+
+export function getDocLinksViewer(ListComp) {
+  return class DoclinksViewer extends React.Component {
+    constructor(props) {
+      super(props);
+      this.currentRef = React.createRef();
+      this.openDocument = this.openDocument.bind(this);
+      this.state = { doclinksCont: null };
+    }
+    openDocument() {
+      if (isCordovaApp && cordova.InAppBrowser) {
+        cordova.InAppBrowser.open(
+          maximoplus.net.getDownloadURL(this.doclikns, "doclinks", {}),
+          "_blank"
+        );
+        return;
+      }
+      window.open(
+        maximoplus.net.getDownloadURL(this.doclinks, "doclinks", {}),
+        "_blank"
+      );
+    }
+    componentDidMount() {
+      if (this.stae.doclinksCont) {
+        return;
+      }
+
+      kont[this.props.container].then(mboCont => {
+        this.setState({
+          doclinksCont: new maximoplus.basecontrols.RelContainer(
+            mboCont,
+            "doclinks"
+          )
+        });
+      });
+    }
+    render() {
+      if (!this.state.doclinksCont) return null;
+      return (
+        <ListComp
+          norows="10"
+          initData={true}
+          columns={[
+            "document",
+            "doctype",
+            "description",
+            "changeby",
+            "changedate"
+          ]}
+          maxontainer={this.state.doclinksCont}
+          selectableF={this.openDocument}
+        />
+      );
     }
   };
 }
