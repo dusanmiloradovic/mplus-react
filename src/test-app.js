@@ -55,7 +55,8 @@ const dialogs = {
   ),
   photoUpload: dialog => (
     <PhotoUploadDialog container={dialog.container} doctype={dialog.doctype} />
-  )
+  ),
+  doclinksview: dialog => <DoclinksViewer container={dialog.container} />
 };
 
 const filterTemplates = {
@@ -496,7 +497,7 @@ class TestList extends React.Component {
   }
 }
 const DoclinksViewer = getDoclinksViewer(props => (
-    <list {...props} listTemplate="doclinks" />
+  <TestList {...props} listTemplate="doclinks" />
 ));
 
 const DoclinksUpload = getDoclinksUpload(props => {
@@ -644,6 +645,16 @@ class App extends React.Component {
                       }
                     >
                       Take Photo
+                    </button>
+                    <button
+                      onClick={ev =>
+                        openDialog({
+                          type: "doclinksview",
+                          container: "pocont"
+                        })
+                      }
+                    >
+                      View Docs
                     </button>
 
                     <button onClick={ev => save("pocont")}>Save</button>

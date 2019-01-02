@@ -441,7 +441,7 @@ export function getComponentAdapter(Adapter) {
   };
 }
 
-export function getDocLinksViewer(ListComp) {
+export function getDoclinksViewer(ListComp) {
   return class DoclinksViewer extends React.Component {
     constructor(props) {
       super(props);
@@ -452,18 +452,22 @@ export function getDocLinksViewer(ListComp) {
     openDocument() {
       if (isCordovaApp && cordova.InAppBrowser) {
         cordova.InAppBrowser.open(
-          maximoplus.net.getDownloadURL(this.doclikns, "doclinks", {}),
+          maximoplus.net.getDownloadURL(
+            this.state.doclinksCont,
+            "doclinks",
+            {}
+          ),
           "_blank"
         );
         return;
       }
       window.open(
-        maximoplus.net.getDownloadURL(this.doclinks, "doclinks", {}),
+        maximoplus.net.getDownloadURL(this.state.doclinksCont, "doclinks", {}),
         "_blank"
       );
     }
     componentDidMount() {
-      if (this.stae.doclinksCont) {
+      if (this.state.doclinksCont) {
         return;
       }
 
@@ -480,8 +484,8 @@ export function getDocLinksViewer(ListComp) {
       if (!this.state.doclinksCont) return null;
       return (
         <ListComp
-          norows="10"
-          initData={true}
+          norows="15"
+          initdata={true}
           columns={[
             "document",
             "doctype",
@@ -489,7 +493,7 @@ export function getDocLinksViewer(ListComp) {
             "changeby",
             "changedate"
           ]}
-          maxontainer={this.state.doclinksCont}
+          maxcontainer={this.state.doclinksCont}
           selectableF={this.openDocument}
         />
       );
