@@ -1271,7 +1271,7 @@ const _uploadFile = (container, uploadMethod, file, doctype) => {
   fd.append("docname", file.name);
   fd.append("doctype", doctype);
   fd.append("file", file);
-  kont[container].then(mbocont => {
+  let prom = kont[container].then(mbocont => {
     return new Promise((resolve, reject) => {
       maximoplus.net.upload(
         mbocont,
@@ -1290,6 +1290,7 @@ const _uploadFile = (container, uploadMethod, file, doctype) => {
       );
     });
   });
+  return prom;
 };
 //the functions for attaching, etc. should be accessed from ref. Wrapper will be there just to display the currently attached files and errors
 export function getDoclinksUpload(Wrapper) {
@@ -1297,7 +1298,7 @@ export function getDoclinksUpload(Wrapper) {
     constructor(props) {
       super(props);
       this.inputRef = React.createRef();
-      this.state = { files: [] };
+      this.state = { files: [], uploading: false };
       this.addFiles = this.addFiles.bind(this);
       this.attachFiles = this.attachFiles.bind(this);
       this.removeFile = this.removeFile.bind(this);
@@ -1326,15 +1327,24 @@ export function getDoclinksUpload(Wrapper) {
       return _uploadFile(this.props.container, uploadMethod, file, doctype);
     }
     async uploadFiles(doctype) {
+      this.setState({ uploading: true });
       let errors = {};
       for (let j = 0; j < this.state.files.length; j++) {
         try {
           await this.uploadFile(this.state.files[j], doctype);
+          this.setState(state => {
+            let finished = state.finished;
+            if (!finished) {
+              return { finished: [j] };
+            }
+            let _finished = [...finished, j];
+            return { finished: _finished };
+          });
         } catch (err) {
           errors[j] = err;
         }
       }
-      this.setState({ errors: errors });
+      this.setState({ errors: errors, uploading: false, files: [] });
     }
     render() {
       return (

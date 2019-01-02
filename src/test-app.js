@@ -15,7 +15,6 @@ import {
   setExternalRootContext,
   getComponentAdapter,
   getAppDocTypesPicker,
-  getComponentAdapter,
   getDoclinksUpload,
   getPhotoUpload,
   save
@@ -497,7 +496,14 @@ class TestList extends React.Component {
 }
 
 const DoclinksUpload = getDoclinksUpload(props => {
-  let fileNames = props.files.map(f => <div>{f.name}</div>);
+  let fileNames = props.files.map((f, i) => {
+    let name = f.name;
+    if (props.finished && props.finished.indexOf(i) != -1) {
+      name += " *";
+    }
+
+    return <div>{name}</div>;
+  });
   let errors = props.errors ? Object.values(props.errors) : [];
   let errDisp = errors.lenght > 0 ? "Errors" : "";
   let errArr = errors.map(e => <div>e</div>);
@@ -507,7 +513,8 @@ const DoclinksUpload = getDoclinksUpload(props => {
       <div>Files:</div>
       <div>{fileNames}</div>
       <div>{errDisp}</div>
-      <div>{errArr}</div>;
+      <div>{errArr}</div>
+      <div>{props.uploading ? "Wait" : ""}</div>
     </div>
   );
 });
@@ -516,22 +523,33 @@ class DoclinksUploadDialog extends React.Component {
   constructor(props) {
     super(props);
     this.uploadRef = React.createRef();
+    this.pickerRef = React.createRef();
   }
   render() {
+    let uploadButton = this.props.uploading ? (
+      <div>Wait...</div>
+    ) : (
+      <button
+        onClick={ev => {
+          let doctype = this.pickerRef.current.currentRef.current.adapterValue;
+          this.uploadRef.current.uploadFiles(doctype);
+        }}
+      >
+        Upload
+      </button>
+    );
+    let attachButton = this.props.uploading ? null : (
+      <button onClick={ev => this.uploadRef.current.attachFiles()}>
+        Attach
+      </button>
+    );
     return (
       <div>
+        <AppDocPicker container={this.props.container} ref={this.pickerRef} />
         <DoclinksUpload {...this.props} ref={this.uploadRef} />
         <div>
-          <button onClick={ev => this.uploadRef.current.attachFiles()}>
-            Attach
-          </button>
-          <button
-            onClick={ev =>
-              this.uploadRef.current.uploadFiles(this.props.doctype)
-            }
-          >
-            Upload
-          </button>
+          {attachButton}
+          {uploadButton}
         </div>
       </div>
     );
@@ -565,108 +583,114 @@ class App extends React.Component {
           relationship="poline"
           id="polinecont"
         />
+        <div className="flex">
+          <div className="flex-item">
+            <TestList
+              container="pocont"
+              columns={["ponum", "description", "status"]}
+              norows="20"
+              initdata="true"
+              listTemplate="porow"
+            />
+          </div>
+          <div className="flex-item">
+            <Section
+              container="pocont"
+              columns={[
+                "ponum",
+                "description",
+                "status",
+                "shipvia",
+                "orderdate"
+              ]}
+              metadata={{
+                SHIPVIA: {
+                  hasLookup: "true",
+                  listTemplate: "valuelist",
+                  filterTemplate: "valuelist"
+                }
+              }}
+            />
 
-        <div className="flex-item">
-          <TestList
-            container="pocont"
-            columns={["ponum", "description", "status"]}
-            norows="20"
-            initdata="true"
-            listTemplate="porow"
-          />
-        </div>
-        <div className="flex-item">
-          <Section
-            container="pocont"
-            columns={["ponum", "description", "status", "shipvia", "orderdate"]}
-            metadata={{
-              SHIPVIA: {
-                hasLookup: "true",
-                listTemplate: "valuelist",
-                filterTemplate: "valuelist"
-              }
-            }}
-          />
+            <DialogContext.Consumer>
+              {({ openWorkflow, openDialog }) => {
+                return (
+                  <>
+                    <button onClick={ev => openWorkflow("pocont", "POSTATUS")}>
+                      Open Workflow
+                    </button>
+                    <button
+                      onClick={ev =>
+                        openDialog({
+                          type: "fileupload",
+                          container: "pocont",
+                          doctype: "Attachments"
+                        })
+                      }
+                    >
+                      Upload Files
+                    </button>
+                    <button
+                      onClick={ev =>
+                        openDialog({
+                          type: "photoupload",
+                          container: "pocont",
+                          doctype: "Attachments"
+                        })
+                      }
+                    >
+                      Take Photo
+                    </button>
 
-          <AppDocPicker container="pocont" />
-          <DialogContext.Consumer>
-            {({ openWorkflow, openDialog }) => {
-              return (
-                <>
-                  <button onClick={ev => openWorkflow("pocont", "POSTATUS")}>
-                    Open Workflow
-                  </button>
-                  <button
-                    onClick={ev =>
-                      openDialog({
-                        type: "fileupload",
-                        container: "pocont",
-                        doctype: "Attachments"
-                      })
-                    }
-                  >
-                    Upload Files
-                  </button>
-                  <button
-                    onClick={ev =>
-                      openDialog({
-                        type: "photoupload",
-                        container: "pocont",
-                        doctype: "Attachments"
-                      })
-                    }
-                  >
-                    Take Photo
-                  </button>
-
-                  <button onClick={ev => save("pocont")}>Save</button>
-                </>
-              );
-            }}
-          </DialogContext.Consumer>
-        </div>
-        <div className="flex-item">
-          <QbeSection
-            container="pocont"
-            columns={["ponum", "description", "status", "shipvia"]}
-            qbePrepends={[
-              {
-                virtualName: "from_orderdate",
-                qbePrepend: ">=",
-                attributeName: "orderdate",
-                title: "Order Date From",
-                position: "4"
-              },
-              {
-                virtualName: "to_orderdate",
-                qbePrepend: "<=",
-                attributeName: "orderdate",
-                title: "Order Date To",
-                position: "5"
-              }
-            ]}
-            metadata={{
-              SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
-              STATUS: {
-                hasLookup: "true",
-                listTemplate: "qbevaluelist",
-                filterTemplate: "valuelist"
-              }
-            }}
-          />
-        </div>
-        <div className="flex-item">
-          <Section
-            container="polinecont"
-            columns={[
-              "polinenum",
-              "itemnum",
-              "orderqty",
-              "orderunit",
-              "gldebitacct"
-            ]}
-            metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
-          />
+                    <button onClick={ev => save("pocont")}>Save</button>
+                  </>
+                );
+              }}
+            </DialogContext.Consumer>
+          </div>
+          <div className="flex-item">
+            <QbeSection
+              container="pocont"
+              columns={["ponum", "description", "status", "shipvia"]}
+              qbePrepends={[
+                {
+                  virtualName: "from_orderdate",
+                  qbePrepend: ">=",
+                  attributeName: "orderdate",
+                  title: "Order Date From",
+                  position: "4"
+                },
+                {
+                  virtualName: "to_orderdate",
+                  qbePrepend: "<=",
+                  attributeName: "orderdate",
+                  title: "Order Date To",
+                  position: "5"
+                }
+              ]}
+              metadata={{
+                SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
+                STATUS: {
+                  hasLookup: "true",
+                  listTemplate: "qbevaluelist",
+                  filterTemplate: "valuelist"
+                }
+              }}
+            />
+          </div>
+          <div className="flex-item">
+            <Section
+              container="polinecont"
+              columns={[
+                "polinenum",
+                "itemnum",
+                "orderqty",
+                "orderunit",
+                "gldebitacct"
+              ]}
+              metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
+            />
+          </div>
         </div>
       </AppRoot>
     );
