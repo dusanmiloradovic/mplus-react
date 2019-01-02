@@ -564,7 +564,14 @@ class DoclinksUploadDialog extends React.Component {
 const PhotoUploadDialog = getPhotoUpload(props => (
   <div>
     {props.children}
-    <button onClick={props.photoUploadF}>Shoot</button>
+    <button
+      onClick={ev => {
+        console.log("shoot");
+        props.uploadF();
+      }}
+    >
+      Shoot
+    </button>
   </div>
 ));
 

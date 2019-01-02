@@ -1434,8 +1434,9 @@ export function getPhotoUpload(Wrapper) {
       this.uploadPhoto = this.uploadPhoto.bind(this);
     }
     uploadPhoto() {
-      let img64 = this.webcamRef.current.getScreenShot();
-      let arrayBuf = decode(img64);
+      let img64 = this.webcamRef.current.getScreenshot();
+      let raw_image_data = img64.replace(/^data\:image\/\w+\;base64\,/, "");
+      let arrayBuf = decode(raw_image_data);
       let fileName = "IMG-" + new Date().valueOf() + ".jpg";
       let f = new File([arrayBuf], fileName, { type: "image/jpeg" });
       let uploadMethod = this.props.uploadMethod
@@ -1450,11 +1451,13 @@ export function getPhotoUpload(Wrapper) {
     }
     render() {
       return (
-        <Wrapper photoUploafF={this.uploadPhoto}>
+        <Wrapper uploadF={this.uploadPhoto}>
           <WebCam
             ref={this.webcamRef}
             screenshotFormat="image/jpeg"
             audio={false}
+            width={400}
+            height={400}
           />
         </Wrapper>
       );
