@@ -13,7 +13,8 @@ import {
   getGLDialog,
   getWorkflowDialog,
   setExternalRootContext,
-  getComponentAdapter
+  getComponentAdapter,
+  getAppDocTypesPicker
 } from "./mplus-react.js";
 import React from "react";
 import { ContextPool } from "react-multiple-contexts";
@@ -334,6 +335,37 @@ const TestComponentAdapter = getComponentAdapter(props => {
   );
 });
 
+class PickerVals extends React.Component {
+  constructor(props) {
+    super(props);
+    this.changeValue = this.changeValue.bind(this);
+  }
+  changeValue(value) {
+    this.setState({ value: value });
+  }
+  getValue() {
+    return this.state.value || this.props.maxrows[0].data.DOCTYPE;
+  }
+  render() {
+    if (!this.props.maxrows) return null;
+    let options = this.props.maxrows.map(({ data }) => (
+      <option value={data.DOCTYPE}>{data.DOCTYPE}</option>
+    ));
+    return (
+      <select onChange={ev => this.changeValue(ev.target.value)}>
+        {options}
+      </select>
+    );
+  }
+  componentDidUpdate(prevProps, prevState) {
+    if (!prevProps.maxrows && this.props.maxrows) {
+      this.setState({ value: this.props.maxrows[0].DOCTYPE });
+    }
+  }
+}
+
+const AppDocPicker = getAppDocTypesPicker(PickerVals);
+
 class AppRoot extends React.Component {
   constructor(props) {
     super(props);
@@ -481,6 +513,7 @@ const App = props => (
           container="pocont"
           columns={["ponum", "status"]}
         />
+        <AppDocPicker container="pocont" />
         <DialogContext.Consumer>
           {({ openWorkflow }) => {
             return (

@@ -380,9 +380,17 @@ export function getComponentAdapter(Adapter) {
     constructor(props) {
       super(props);
       this.setMaxValue = this.setMaxValue.bind(this);
+      this.adapterRef = React.createRef();
     }
     initData() {
       this.mp.initData();
+    }
+    get adapterValue() {
+      return (
+        this.adapterRef.current &&
+        this.adapterRef.current.getValue &&
+        this.adapterRef.current.getValue()
+      );
     }
     putContainer(mboCont) {
       if (this.mp) {
@@ -410,9 +418,9 @@ export function getComponentAdapter(Adapter) {
             let maxrows = value.maxrows;
             let rowValue = maxrows ? maxrows[rownum] : {}; //for the sake of simplicity, by default return only one object
             if (this.props.norows && this.props.norows > 1) {
-              return <Adapter maxrows={maxrows} />;
+              return <Adapter maxrows={maxrows} ref={this.adapterRef} />;
             }
-            return <Adapter {...rowValue} />;
+            return <Adapter {...rowValue} ref={this.adapterRef} />;
           }}
         </Consumer>
       );
@@ -422,6 +430,51 @@ export function getComponentAdapter(Adapter) {
     }
     static get contextType() {
       return getRootContext();
+    }
+  };
+}
+
+export function getAppDocTypesPicker(Picker) {
+  //picker shouuld be the component, that has the state value. We will get the value by ref forwarding
+
+  let AppDocPicker = getComponentAdapter(Picker);
+  return class MPAppDoctypes extends React.Component {
+    constructor(props) {
+      super(props);
+      this.currentRef = React.createRef();
+      this.state = { appDocCont: null };
+    }
+    render() {
+      if (!this.state.appDocCont) return null;
+      return (
+        <>
+          <AppDocPicker
+            maxcontainer={this.state.appDocCont}
+            columns={["doctype"]}
+            norows={100}
+            ref={this.currentRef}
+          />
+          <button
+            onClick={ev => {
+              console.log(this.currentRef.current.adapterValue);
+            }}
+          >
+            Button
+          </button>
+        </>
+      );
+    }
+    componentDidMount() {
+      if (this.state.appDocType) return;
+      kont[this.props.container].then(mboCont => {
+        let app = mboCont.getApp();
+        let appDocCont = new maximoplus.basecontrols.MboContainer("appdoctype");
+        appDocCont.setQbe("app", app);
+        this.setState({ appDocCont: appDocCont });
+      });
+    }
+    get value() {
+      return this.currentRef.current.state.value;
     }
   };
 }
