@@ -53,7 +53,7 @@ const dialogs = {
       doctype={dialog.doctype}
     />
   ),
-  photoUpload: dialog => (
+  photoupload: dialog => (
     <PhotoUploadDialog container={dialog.container} doctype={dialog.doctype} />
   ),
   doclinksview: dialog => <DoclinksViewer container={dialog.container} />
