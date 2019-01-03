@@ -1242,7 +1242,6 @@ export function getGLDialog(drawDialog, WrappedList) {
 
 export function getWorkflowDialog(
   WrappedSection,
-  WrappedActionButton,
   drawDialog
 ) {
   return class MPWorkflowDialog extends MPlusComponent {
@@ -1276,12 +1275,6 @@ export function getWorkflowDialog(
             if (!section || !section.fields || !actions) {
               return <div />;
             }
-
-            //            let actionButtons = Object.keys(actions).map(key => (
-            //              <WrappedActionButton onClick={actions[key].actionFunction}>
-            //                {actions[key].label}
-            //              </WrappedActionButton>
-            //            ));
             let metadata = {
               ACTIONID: {
                 picker: "true",
