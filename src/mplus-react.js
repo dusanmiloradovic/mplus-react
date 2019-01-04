@@ -521,13 +521,6 @@ export function getAppDocTypesPicker(Picker) {
             norows={100}
             ref={this.currentRef}
           />
-          <button
-            onClick={ev => {
-              console.log(this.currentRef.current.adapterValue);
-            }}
-          >
-            Button
-          </button>
         </>
       );
     }
