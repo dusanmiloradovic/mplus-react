@@ -739,7 +739,9 @@ export function getPickerList(drawPickerOption, drawPicker) {
             let drs = [];
             if (maxrows) {
               drs = maxrows.map((object, i) => {
-                let selected = object.picked || object.selected;
+                let selected =
+                  object.picked ||
+                  (typeof object.picked === "undefined" && object.selected);
                 let optionKey =
                   object.data[this.props.pickerkeycol.toUpperCase()];
                 let optionVal = object.data[this.props.pickercol.toUpperCase()];
@@ -1240,10 +1242,7 @@ export function getGLDialog(drawDialog, WrappedList) {
   };
 }
 
-export function getWorkflowDialog(
-  WrappedSection,
-  drawDialog
-) {
+export function getWorkflowDialog(WrappedSection, drawDialog) {
   return class MPWorkflowDialog extends MPlusComponent {
     constructor(props) {
       super(props);
