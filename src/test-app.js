@@ -560,19 +560,24 @@ class DoclinksUploadDialog extends React.Component {
   }
 }
 
-const PhotoUploadDialog = getPhotoUpload(props => (
-  <div>
-    {props.children}
-    <button
-      onClick={ev => {
-        console.log("shoot");
-        props.uploadF();
-      }}
-    >
-      Shoot
-    </button>
-  </div>
-));
+const PhotoUpload = getPhotoUpload(props => <div>{props.children}</div>);
+
+class PhotoUploadDialog extends React.Component {
+  constructor(props) {
+    super(props);
+    this.ref = React.createRef();
+  }
+  render() {
+    return (
+      <div>
+        <PhotoUpload ref={this.ref} />
+        <button onClick={this.ref.current.shoot}>Camera</button>
+        <button onClick={this.ref.current.uploadPhoto}>Upload</button>
+        <button onClick={this.ref.current.removePhoto}>Shoot again</button>
+      </div>
+    );
+  }
+}
 
 class App extends React.Component {
   constructor(props) {

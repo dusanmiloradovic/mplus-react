@@ -1416,7 +1416,6 @@ export function getPhotoUpload(Wrapper) {
     constructor(props) {
       super(props);
       this.webcamRef = React.createRef();
-      this.shoot = this.shoot.bind(this);
       this.uploadPhoto = this.uploadPhoto.bind(this);
       this.shoot = this.shoot.bind(this);
       this.removePhoto = this.removePhoto.bind(this);
