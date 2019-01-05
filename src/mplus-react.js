@@ -1416,34 +1416,65 @@ export function getPhotoUpload(Wrapper) {
     constructor(props) {
       super(props);
       this.webcamRef = React.createRef();
+      this.shoot = this.shoot.bind(this);
       this.uploadPhoto = this.uploadPhoto.bind(this);
+      this.shoot = this.shoot.bind(this);
+      this.removePhoto = this.removePhoto.bind(this);
+      this.state = { imgData: null, file: null, error: null, uploading: false };
+      //two separate functions, so the user can preview. You can combine them into one if you need
     }
-    uploadPhoto() {
+    shoot() {
       let img64 = this.webcamRef.current.getScreenshot();
       let raw_image_data = img64.replace(/^data\:image\/\w+\;base64\,/, "");
       let arrayBuf = decode(raw_image_data);
       let fileName = "IMG-" + new Date().valueOf() + ".jpg";
       let f = new File([arrayBuf], fileName, { type: "image/jpeg" });
+      this.setState({ imgData: img64, file: f, error: null });
+    }
+    removePhoto() {
+      this.setSate({ imgData: null, file: null, eror: null, uploading: false });
+    }
+    uploadPhoto(doctype) {
+      if (!this.state.file) {
+        this.setState({ error: "No image ready for upload" });
+        return;
+      }
       let uploadMethod = this.props.uploadMethod
         ? this.props.uploadMethod
         : "doclinks";
-      return _uploadFile(
+      _uploadFile(
         this.props.container,
         uploadMethod,
-        f,
-        this.props.doctype
-      );
+        this.state.file,
+        doctype || this.props.doctype
+      )
+        .then(_ => this.removePhoto())
+        .catch(err => this.setState({ uploading: false, error: err }));
     }
     render() {
+      let webcamW = this.props.width ? this.props.width : 400;
+      let webcamH = this.props.height ? this.props.height : 400;
+      let displayEl = this.state.imgData ? (
+        <ing
+          src={this.state.imgData}
+          style={{ width: webcamW, height: webcamH }}
+        />
+      ) : (
+        <WebCam
+          ref={this.webcamRef}
+          screenshotFormat="image/jpeg"
+          audio={false}
+          width={webcamW}
+          height={webcamH}
+        />
+      );
+      //these two properties sent to wrapper will be used to codnitionally display buttons
       return (
-        <Wrapper uploadF={this.uploadPhoto}>
-          <WebCam
-            ref={this.webcamRef}
-            screenshotFormat="image/jpeg"
-            audio={false}
-            width={400}
-            height={400}
-          />
+        <Wrapper
+          readyForUpload={!this.state.uploading && this.state.file}
+          canTakePhoto={!this.state.file}
+        >
+          {displayEl}
         </Wrapper>
       );
     }
