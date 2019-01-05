@@ -1431,7 +1431,12 @@ export function getPhotoUpload(Wrapper) {
       this.setState({ imgData: img64, file: f, error: null });
     }
     removePhoto() {
-      this.setSate({ imgData: null, file: null, eror: null, uploading: false });
+      this.setState({
+        imgData: null,
+        file: null,
+        eror: null,
+        uploading: false
+      });
     }
     uploadPhoto(doctype) {
       if (!this.state.file) {
@@ -1454,10 +1459,7 @@ export function getPhotoUpload(Wrapper) {
       let webcamW = this.props.width ? this.props.width : 400;
       let webcamH = this.props.height ? this.props.height : 400;
       let displayEl = this.state.imgData ? (
-        <ing
-          src={this.state.imgData}
-          style={{ width: webcamW, height: webcamH }}
-        />
+        <img src={this.state.imgData} style={{ width: webcamW }} />
       ) : (
         <WebCam
           ref={this.webcamRef}
