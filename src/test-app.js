@@ -571,9 +571,11 @@ class PhotoUploadDialog extends React.Component {
     return (
       <div>
         <PhotoUpload ref={this.ref} />
-        <button onClick={this.ref.current.shoot}>Camera</button>
-        <button onClick={this.ref.current.uploadPhoto}>Upload</button>
-        <button onClick={this.ref.current.removePhoto}>Shoot again</button>
+        <button onClick={ev => this.ref.current.shoot()}>Camera</button>
+        <button onClick={ev => this.ref.current.uploadPhoto()}>Upload</button>
+        <button onClick={ev => this.ref.current.removePhoto()}>
+          Shoot again
+        </button>
       </div>
     );
   }
