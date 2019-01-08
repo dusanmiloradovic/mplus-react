@@ -21,6 +21,7 @@ export default {
       include: "node_modules/**"
     }),
     eslint({
+      extends: ["eslint:recommended", "google"],
       envs: ["browser", "mocha"],
       useEslintrc: false,
       parser: "babel-eslint",
@@ -32,6 +33,17 @@ export default {
           modules: true,
           experimentalObjectRestSpread: true
         }
+      },
+      rules: {
+        // enable additional rules
+        quotes: ["error", "double"],
+        semi: ["error", "always"],
+
+        // override default options for rules from base configurations
+        "no-cond-assign": ["error", "always"],
+
+        // disable rules from base configurations
+        "no-console": "off"
       }
     }),
     babel({
