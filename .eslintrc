@@ -1,5 +1,6 @@
 {
-  "env": { "browser": "true","es6":"true" },
+  "env": { "browser": "true","es6":"true"35
+  },
   "extends": [
     "eslint:recommended",
     "plugin:react/recommended",

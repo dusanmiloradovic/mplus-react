@@ -3,6 +3,7 @@ import flyd from "flyd";
 import md5 from "js-md5";
 import { decode } from "base64-arraybuffer";
 import WebCam from "react-webcam";
+import PropTypes from "prop-types";
 
 const kont = {};
 
@@ -212,10 +213,13 @@ export const closeDialog = rootContext => {
 
 /** The App Container, main application container for the app*/
 export class AppContainer extends React.Component {
+  /** Constructor, init the container from the core lib
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
     if (kont[this.props.id] && kont[this.props.id].resolved) return;
-    let mp = new maximoplus.basecontrols.AppContainer(
+    const mp = new maximoplus.basecontrols.AppContainer(
       this.props.mboname,
       this.props.appname
     );
@@ -229,39 +233,60 @@ export class AppContainer extends React.Component {
     this.mboCommand = this.mboCommand.bind(this);
     this.mboSetCommand = this.mboSetCommand.bind(this);
   }
+  /** getter for the MaximoPlus core object */
   get mp() {
     return this.state.mp;
   }
-
+  /**
+   * Main render function
+   * @return {React.ReactElement}
+   */
   render() {
     return <div mboname={this.props.mboname} appname={this.props.appname} />;
   }
-
+  /** Dispose the mp container */
   dispose() {
-    //we will explicitely delete the cotnainer, and that will happen only for dynamic pages (dialogs)
+    // we will explicitely delete the cotnainer, and that will happen only for dynamic pages (dialogs)
     this.mp.dispose();
     delete kont[this.props.id];
   }
-
+  /** Save all the pending changes in container */
   save() {
     this.state.mp.save();
   }
-
+  /** Rollback all the pending changes in container */
   rollback() {
     this.mp.rollback();
   }
-
+  /** Execute the mbocommand on the container
+   * @param {string} command
+   * @return {Promise}
+   */
   mboCommand(command) {
     return this.mp.mboCommand(command);
   }
-
+  /** Execute the mbo set command on the container
+   * @param {string} command
+   * @return {Promise}
+   */
   mboSetCommand(command) {
     return this.mp.mboSetCommand(command);
   }
 }
 
+AppContainer.propTypes = {
+  id: PropTypes.string,
+  mboname: PropTypes.string,
+  appname: PropTypes.string,
+  offlineenabled: PropTypes.bool
+};
+
 const getDepContainer = containerConstF => {
-  return class extends React.Component {
+  /** helper class for dep contaniers */
+  return class DepContainer extends React.Component {
+    /** Constructor, intializs the template
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       if (kont[this.props.id] && kont[this.props.id].resolved) return;
@@ -269,10 +294,15 @@ const getDepContainer = containerConstF => {
       this.mboCommand = this.mboCommand.bind(this);
       this.mboSetCommand = this.mboSetCommand.bind(this);
     }
-
+    /** getter function for mp object
+     * @return {object}
+     */
     get mp() {
       return this.state.mp;
     }
+    /** React lifecycle method use dto resolve the containers
+     * @return {Void}
+     */
 
     componentDidMount() {
       if (kont[this.props.id] && kont[this.props.id].resolved) {
@@ -287,21 +317,28 @@ const getDepContainer = containerConstF => {
       });
     }
 
+    /** Dumb render */
     render() {
       return null;
     }
-
+    /** Dispose related mp */
     dispose() {
       if (this.mp) {
         this.mp.dispose();
       }
       delete kont[this.props.id];
     }
-
+    /** Execute the mbocommand on the container
+     * @param {string} command
+     * @return {Promise}
+     */
     mboCommand(command) {
       return this.mp.mboCommand(command);
     }
-
+    /** Execute the mbo set command on the container
+     * @param {string} command
+     * @return {Promise}
+     */
     mboSetCommand(command) {
       return this.mp.mbosetCommand(command);
     }
@@ -316,32 +353,37 @@ export const SingleMboContainer = getDepContainer(
   (mboCont, props) => new maximoplus.basecontrols.SingleMboContainer(mboCont)
 );
 
+/** Basic React component class to be extended by all the visual components */
 export class MPlusComponent extends React.Component {
   //the following tho methods should be overriden in the concrete implementations with
   //MPlusComponent.prototype.pushDialog = function (dialog)...
-
+  /** Constructor, init the container from the core lib
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
     this.oid = hash(this.props);
     this.removeContext = this.removeContext.bind(this);
   }
-
+  /** getter for the MaximoPlus core object */
   get mp() {
     return innerContexts[this.oid] && innerContexts[this.oid].mp;
   }
+  /** getter for the MaximoPlus wraooer object */
   get wrapper() {
     return innerContexts[this.oid] && innerContexts[this.oid].wrapper;
   }
+  /** Dynamic context removal */
   removeContext() {
     //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
     this.context.removeInnerContext(this.oid);
     delete innerContexts[this.oid];
   }
-
+  /* getter for the context */
   get Context() {
     return innerContexts[this.oid] && innerContexts[this.oid].context;
   }
-
+  /** React lifecycle */
   componentDidMount() {
     /*
 The components that sub-class this component may have the property container or maxcontainer (but not both).
