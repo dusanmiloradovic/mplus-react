@@ -1,0 +1,36 @@
+{
+  "env": { "browser": "true","es6":"true" },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "google",
+    "prettier"
+  ],
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true,
+      "modules": true,
+      "experimentalObjectRestSpread": true
+    }
+  },
+  "globals": {
+    "maximoplus": true,
+    "process": true
+  },
+  "rules": {
+    // enable additional rules
+    "quotes": ["error", "double"],
+    "semi": ["error", "always"],
+    "linebreak-style": "off",
+    "arrow-parens": "off",
+    "object-curly-spacing": "off",
+    // override default options for rules from base configurations
+    "no-cond-assign": ["error", "always"],
+    "comma-dangle": "off",
+    // disable rules from base configurations
+    "no-console": "off"
+  }
+}
