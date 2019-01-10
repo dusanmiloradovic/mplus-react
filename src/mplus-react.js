@@ -1023,7 +1023,8 @@ If we call the maximo change handler for every field, Maximo may change the valu
                         enabled: !f.readonly,
                         required: f.required,
                         norows: f.metadata.pickerrows,
-                        type: "picker",
+                        type: f.metadata.maxType,
+                        kind: "picker",
                         key: fKey
                       };
                     }
@@ -1040,6 +1041,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                         enabled={!f.readonly}
                         required={f.required}
                         norows={f.metadata.pickerrows}
+                        type={f.metadata.maxType}
                         key={fKey}
                       />
                     );
@@ -1078,7 +1080,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                     }
                   }
                   if (raw) {
-                    attrs.type = "field";
+                    attrs.kind = "field";
                     return attrs;
                   }
                   return <WrappedTextField {...attrs} />;
