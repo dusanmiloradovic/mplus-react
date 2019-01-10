@@ -1,27 +1,27 @@
 import React from "react";
 import flyd from "flyd";
-import { ContextPool } from "react-multiple-contexts";
 import md5 from "js-md5";
 import { decode } from "base64-arraybuffer";
 import WebCam from "react-webcam";
+import PropTypes from "prop-types";
 
-let kont = {};
+const kont = {};
 
 export const shallowDiffers = (a, b) => {
   if (!a && b) return true;
-  for (let i in a) if (!(i in b)) return true;
-  for (let i in b) if (a[i] !== b[i]) return true;
+  for (const i in a) if (!(i in b)) return true;
+  for (const i in b) if (a[i] !== b[i]) return true;
   return false;
 };
 
 const hash = value => {
-  let _value = [];
-  for (let k in value) {
+  const _value = [];
+  for (const k in value) {
     if (typeof value[k] == "undefined" || typeof value[k] == "function")
       continue;
     if (typeof value[k] == "object" && value[k].getId) {
       _value.push(k);
-      _value.push(value[k].getId()); //MaximoPlus object
+      _value.push(value[k].getId()); // MaximoPlus object
     } else {
       _value.push(k);
       _value.push(value[k]);
@@ -31,23 +31,23 @@ const hash = value => {
   return md5(JSON.stringify(_value));
 };
 
-function difference(a1, a2) {
-  var result = [];
-  for (var i = 0; i < a1.length; i++) {
+const difference = (a1, a2) => {
+  const result = [];
+  for (let i = 0; i < a1.length; i++) {
     if (a2.indexOf(a1[i]) === -1) {
       result.push(a1[i]);
     }
   }
   return result;
-}
+};
 
-let isCordovaApp = !!window.cordova;
+const isCordovaApp = !!window.cordova;
 
-let dialogRefInnerIds = [];
-//when the dialog opens it will open the inner contexts for the MaximoPlus controls inside the dialog. Once it
-//closes we need to clean up that. We will simply see the difference at the time of closing and remove these contexts.
-//We need this to be an array, because we may open the dialog from another dialog , like the stack, we need to record the contexts  at the time of opening the dialog
-let externalRootContext = {};
+const dialogRefInnerIds = [];
+// when the dialog opens it will open the inner contexts for the MaximoPlus controls inside the dialog. Once it
+// closes we need to clean up that. We will simply see the difference at the time of closing and remove these contexts.
+// We need this to be an array, because we may open the dialog from another dialog , like the stack, we need to record the contexts  at the time of opening the dialog
+const externalRootContext = {};
 export const setExternalRootContext = rootContext => {
   externalRootContext.ctx = rootContext;
 };
@@ -69,8 +69,9 @@ const getDeferredContainer = contId => {
   if (kont[contId]) {
     return kont[contId];
   }
-  let _resolve, _reject;
-  let prom = new Promise(function(resolve, reject) {
+  let _resolve = null;
+  let _reject = null;
+  const prom = new Promise(function(resolve, reject) {
     _resolve = resolve;
     _reject = reject;
   });
@@ -82,13 +83,18 @@ const getDeferredContainer = contId => {
 
 export const animating = flyd.stream(false);
 
-let rootComponent = null;
-
 const innerContexts = {};
-//to simplify the things, we will calculate the id based on the props of the components, and then create the inner context. This will separate completely Maximoplus components from react components
+// to simplify the things, we will calculate the id based on the props of the components, and then create the inner context. This will separate completely Maximoplus components from react components
 
+/** Wrapper class for the maximoplus core library. Instead of directly calling updates from MaximoPlus
+ * the wrapper calls the updates. This is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
+ */
 class MaximoPlusWrapper {
-  //this is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
+  /** Constructor, add the actual
+   * @param {object} rootContext
+   * @param {string} contextId
+   * @param {object} mp
+   */
   constructor(rootContext, contextId, mp) {
     this.contextId = contextId;
     this.mp = mp;
@@ -96,19 +102,24 @@ class MaximoPlusWrapper {
     mp.addWrappedComponent(this);
     this.setState("mp", mp);
   }
-
+  /** Method to be called from the core lib
+   * @param {string} property
+   * @return {object}
+   */
   getInternalState(property) {
     return this.state && this.state[property];
   }
-
+  /** Sets the internal state
+   * @param {function} stateF
+   */
   setInternalState(stateF) {
-    let innerStateF = state => {
-      //cam\t ise directly stateF, in case of the dialogs, we need to move the dialog to the upper leel
-      let newState = stateF(state);
-      let mfs = newState && newState["maxfields"];
+    const innerStateF = state => {
+      // can't ise directly stateF, in case of the dialogs, we need to move the dialog to the upper leel
+      const newState = stateF(state);
+      const mfs = newState && newState["maxfields"];
       if (mfs) {
         for (let j = 0; j < mfs.length; j++) {
-          let newDialogs = mfs[j].dialogs;
+          const newDialogs = mfs[j].dialogs;
           if (!newDialogs) {
             continue;
           }
@@ -127,25 +138,30 @@ class MaximoPlusWrapper {
           }
         }
       }
-      //this sets the Context, not the state, we need to return the full state, not just the chenge
+      // this sets the Context, not the state, we need to return the full state, not just the chenge
       return Object.assign({}, state, newState);
     };
     if (this.rootContext.getInnerState(this.contextId)) {
       this.rootContext.setInnerState(this.contextId, innerStateF);
     }
   }
-
+  /** Method to close the dialog */
   closeDialog() {
-    //this will be called only from the workflow dialog
-    //we will ignore it and depend on the finished value
+    // this will be called only from the workflow dialog
+    // we will ignore it and depend on the finished value
     closeDialog(this.rootContext);
   }
+  /** State getter */
   get state() {
     return this.rootContext.getInnerState(this.contextId);
   }
+  /** State setter
+   * @param {string} property
+   * @param {object} state
+   */
   setState(property, state) {
     this.rootContext.setInnerState(this.contextId, _state => {
-      let ret = _state ? { ..._state } : {};
+      const ret = _state ? { ..._state } : {};
       ret[property] = state;
       return ret;
     });
@@ -157,7 +173,7 @@ I will use react context to pass the data from Maximo to the components. The pro
 We will have only one context and context provider for the whole application, the consumers will get the data from the context based on their id.
 */
 
-//Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context. The method from opeing and closing the dialog will be in the dialogcontext, and it will call this functions
+// Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context. The method from opeing and closing the dialog will be in the dialogcontext, and it will call this functions
 export const openDialog = (rootContext, dialog) => {
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
@@ -178,13 +194,13 @@ export const closeDialog = rootContext => {
   if (dialogRefInnerIds.length == 0) {
     return;
   }
-  let dff = difference(Object.keys(innerContexts), dialogRefInnerIds.pop());
+  const dff = difference(Object.keys(innerContexts), dialogRefInnerIds.pop());
 
   rootContext.setInnerState("dialogs", dialogs => {
     if (dialogs.length == 0) return [];
-    let newDialogs = [...dialogs];
+    const newDialogs = [...dialogs];
     newDialogs.pop();
-    for (let j of dff) {
+    for (const j of dff) {
       if (innerContexts[j].mp && innerContexts[j].mp.dispose) {
         innerContexts[j].mp.dispose();
       }
@@ -195,11 +211,15 @@ export const closeDialog = rootContext => {
   });
 };
 
+/** The App Container, main application container for the app*/
 export class AppContainer extends React.Component {
+  /** Constructor, init the container from the core lib
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
     if (kont[this.props.id] && kont[this.props.id].resolved) return;
-    let mp = new maximoplus.basecontrols.AppContainer(
+    const mp = new maximoplus.basecontrols.AppContainer(
       this.props.mboname,
       this.props.appname
     );
@@ -213,39 +233,60 @@ export class AppContainer extends React.Component {
     this.mboCommand = this.mboCommand.bind(this);
     this.mboSetCommand = this.mboSetCommand.bind(this);
   }
+  /** getter for the MaximoPlus core object */
   get mp() {
     return this.state.mp;
   }
-
+  /**
+   * Main render function
+   * @return {React.ReactElement}
+   */
   render() {
     return <div mboname={this.props.mboname} appname={this.props.appname} />;
   }
-
+  /** Dispose the mp container */
   dispose() {
-    //we will explicitely delete the cotnainer, and that will happen only for dynamic pages (dialogs)
+    // we will explicitely delete the cotnainer, and that will happen only for dynamic pages (dialogs)
     this.mp.dispose();
     delete kont[this.props.id];
   }
-
+  /** Save all the pending changes in container */
   save() {
     this.state.mp.save();
   }
-
+  /** Rollback all the pending changes in container */
   rollback() {
     this.mp.rollback();
   }
-
+  /** Execute the mbocommand on the container
+   * @param {string} command
+   * @return {Promise}
+   */
   mboCommand(command) {
     return this.mp.mboCommand(command);
   }
-
+  /** Execute the mbo set command on the container
+   * @param {string} command
+   * @return {Promise}
+   */
   mboSetCommand(command) {
     return this.mp.mboSetCommand(command);
   }
 }
 
+AppContainer.propTypes = {
+  id: PropTypes.string,
+  mboname: PropTypes.string,
+  appname: PropTypes.string,
+  offlineenabled: PropTypes.bool
+};
+
 const getDepContainer = containerConstF => {
-  return class extends React.Component {
+  /** helper class for dep contaniers */
+  return class DepContainer extends React.Component {
+    /** Constructor, intializs the template
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       if (kont[this.props.id] && kont[this.props.id].resolved) return;
@@ -253,10 +294,15 @@ const getDepContainer = containerConstF => {
       this.mboCommand = this.mboCommand.bind(this);
       this.mboSetCommand = this.mboSetCommand.bind(this);
     }
-
+    /** getter function for mp object
+     * @return {object}
+     */
     get mp() {
       return this.state.mp;
     }
+    /** React lifecycle method use dto resolve the containers
+     * @return {Void}
+     */
 
     componentDidMount() {
       if (kont[this.props.id] && kont[this.props.id].resolved) {
@@ -271,21 +317,28 @@ const getDepContainer = containerConstF => {
       });
     }
 
+    /** Dumb render */
     render() {
       return null;
     }
-
+    /** Dispose related mp */
     dispose() {
       if (this.mp) {
         this.mp.dispose();
       }
       delete kont[this.props.id];
     }
-
+    /** Execute the mbocommand on the container
+     * @param {string} command
+     * @return {Promise}
+     */
     mboCommand(command) {
       return this.mp.mboCommand(command);
     }
-
+    /** Execute the mbo set command on the container
+     * @param {string} command
+     * @return {Promise}
+     */
     mboSetCommand(command) {
       return this.mp.mbosetCommand(command);
     }
@@ -300,32 +353,37 @@ export const SingleMboContainer = getDepContainer(
   (mboCont, props) => new maximoplus.basecontrols.SingleMboContainer(mboCont)
 );
 
+/** Basic React component class to be extended by all the visual components */
 export class MPlusComponent extends React.Component {
   //the following tho methods should be overriden in the concrete implementations with
   //MPlusComponent.prototype.pushDialog = function (dialog)...
-
+  /** Constructor, init the container from the core lib
+   * @param {object} props
+   */
   constructor(props) {
     super(props);
     this.oid = hash(this.props);
     this.removeContext = this.removeContext.bind(this);
   }
-
+  /** getter for the MaximoPlus core object */
   get mp() {
     return innerContexts[this.oid] && innerContexts[this.oid].mp;
   }
+  /** getter for the MaximoPlus wraooer object */
   get wrapper() {
     return innerContexts[this.oid] && innerContexts[this.oid].wrapper;
   }
+  /** Dynamic context removal */
   removeContext() {
     //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
     this.context.removeInnerContext(this.oid);
     delete innerContexts[this.oid];
   }
-
+  /* getter for the context */
   get Context() {
     return innerContexts[this.oid] && innerContexts[this.oid].context;
   }
-
+  /** React lifecycle */
   componentDidMount() {
     /*
 The components that sub-class this component may have the property container or maxcontainer (but not both).
