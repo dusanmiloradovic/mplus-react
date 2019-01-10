@@ -18,7 +18,8 @@
   },
   "globals": {
     "maximoplus": true,
-    "process": true
+    "process": true,
+    "cordova":true
   },
   "rules": {
     // enable additional rules

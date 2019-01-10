@@ -455,7 +455,10 @@ MPlusComponent.propTypes = {
   maxcontainer: PropTypes.object
 };
 
-/** HOC for component adapter */
+/** HOC for component adapter
+ * @param {object} Adapter
+ * @return {MPlusComponent}
+ */
 export function getComponentAdapter(Adapter) {
   /** Adapter for integrating 3rd party libraries and controls */
   class MPAdapter extends MPlusComponent {
@@ -482,7 +485,7 @@ export function getComponentAdapter(Adapter) {
       );
     }
     /** Initialize the underlying MaximoPlus component
-     * @props {object} mboCont
+     * @param {object} mboCont
      */
     putContainer(mboCont) {
       if (this.mp) {
@@ -504,14 +507,14 @@ export function getComponentAdapter(Adapter) {
      */
     render() {
       if (!this.Context) return null;
-      let Consumer = this.Context.Consumer;
+      const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
             if (!value) return null;
-            let rownum = value.currow;
-            let maxrows = value.maxrows;
-            let rowValue = maxrows ? maxrows[rownum] : {}; //for the sake of simplicity, by default return only one object
+            const rownum = value.currow;
+            const maxrows = value.maxrows;
+            const rowValue = maxrows ? maxrows[rownum] : {}; // for the sake of simplicity, by default return only one object
             if (this.props.norows && this.props.norows > 1) {
               return <Adapter maxrows={maxrows} ref={this.adapterRef} />;
             }
@@ -539,14 +542,23 @@ export function getComponentAdapter(Adapter) {
   return MPAdapter;
 }
 
+/** HOC to get the list viewer
+ * @param {object} ListComp - a list component
+ * @return {React.Component}
+ */
 export function getDoclinksViewer(ListComp) {
-  return class DoclinksViewer extends React.Component {
+  /** Doclinks viewer */
+  class DoclinksViewer extends React.Component {
+    /** Constructor, bind the functions
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       this.currentRef = React.createRef();
       this.openDocument = this.openDocument.bind(this);
       this.state = { doclinksCont: null };
     }
+    /** opens a document in browser or device */
     openDocument() {
       if (isCordovaApp && cordova.InAppBrowser) {
         cordova.InAppBrowser.open(
@@ -564,6 +576,7 @@ export function getDoclinksViewer(ListComp) {
         "_blank"
       );
     }
+    /** React lifecycle method to init the contaniers */
     componentDidMount() {
       if (this.state.doclinksCont) {
         return;
@@ -578,6 +591,9 @@ export function getDoclinksViewer(ListComp) {
         });
       });
     }
+    /** React render method
+     * @return {React.Element}
+     */
     render() {
       if (!this.state.doclinksCont) return null;
       return (
@@ -596,19 +612,34 @@ export function getDoclinksViewer(ListComp) {
         />
       );
     }
+  }
+  DoclinksViewer.propTypes = {
+    container: PropTypes.string
   };
+  return DoclinksViewer;
 }
 
+/** HOC to get the Picker
+* @param {object} Picker
+ * @return {MPlusComponent}
+ */
 export function getAppDocTypesPicker(Picker) {
-  //picker shouuld be the component, that has the state value. We will get the value by ref forwarding
+  // picker shouuld be the component, that has the state value. We will get the value by ref forwarding
 
-  let AppDocPicker = getComponentAdapter(Picker);
-  return class MPAppDoctypes extends React.Component {
+  const AppDocPicker = getComponentAdapter(Picker);
+  /** AppDocTypes picker */
+  class MPAppDoctypes extends React.Component {
+    /** Constructor, init the ref
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       this.currentRef = React.createRef();
       this.state = { appDocCont: null };
     }
+    /** React render picker
+     * @return {React.Element}
+     */
     render() {
       if (!this.state.appDocCont) return null;
       return (
@@ -622,19 +653,25 @@ export function getAppDocTypesPicker(Picker) {
         </>
       );
     }
+    /** React lifecycle method, used to init the containers */
     componentDidMount() {
       if (this.state.appDocType) return;
       kont[this.props.container].then(mboCont => {
-        let app = mboCont.getApp();
-        let appDocCont = new maximoplus.basecontrols.MboContainer("appdoctype");
+        const app = mboCont.getApp();
+        const appDocCont = new maximoplus.basecontrols.MboContainer("appdoctype");
         appDocCont.setQbe("app", app);
         this.setState({ appDocCont: appDocCont });
       });
     }
+    /** value getter*/
     get value() {
       return this.currentRef.current.state.value;
     }
+  }
+  MPAppDoctypes.propTypes = {
+    container: PropTypes.sring
   };
+  return MPAppDoctypes;
 }
 
 export function getList(getListTemplate, drawFilterButton, drawList, raw) {
