@@ -620,7 +620,7 @@ export function getDoclinksViewer(ListComp) {
 }
 
 /** HOC to get the Picker
-* @param {object} Picker
+ * @param {object} Picker
  * @return {MPlusComponent}
  */
 export function getAppDocTypesPicker(Picker) {
@@ -658,7 +658,9 @@ export function getAppDocTypesPicker(Picker) {
       if (this.state.appDocType) return;
       kont[this.props.container].then(mboCont => {
         const app = mboCont.getApp();
-        const appDocCont = new maximoplus.basecontrols.MboContainer("appdoctype");
+        const appDocCont = new maximoplus.basecontrols.MboContainer(
+          "appdoctype"
+        );
         appDocCont.setQbe("app", app);
         this.setState({ appDocCont: appDocCont });
       });
@@ -674,10 +676,21 @@ export function getAppDocTypesPicker(Picker) {
   return MPAppDoctypes;
 }
 
+/** HOC to retunr the List(Grid) component
+ * @param {function} getListTemplate - function that retuns the JSX template of a list item
+ * @param {function} drawFilterButton - function that draws a filter for list
+ * @param {function} drawList - function that draws a List (top level)
+ * @param {boolean} raw - if true, doesn't render the raws, implementing component does it. Some libraries require this
+ * @return {MPlusComponent}
+ */
 export function getList(getListTemplate, drawFilterButton, drawList, raw) {
-  //sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
+  // sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
 
-  return class MPList extends MPlusComponent {
+  /** List component*/
+  class MPList extends MPlusComponent {
+    /** Constructor, init the container from the core lib
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       this.fetchMore = this.fetchMore.bind(this);
@@ -694,6 +707,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
 
       this.state = { dataSetInitialized: true };
     }
+    /** init the component data*/
     initData() {
       this.mp.initData();
     }
@@ -702,18 +716,21 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     //      super.componentWillMount();
 
     //    }
+    /** Initializes underlying core component
+     * @param {object} mboCont
+     */
     putContainer(mboCont) {
       if (this.mp) {
         return;
       }
 
-      let mp = new maximoplus.re.Grid(
+      const mp = new maximoplus.re.Grid(
         mboCont,
         this.props.columns,
         this.props.norows
       );
 
-      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
       if (this.props.showWaiting) {
@@ -730,75 +747,66 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         mp.initData();
       }
     }
-
+    /** When function is called, the wait will be displayed locally*/
     enableLocalWaitSpinner() {
-      //useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
+      // useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
 
       this.mp.prepareCall = _ => {
         this.wrapper.setState("waiting", true);
         this.wrapper.setState("startWait", Date.now());
-        //        this.setState({ waiting: true });
-        //        if (this.paginator && this.paginator.numrows != this.paginator.torow) {
-        //          this.setState({ waiting: true, startWait: Date.now() });
-        //        }
       };
       this.mp.finishCall = _ => {
         this.wrapper.setState("waiting", false);
-        //      this.setState({ waiting: false });
       };
     }
-
+    /**
+     * Fetch more records into list, used mostly for infinite scroll
+     * @param {number} numRows
+     */
     fetchMore(numRows) {
       this.mp.fetchMore(numRows);
     }
-
+    /** If paging is use instead of infinite scroll, go to next page */
     pageNext() {
       this.mp.pageNext();
     }
-
+    /** If paging is use instead of infinite scroll, go to previous page */
     pagePrev() {
       this.mp.pagePrev();
     }
 
-    //    componentDidUpdate(prevProps, prevState) {
-    //      Object.entries(this.props).forEach(
-    //        ([key, val]) =>
-    //          prevProps[key] !== val && console.log(`Prop '${key}' changed`)
-    //      );
-    //      Object.entries(this.state).forEach(
-    //        ([key, val]) =>
-    //          prevState[key] !== val && console.log(`State '${key}' changed`)
-    //      );
-    //    }
+    /** React render
+     * @return {React.Element}
+     */
     render() {
       if (!this.Context) return <div />;
-      let Consumer = this.Context.Consumer;
+      const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
             if (!value) {
               return <div />;
             }
-            let waiting = value.waiting;
-            let paginator = value.paginator;
-            let maxrows = value.maxrows;
-            let _waiting =
+            const waiting = value.waiting;
+            const paginator = value.paginator;
+            const maxrows = value.maxrows;
+            const _waiting =
               waiting && (!paginator || paginator.numrows != paginator.torow);
             let drs = [];
 
             if (maxrows) {
-              const Template = getListTemplate(this.props.listTemplate);
-              if (Template) {
-                //raw means don't render the row, return just the props, and parent will take care of rendering with that props
+              const template = getListTemplate(this.props.listTemplate);
+              if (template) {
+                // raw means don't render the row, return just the props, and parent will take care of rendering with that props
                 if (raw) {
                   drs = maxrows.map(o => {
-                    let _o = Template(o);
+                    const _o = template(o);
                     _o.key = o.data["_uniqueid"];
                     return _o;
                   });
                 } else {
                   drs = maxrows.map(o => (
-                    <Template {...o} key={o.data["_uniqueid"]} />
+                    <template {...o} key={o.data["_uniqueid"]} />
                   ));
                 }
               }
@@ -808,9 +816,9 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         </Consumer>
       );
     }
-
+    /** Display the filter */
     showFilter() {
-      let container = this.props.maxcontainer
+      const container = this.props.maxcontainer
         ? this.props.maxcontainer
         : kont[this.props.container];
       openDialog(this.context, {
@@ -819,30 +827,46 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
         filtername: this.props.filterTemplate
       });
     }
-
+    /** Draws filter button
+     * @return {React.Element}
+     */
     getFilterButton() {
       if (this.props.filterTemplate) {
         return drawFilterButton(this.showFilter);
-        return <button onClick={ev => this.showFilter()}>Filter</button>;
       }
       return <div />;
     }
-
+    /** Internal */
     static get contextType() {
       return getRootContext();
     }
+  }
+  MPList.propTypes = {
+    container: PropTypes.string,
+    listTemplate: PropTypes.string,
+    filterTemplate: PropTypes.string
   };
+  return MPList;
 }
 
+/** HOC to get the picker list
+ * @param {function} drawPickerOption - draws individual option
+ * @param {function} drawPicker - draws whole picker
+ * @return {MPlusComponent}
+ */
 export function getPickerList(drawPickerOption, drawPicker) {
-  return class MPPickerList extends MPlusComponent {
+  /** Picker component */
+  class MPPickerList extends MPlusComponent {
+    /** Init underlying maximoplus grid
+     * @param {object} mboCont
+     */
     putContainer(mboCont) {
-      let mp = new maximoplus.re.Grid(
+      const mp = new maximoplus.re.Grid(
         mboCont,
         this.props.columns,
         this.props.norows
       );
-      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
       mp.renderDeferred();
@@ -856,23 +880,27 @@ export function getPickerList(drawPickerOption, drawPicker) {
       mp.initData();
       this.props.maxpickerfield.addPickerList(mp);
     }
+    /** React render method
+     * @return {React.Element}
+     */
     render() {
       if (!this.Context) return <div />;
-      let Consumer = this.Context.Consumer;
+      const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
             if (!value) return <div />;
-            let maxrows = value.maxrows;
+            const maxrows = value.maxrows;
             let drs = [];
             if (maxrows) {
               drs = maxrows.map((object, i) => {
-                let selected =
+                const selected =
                   object.picked ||
                   (typeof object.picked === "undefined" && object.selected);
-                let optionKey =
+                const optionKey =
                   object.data[this.props.pickerkeycol.toUpperCase()];
-                let optionVal = object.data[this.props.pickercol.toUpperCase()];
+                const optionVal =
+                  object.data[this.props.pickercol.toUpperCase()];
                 return drawPickerOption(
                   this.props.label,
                   selected,
@@ -887,28 +915,50 @@ export function getPickerList(drawPickerOption, drawPicker) {
         </Consumer>
       );
     }
+    /** Internal */
     static get contextType() {
       return getRootContext();
     }
+  }
+  MPPickerList.propTypes = {
+    label: PropTypes.string,
+    changeListener: PropTypes.func,
+    pickercol: PropTypes.string,
+    pickerkeycol: PropTypes.string
   };
+  return MPPickerList;
 }
 
+/** HOC to return the Section component
+ * @param {object} WrappedTextField - text field
+ * @param {object} WrappedPicker - picker comp
+ * @param {boolean} drawFields - if true return the array, rendering in implemetation
+ * @return {MPlusComponent}
+ */
 export function getSection(WrappedTextField, WrappedPicker, drawFields) {
-  //like for the list, here we also support the "raw" rendering, i.e. this HOC returns the data, and parent does the actual rendering. We don't need the raw field for this, if wrappers are null, we just return the props. For picker list,we will have to send the array of values in one field (so we need to transfer the field row state to props)
+  // like for the list, here we also support the "raw" rendering, i.e. this HOC returns the data, and parent does the actual rendering. We don't need the raw field for this, if wrappers are null, we just return the props. For picker list,we will have to send the array of values in one field (so we need to transfer the field row state to props)
 
-  return class MPSection extends MPlusComponent {
+  /** Section Component*/
+  class MPSection extends MPlusComponent {
+    /** Constructor, binds the change function
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       this.changeInternalFieldValue = this.changeInternalFieldValue.bind(this);
       this.state = { fieldValues: {} };
     }
+    /**
+     * Init uderlying core component
+     * @param {object} mboCont
+     */
     putContainer(mboCont) {
       if (this.mp) {
         return;
       }
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
-      let mp = new maximoplus.re.Section(mboCont, this.props.columns);
+      const mp = new maximoplus.re.Section(mboCont, this.props.columns);
 
       if (this.props.metadata) {
         mp.addColumnsMeta(this.props.metadata);
@@ -916,7 +966,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       mp.renderDeferred();
       mp.initData();
 
-      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
 
@@ -924,22 +974,31 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
 If we call the maximo change handler for every field, Maximo may change the values, while the user is typing (it is trimming the spaces for example). We will keep the values internally in the state, and pass 2 functions to the field: 1) function that changes this state that is called from onChange field handler, and 2) Maximo change function that is called from onblur
 */
     }
-
+    /** Value to be kept internally before sending to Maximo. React changes on every letter, maximo is designed to react on blur
+     * @param {string} fieldKey
+     * @param {string} value
+     */
     changeInternalFieldValue(fieldKey, value) {
-      let newFieldValues = Object.assign({}, this.state.fieldValues);
+      const newFieldValues = Object.assign({}, this.state.fieldValues);
       newFieldValues[fieldKey] = value;
       this.setState({ fieldValues: newFieldValues });
     }
+    /** React lifecycle, used to add the meta
+     * @param {object} prevProps
+     */
     componentDidUpdate(prevProps) {
       super.componentDidUpdate(prevProps);
       if (prevProps.metadata != this.props.metadata && this.mp) {
         this.mp.addColumnsMeta(this.props.metadata);
       }
     }
-
+    /**
+     *  render function
+     * @return {React.ReactElement}
+     */
     render() {
       if (!this.Context) return <div />;
-      let Consumer = this.Context.Consumer;
+      const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
@@ -947,13 +1006,11 @@ If we call the maximo change handler for every field, Maximo may change the valu
             const raw = !WrappedTextField;
             if (value && value.maxfields) {
               flds = value.maxfields.map((f, i) => {
-                let fKey = f.metadata.attributeName + i;
+                const fKey = f.metadata.attributeName + i;
                 if (f.metadata.picker && f.picker) {
-                  let lst = f.picker.list;
+                  const lst = f.picker.list;
                   if (lst) {
                     if (raw) {
-                      //TODO this is not good, I want just the array of values and metadata to be passed as a value of the field to concrete implemntation
-                      //we need to run the internal component and pass it. IDEA: maybe just run the getList over the list container and return the rows only inside the section implementation
                       return {
                         label: f.metadata.title,
                         maxcontainer: lst.listContainer,
@@ -990,20 +1047,20 @@ If we call the maximo change handler for every field, Maximo may change the valu
                     return raw ? { key: fKey } : <div key={fKey} />;
                   }
                 } else {
-                  let _val = this.state.fieldValues[fKey]
+                  const _val = this.state.fieldValues[fKey]
                     ? this.state.fieldValues[fKey]
                     : f.data;
-                  let attrs = {
+                  const attrs = {
                     label: f.metadata.title,
                     value: _val,
                     type: f.metadata.maxType,
                     listener: value =>
                       this.changeInternalFieldValue(fKey, value),
                     changeListener: () => {
-                      let newFst = Object.assign({}, this.state.fieldValues);
-                      let __vval = newFst[fKey];
+                      const newFst = Object.assign({}, this.state.fieldValues);
+                      const __vval = newFst[fKey];
                       if (__vval) {
-                        //post the change only if there was change
+                        // post the change only if there was change
                         delete newFst[fKey];
                         this.setState({ fieldValues: newFst });
                         f.listeners["change"](_val);
@@ -1033,29 +1090,48 @@ If we call the maximo change handler for every field, Maximo may change the valu
         </Consumer>
       );
     }
+    /** Internal*/
     static get contextType() {
       return getRootContext();
     }
+  }
+  MPSection.propTypes = {
+    container: PropTypes.string,
+    columns: PropTypes.array
   };
+  return MPSection;
 }
 
+/** HOC to return the QbeSection component
+ * @param {object} WrappedTextField - text field
+ * @param {boolean} drawFields - if true return the array, rendering in implemetation
+ *  @param {boolean} drawSearchButtons - if true return the array, rendering in implemetation
+ * @return {MPlusComponent}
+ */
 export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
-  return class MPQbeSection extends MPlusComponent {
+  /** Qbe section component */
+  class MPQbeSection extends MPlusComponent {
+    /** Constructor, binds the change function
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
-
       this.getControlActions = this.getControlActions.bind(this);
       this.clear = this.clear.bind(this);
       this.search = this.search.bind(this);
       this.runControlAction = this.runControlAction.bind(this);
     }
+    /**
+     * Init uderlying core component
+     * @param {object} mboCont
+     */
     putContainer(mboCont) {
       if (this.mp) {
         return;
       }
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
-      let mp = new maximoplus.re.QbeSection(mboCont, this.props.columns);
+      const mp = new maximoplus.re.QbeSection(mboCont, this.props.columns);
 
       /*
 	 Important.
@@ -1063,7 +1139,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
 	 */
 
       if (this.props.qbePrepends) {
-        for (let qp of this.props.qbePrepends) {
+        for (const qp of this.props.qbePrepends) {
           mp.addPrependColumns(
             qp.virtualName,
             qp.qbePrepend,
@@ -1081,31 +1157,33 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       mp.renderDeferred();
       mp.initData();
 
-      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
     }
-
+    /** Clears the qbe */
     clear() {
       this.mp.clearQbe();
     }
-
+    /** Internal */
     componentWillUnmount() {
       //      if (this.mp) this.mp.clearQbe();
     }
-
+    /** Perform the seaarch for the entered qbe */
     search() {
       this.mp.getContainer().reset();
       if (this.props.indialog) {
-        //should not do this for the static qbe section
+        // should not do this for the static qbe section
         this.mp.getParent().removeChild(this.mp); // MaximoPlus will try to send data on reset finish to this component
-        closeDialog(this.context); //dialogs will be modal. If i can access the search, and there are dialogs, that means I clicked search from the dialog. If there are no dialogs, this command doesn't do anything
+        closeDialog(this.context); // dialogs will be modal. If i can access the search, and there are dialogs, that means I clicked search from the dialog. If there are no dialogs, this command doesn't do anything
       }
     }
-
+    /** Get the search buttons for the qbe control
+     * @return {array}
+     */
     getSearchButtons() {
-      //this may not be necessary, it will render the search buttons for the dialog
-      let buttons = [
+      // this may not be necessary, it will render the search buttons for the dialog
+      const buttons = [
         { label: "Search", action: this.search, key: "search" },
         { label: "Clear", action: this.clear, key: "clear" }
       ];
@@ -1117,15 +1195,19 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       }
       return drawSearchButtons(buttons);
     }
-
+    /** returns control actions
+     * @return {array}
+     */
     getControlActions() {
-      //this is the "interface" method - we can use it for all the types of controls
+      // this is the "interface" method - we can use it for all the types of controls
       return this.getSearchButtons();
     }
-
+    /** Runs the control aciton (clear or search)
+     * @param {string} actionKey
+     */
     runControlAction(actionKey) {
-      //In React, if the actions are returned directly like in getSearchButtons, the binding loses the state
-      //Insted this function called from the ref should work properly
+      // In React, if the actions are returned directly like in getSearchButtons, the binding loses the state
+      // Instead this function called from the ref should work properly
       if (actionKey == "clear") {
         this.clear();
       }
@@ -1133,19 +1215,21 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
         this.search();
       }
     }
-
+    /**
+     *  render function
+     * @return {React.ReactElement}
+     */
     render() {
-      //Don't forget about filter dialogs
       if (!this.Context) return <div />;
-      let Consumer = this.Context.Consumer;
+      const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
             let flds = [];
-            let buttons = this.getSearchButtons();
+            const buttons = this.getSearchButtons();
             if (value && value.maxfields) {
               flds = value.maxfields.map((f, counter) => {
-                let attrs = {
+                const attrs = {
                   label: f.metadata.title,
                   value: f.data,
                   type: f.metadata.maxType,
@@ -1155,12 +1239,12 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
                 };
                 if (f.metadata.hasLookup) {
                   attrs.showLookupF = () => f.maximoField.showLookup();
-                  attrs.qbe = true; //in qbe mode display only the text field, not the checkbox
+                  attrs.qbe = true; // in qbe mode display only the text field, not the checkbox
                 }
                 if (!WrappedTextField) {
                   return attrs;
                 }
-                return <WrappedTextField {...attrs} />; //try to put this as a function, to be able to override. There is no indirection, or maybe HOC
+                return <WrappedTextField key={attrs.fieldKey} {...attrs} />; // try to put this as a function, to be able to override. There is no indirection, or maybe HOC
               });
             }
             return drawFields(flds, buttons);
@@ -1168,24 +1252,46 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
         </Consumer>
       );
     }
+    /** Internal */
     static get contextType() {
       return getRootContext();
     }
+  }
+  MPQbeSection.propypes = {
+    container: PropTypes.string,
+    columns: PropTypes.array
   };
+  return MPQbeSection;
 }
 
+/** HOC to get the dialog
+ * @param {object} DialogWrapper
+ * @param {function} getDialogF
+ * @param {function} defaultCloseDialogAction
+ * @return {MPlusComponent}
+ */
 function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
-  return class extends React.Component {
+  /** Dialog Component */
+  class Dialog extends React.Component {
+    /** React lifecycle method
+     * @param {object} props
+     * @param {object} state
+     * @return {boolean}
+     */
     shouldComponentUpdate(props, state) {
       if (!props.dialogs || props.dialogs.length == this.props.dialogs.length)
         return false;
       return true;
     }
+    /**
+     *  render function
+     * @return {React.ReactElement}
+     */
     render() {
       if (!this.props.dialogs || this.props.dialogs.length == 0) {
         return <div />;
       }
-      let currDialog = this.props.dialogs[this.props.dialogs.length - 1];
+      const currDialog = this.props.dialogs[this.props.dialogs.length - 1];
       if (!currDialog) {
         return <div />;
       } else {
@@ -1207,37 +1313,60 @@ function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
         return <div />;
       }
     }
+  }
+  Dialog.propTypes = {
+    dialogs: PropTypes.array
   };
+  return Dialog;
 }
 
-//Every MaximoPlus component will create the context. The dialog wrapper should remove the context once the dialog is closed.
-//If the getDialogF returns directly the MaximoPlus components, it will have the oid property. DialogWrapper should remove thiat context
-//If there is no oid, the dialog should have the cleanContext, that should clean context on each MaximoPlus component
+// Every MaximoPlus component will create the context. The dialog wrapper should remove the context once the dialog is closed.
+// If the getDialogF returns directly the MaximoPlus components, it will have the oid property. DialogWrapper should remove thiat context
+// If there is no oid, the dialog should have the cleanContext, that should clean context on each MaximoPlus component
 
+/** HOC to get the dialog holder
+ * @param {object} DialogWrapper
+ * @param {function} getDialogF
+ * @param {boolean} raw
+ * @return {MPlusComponent}
+ */
 export function getDialogHolder(DialogWrapper, getDialogF, raw) {
-  return class MPDialogHolder extends React.Component {
+  /** Dialog holder */
+  class MPDialogHolder extends React.Component {
+    /** Constructor, binds the open and close dialog functions
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       this.openDialog = this.openDialog.bind(this);
       this.closeDialog = this.closeDialog.bind(this);
     }
+    /** internal */
     get Context() {
       return innerContexts["dialogs"];
     }
+    /** Opens the dialog
+     * @param {object} dialog
+     */
     openDialog(dialog) {
-      //can't access the openDialog and closeDialog functions directlry, becaise of the contexts
-      //the dialogholder will have to be reffed from the main template, and there we can call this functions
+      // can't access the openDialog and closeDialog functions directlry, becaise of the contexts
+      // the dialogholder will have to be reffed from the main template, and there we can call this functions
       openDialog(this.context, dialog);
     }
+    /** Closes the currently open dialog */
     closeDialog() {
       closeDialog(this.context);
     }
+    /**
+     * React render function
+     * @return {React.ReactElement}
+     */
     render() {
       /*
 If both dialogwrapper and getdialogf is null, let the implementation manage the dialogs on itself
 */
       if (!this.Context) return <div />;
-      let Consumer = this.Context.Consumer;
+      const Consumer = this.Context.Consumer;
       let Dialog = null;
       if (!raw) {
         Dialog = getDialog(DialogWrapper, getDialogF, _ =>
@@ -1252,12 +1381,12 @@ If both dialogwrapper and getdialogf is null, let the implementation manage the 
           </Consumer>
         );
       } else {
-        let ff = _ => closeDialog(this.context);
-        //in this case the implementation will take care of the dialog openings and closing
+        const ff = _ => closeDialog(this.context);
+        // in this case the implementation will take care of the dialog openings and closing
         return (
           <Consumer>
             {dialogs => {
-              let dials = dialogs
+              const dials = dialogs
                 ? dialogs.map(d => {
                     d.closeTheDialog = ff;
                     return d;
@@ -1269,21 +1398,33 @@ If both dialogwrapper and getdialogf is null, let the implementation manage the 
         );
       }
     }
+    /** React lifecycle component, attach the dialog context */
     componentDidMount() {
       if (!innerContexts["dialogs"]) {
         innerContexts["dialogs"] = this.context.addInnerContext("dialogs");
       }
     }
-
+    /** Internal */
     static get contextType() {
       return getRootContext();
     }
-  };
+  }
+  MPDialogHolder.propTypes = {};
+  return MPDialogHolder;
 }
 
+/** HOC to return the List Dialog
+ * @param {object} WrappedList
+ * @param {function} drawList
+ * @return {MPlusComponent}
+ */
 export function getListDialog(WrappedList, drawList) {
-  //HOC
-  return class MPListDialog extends React.Component {
+  /** List Dialog components */
+  class MPListDialog extends React.Component {
+    /**
+     * React render function
+     * @return {React.ReactElement}
+     */
     render() {
       const LstD = drawList();
 
@@ -1303,53 +1444,72 @@ export function getListDialog(WrappedList, drawList) {
         </LstD>
       );
     }
+    /** React lifecycle component */
     componentWillUnmount() {
       if (this.props.dialog.listContainer) {
         //  this.props.dialog.listContainer.reset();
-        //clear the filter (check unmount from qbesection
+        // clear the filter (check unmount from qbesection
       }
     }
+  }
+  MPListDialog.propTypes = {
+    dialog: PropTypes.object
   };
+  return MPListDialog;
 }
 
+/** Function to return the filter dialog
+ * @param {function} getFilter - function to get the filter
+ * @param {function} drawFilter - draw the filter
+ * @return {MPlusComponent}
+ */
 export function getFilterDialog(getFilter, drawFilter) {
   return props => drawFilter(getFilter(props.dialog));
 }
 
+/** HOC to return the gl dialog
+ * @param {function} drawDialog - function to draw the gl dialog
+ * @param {MPlusComponent} WrappedList - List component
+ * @return {MPlusComponent}
+ */
 export function getGLDialog(drawDialog, WrappedList) {
-  //glindividualsegment is a function of object with the following keys:
-  //- listener
-  //- segmentName
-  //- segmentValue
-  //- segmentDelimiter
-  //drawSegments is  a function that draws all the segments into one gl (arg - array of above objects)
-  //drawDialog draws the final dialog from all these
-  //WrappedList - concreate List implementation
-  return class MPGLDialog extends MPlusComponent {
+  // glindividualsegment is a function of object with the following keys:
+  // - listener
+  // - segmentName
+  // - segmentValue
+  // - segmentDelimiter
+  // drawSegments is  a function that draws all the segments into one gl (arg - array of above objects)
+  // drawDialog draws the final dialog from all these
+  // WrappedList - concreate List implementation
+  /** GL Dialog component */
+  class MPGLDialog extends MPlusComponent {
+    /** React lifecycle component */
     componentDidMount() {
       super.componentDidMount();
       if (this.mp) {
         return;
       }
 
-      let mp = new maximoplus.re.GLDialog(this.props.field, this.props.orgid);
-      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      const mp = new maximoplus.re.GLDialog(this.props.field, this.props.orgid);
+      const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
       mp.renderDeferred();
     }
-
+    /** React render lifecycle method
+     * @return {React.Element}
+     */
     render() {
       if (!this.Context) return <div />;
-      let Consumer = this.Context.Consumer;
+      const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
             if (!value || !value.segments || !value.pickerlist) return <div />;
-            let segments = value.segments;
-            let pickerList = value.pickerlist;
-            let chooseF = value.chooseF;
-            let gllist = (
+            const segments = value.segments;
+            const pickerList = value.pickerlist;
+            const chooseF = value.chooseF;
+            const gllist = (
               <WrappedList
                 maxcontainer={pickerList.glcontainer}
                 columns={pickerList.pickercols}
@@ -1364,41 +1524,60 @@ export function getGLDialog(drawDialog, WrappedList) {
         </Consumer>
       );
     }
+    /** Internal */
     static get contextType() {
       return getRootContext();
     }
-  };
+  }
+  MPGLDialog.propTypes = { field: PropTypes.object, orgid: PropTypes.string };
+  return MPGLDialog;
 }
 
+/** HOC to return the workflow dialog
+ * @param {MPlusComponent} WrappedSection
+ * @param {function} drawDialog
+ * @return {MPlusComponent}
+ */
 export function getWorkflowDialog(WrappedSection, drawDialog) {
+  /** Workflow dialog component */
   return class MPWorkflowDialog extends MPlusComponent {
+    /** Constructor, inits the state
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       this.state = { finished: false };
     }
+    /**
+     * Init uderlying core component
+     * @param {object} mboCont
+     */
     putContainer(mboCont) {
       if (this.mp) {
         return;
       }
-      let mp = new maximoplus.re.WorkflowControl(
+      const mp = new maximoplus.re.WorkflowControl(
         mboCont,
         this.props.processname
       );
 
       mp.routeWf();
-      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
     }
-
+    /**
+     * React render function
+     * @return {React.ReactElement}
+     */
     render() {
       if (!this.Context) return <div />;
-      let Consumer = this.Context.Consumer;
+      const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
-            let section = value && value.section;
-            let actions = value && value.actions;
+            const section = value && value.section;
+            const actions = value && value.actions;
             if (!section || !section.fields || !actions) {
               return <div />;
             }
@@ -1431,6 +1610,7 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
       );
       //
     }
+    /** Internal */
     static get contextType() {
       return getRootContext();
     }
@@ -1449,11 +1629,11 @@ export const save = contid => {
 };
 
 const _uploadFile = (container, uploadMethod, file, doctype) => {
-  let fd = new FormData();
+  const fd = new FormData();
   fd.append("docname", file.name);
   fd.append("doctype", doctype);
   fd.append("file", file);
-  let prom = kont[container].then(mbocont => {
+  const prom = kont[container].then(mbocont => {
     return new Promise((resolve, reject) => {
       maximoplus.net.upload(
         mbocont,
@@ -1474,9 +1654,17 @@ const _uploadFile = (container, uploadMethod, file, doctype) => {
   });
   return prom;
 };
-//the functions for attaching, etc. should be accessed from ref. Wrapper will be there just to display the currently attached files and errors
+
+/** the functions for attaching, etc. should be accessed from ref. Wrapper will be there just to display the currently attached files and errors 
+@param{object} Wrapper
+@return {MPlusComponent}
+*/
 export function getDoclinksUpload(Wrapper) {
-  return class DoclinksUpload extends React.Component {
+  /** Doclinks Upload Component */
+  class DoclinksUpload extends React.Component {
+    /** Constructor, binds the change function
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       this.inputRef = React.createRef();
@@ -1486,40 +1674,55 @@ export function getDoclinksUpload(Wrapper) {
       this.removeFile = this.removeFile.bind(this);
       this.uploadFies = this.uploadFiles.bind(this);
     }
+    /** Internal methid to attach the files */
     attachFiles() {
       this.inputRef.current.click();
     }
+    /** Add the files before the upload
+     * @param {array} files
+     */
     addFiles(files) {
       this.setState((state, props) => {
         return { files: [...state.files, ...files] };
       });
     }
+    /** Remove the file from the list of uploaded
+     * @param {number} index
+     */
     removeFile(index) {
-      this.setSate((state, props) => {
-        let fls = state.files;
+      this.setState((state, props) => {
+        const fls = state.files;
         return {
           files: fls.slice(0, index - 1).concat(fls.slice(index, fls.length))
         };
       });
     }
+    /** Upload one file
+     * @param{File} file
+     * @param{string} doctype
+     * @return {Promise}
+     */
     uploadFile(file, doctype) {
-      let uploadMethod = this.props.uploadMethod
+      const uploadMethod = this.props.uploadMethod
         ? this.props.uploadMethod
         : "doclinks";
       return _uploadFile(this.props.container, uploadMethod, file, doctype);
     }
+    /** Upload attached files
+     * @param {string} doctype
+     */
     async uploadFiles(doctype) {
       this.setState({ uploading: true });
-      let errors = {};
+      const errors = {};
       for (let j = 0; j < this.state.files.length; j++) {
         try {
           await this.uploadFile(this.state.files[j], doctype);
           this.setState(state => {
-            let finished = state.finished;
+            const finished = state.finished;
             if (!finished) {
               return { finished: [j] };
             }
-            let _finished = [...finished, j];
+            const _finished = [...finished, j];
             return { finished: _finished };
           });
         } catch (err) {
@@ -1528,6 +1731,10 @@ export function getDoclinksUpload(Wrapper) {
       }
       this.setState({ errors: errors, uploading: false, files: [] });
     }
+    /**
+     * React  render function
+     * @return {React.ReactElement}
+     */
     render() {
       return (
         <div>
@@ -1543,11 +1750,24 @@ export function getDoclinksUpload(Wrapper) {
         </div>
       );
     }
+  }
+  DoclinksUpload.propTypes = {
+    container: PropTypes.string,
+    uploadMethod: PropTypes.string
   };
+  return DoclinksUpload;
 }
 
+/** HOC to get photo upload component
+ * @param {object} Wrapper
+ * @return {MPlusComponent}
+ */
 export function getPhotoUpload(Wrapper) {
-  return class PhotoUpload extends React.Component {
+  /** PhotoUpload component */
+  class PhotoUpload extends React.Component {
+    /** Constructor, binds the functions
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       this.webcamRef = React.createRef();
@@ -1555,16 +1775,18 @@ export function getPhotoUpload(Wrapper) {
       this.shoot = this.shoot.bind(this);
       this.removePhoto = this.removePhoto.bind(this);
       this.state = { imgData: null, file: null, error: null, uploading: false };
-      //two separate functions, so the user can preview. You can combine them into one if you need
+      // two separate functions, so the user can preview. You can combine them into one if you need
     }
+    /** Get the picture form the webcam */
     shoot() {
-      let img64 = this.webcamRef.current.getScreenshot();
-      let raw_image_data = img64.replace(/^data\:image\/\w+\;base64\,/, "");
-      let arrayBuf = decode(raw_image_data);
-      let fileName = "IMG-" + new Date().valueOf() + ".jpg";
-      let f = new File([arrayBuf], fileName, { type: "image/jpeg" });
+      const img64 = this.webcamRef.current.getScreenshot();
+      const rawImageData = img64.replace(/^data:image\/\w+;base64,/, "");
+      const arrayBuf = decode(rawImageData);
+      const fileName = "IMG-" + new Date().valueOf() + ".jpg";
+      const f = new File([arrayBuf], fileName, { type: "image/jpeg" });
       this.setState({ imgData: img64, file: f, error: null });
     }
+    /** Removes the previous picture */
     removePhoto() {
       this.setState({
         imgData: null,
@@ -1573,12 +1795,15 @@ export function getPhotoUpload(Wrapper) {
         uploading: false
       });
     }
+    /** Uploads the picture
+     * @param {string} doctype
+     */
     uploadPhoto(doctype) {
       if (!this.state.file) {
         this.setState({ error: "No image ready for upload" });
         return;
       }
-      let uploadMethod = this.props.uploadMethod
+      const uploadMethod = this.props.uploadMethod
         ? this.props.uploadMethod
         : "doclinks";
       _uploadFile(
@@ -1590,10 +1815,13 @@ export function getPhotoUpload(Wrapper) {
         .then(_ => this.removePhoto())
         .catch(err => this.setState({ uploading: false, error: err }));
     }
+    /** React render method
+@return {React.Element}
+*/
     render() {
-      let webcamW = this.props.width ? this.props.width : 400;
-      let webcamH = this.props.height ? this.props.height : 400;
-      let displayEl = this.state.imgData ? (
+      const webcamW = this.props.width ? this.props.width : 400;
+      const webcamH = this.props.height ? this.props.height : 400;
+      const displayEl = this.state.imgData ? (
         <img src={this.state.imgData} style={{ width: webcamW }} />
       ) : (
         <WebCam
@@ -1604,7 +1832,7 @@ export function getPhotoUpload(Wrapper) {
           height={webcamH}
         />
       );
-      //these two properties sent to wrapper will be used to codnitionally display buttons
+      // these two properties sent to wrapper will be used to codnitionally display buttons
       return (
         <Wrapper
           readyForUpload={!this.state.uploading && this.state.file}
@@ -1614,5 +1842,13 @@ export function getPhotoUpload(Wrapper) {
         </Wrapper>
       );
     }
+  }
+  PhotoUpload.propTypes = {
+    container: PropTypes.string,
+    uploadMethod: PropTypes.string,
+    doctype: PropTypes.string,
+    width: PropTypes.number,
+    height: PropTypes.number
   };
+  return PhotoUpload;
 }
