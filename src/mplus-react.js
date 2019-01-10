@@ -283,7 +283,7 @@ AppContainer.propTypes = {
 
 const getDepContainer = containerConstF => {
   /** helper class for dep contaniers */
-  return class DepContainer extends React.Component {
+  class DepContainer extends React.Component {
     /** Constructor, intializs the template
      * @param {object} props
      */
@@ -300,10 +300,7 @@ const getDepContainer = containerConstF => {
     get mp() {
       return this.state.mp;
     }
-    /** React lifecycle method use dto resolve the containers
-     * @return {Void}
-     */
-
+    /** React lifecycle method use dto resolve the containers */
     componentDidMount() {
       if (kont[this.props.id] && kont[this.props.id].resolved) {
         kont[this.props.id].then(mp => this.setState({ mp: mp }));
@@ -311,13 +308,15 @@ const getDepContainer = containerConstF => {
       }
 
       kont[this.props.container].then(mboCont => {
-        let mp = containerConstF(mboCont, this.props);
+        const mp = containerConstF(mboCont, this.props);
         this.setState({ mp: mp });
         resolveContainer(this.props.id, mp);
       });
     }
 
-    /** Dumb render */
+    /** Dumb render
+     * @return {Void}
+     */
     render() {
       return null;
     }
@@ -342,7 +341,12 @@ const getDepContainer = containerConstF => {
     mboSetCommand(command) {
       return this.mp.mbosetCommand(command);
     }
+  }
+  DepContainer.propTypes = {
+    id: PropTypes.string,
+    container: PropTypes.string
   };
+  return DepContainer;
 };
 
 export const RelContainer = getDepContainer((mboCont, props) => {
@@ -355,8 +359,8 @@ export const SingleMboContainer = getDepContainer(
 
 /** Basic React component class to be extended by all the visual components */
 export class MPlusComponent extends React.Component {
-  //the following tho methods should be overriden in the concrete implementations with
-  //MPlusComponent.prototype.pushDialog = function (dialog)...
+  // the following tho methods should be overriden in the concrete implementations with
+  // MPlusComponent.prototype.pushDialog = function (dialog)...
   /** Constructor, init the container from the core lib
    * @param {object} props
    */
@@ -375,11 +379,11 @@ export class MPlusComponent extends React.Component {
   }
   /** Dynamic context removal */
   removeContext() {
-    //this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
+    // this will be used for dialogs only. Once the dialog is closed, we should remove the context and the MaximoPlus components
     this.context.removeInnerContext(this.oid);
     delete innerContexts[this.oid];
   }
-  /* getter for the context */
+  /** getter for the context */
   get Context() {
     return innerContexts[this.oid] && innerContexts[this.oid].context;
   }
@@ -407,11 +411,13 @@ In case the container property is passed, we have to make sure container is avai
     if (this.props.maxcontainer) {
       this.putContainer(this.props.maxcontainer);
     }
-    animating.map(val => this.setState({ animating: val })); //if component is animating don't display the change until the animation is finished
+    animating.map(val => this.setState({ animating: val })); // if component is animating don't display the change until the animation is finished
   }
-
+  /** React lifecycle method used to init the MaximoPlus core component
+   * @param {object} prevProps
+   */
   componentDidUpdate(prevProps) {
-    /*If for any reason container is changed in the property, we have to re-initialize*/
+    /* If for any reason container is changed in the property, we have to re-initialize*/
     if (this.props.container && this.props.container != prevProps.container) {
       getDeferredContainer(this.props.container).then(container => {
         this.putContainer(container);
@@ -424,7 +430,11 @@ In case the container property is passed, we have to make sure container is avai
       this.putContainer(this.props.maxcontainer);
     }
   }
-
+  /** React lifecycle method for performance controls
+   * @param {object} nextProps
+   * @param {object} nextState
+   * @return {boolean}
+   */
   shouldComponentUpdate(nextProps, nextState) {
     if (nextState.animating) {
       return false;
@@ -434,22 +444,36 @@ In case the container property is passed, we have to make sure container is avai
       shallowDiffers(this.state, nextState)
     );
   }
-
+  /** Method to be overriden by the implementations */
   putContainer() {
     throw Error("should override");
   }
 }
 
+MPlusComponent.propTypes = {
+  container: PropTypes.string,
+  maxcontainer: PropTypes.object
+};
+
+/** HOC for component adapter */
 export function getComponentAdapter(Adapter) {
-  return class MPAdapter extends MPlusComponent {
+  /** Adapter for integrating 3rd party libraries and controls */
+  class MPAdapter extends MPlusComponent {
+    /** constructor init the refs and bind
+     * @param {object} props
+     */
     constructor(props) {
       super(props);
       this.setMaxValue = this.setMaxValue.bind(this);
       this.adapterRef = React.createRef();
     }
+    /** initialize the data for the control */
     initData() {
       this.mp.initData();
     }
+    /** getter to get the value for the control
+     * @return {object}
+     */
     get adapterValue() {
       return (
         this.adapterRef.current &&
@@ -457,21 +481,27 @@ export function getComponentAdapter(Adapter) {
         this.adapterRef.current.getValue()
       );
     }
+    /** Initialize the underlying MaximoPlus component
+     * @props {object} mboCont
+     */
     putContainer(mboCont) {
       if (this.mp) {
         return;
       }
-      let mp = new maximoplus.re.ComponentAdapter(
+      const mp = new maximoplus.re.ComponentAdapter(
         mboCont,
         this.props.columns,
         this.props.norows ? this.props.norows : 1
       );
-      let wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
 
       mp.initData();
     }
+    /** Render method of the component
+     * @return {React.Element}
+     */
     render() {
       if (!this.Context) return null;
       let Consumer = this.Context.Consumer;
@@ -490,13 +520,23 @@ export function getComponentAdapter(Adapter) {
         </Consumer>
       );
     }
+    /** Method to be called from the library or component to change the Maximo value
+     * @param {string} column
+     * @param {string} value
+     */
     setMaxValue(column, value) {
       this.mp.setMaxValue(column, value);
     }
+    /** Internal getter*/
     static get contextType() {
       return getRootContext();
     }
+  }
+  MPAdapter.propTypes = {
+    columns: PropTypes.array,
+    norows: PropTypes.number
   };
+  return MPAdapter;
 }
 
 export function getDoclinksViewer(ListComp) {
