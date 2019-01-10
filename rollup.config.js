@@ -21,7 +21,7 @@ export default {
       include: "node_modules/**"
     }),
     eslint({
-      extends: ["eslint:recommended", "google"],
+      extends:  "google",
       envs: ["browser", "mocha"],
       useEslintrc: false,
       parser: "babel-eslint",
