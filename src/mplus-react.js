@@ -752,11 +752,14 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       // useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
 
       this.mp.prepareCall = _ => {
+        if (!this.wrapper) return;
         this.wrapper.setState("waiting", true);
         this.wrapper.setState("startWait", Date.now());
       };
       this.mp.finishCall = _ => {
-        this.wrapper.setState("waiting", false);
+        if (this.wrapper) {
+          this.wrapper.setState("waiting", false);
+        }
       };
     }
     /**
@@ -1068,6 +1071,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                         f.listeners["change"](_val);
                       }
                     },
+                    immediateChangeListener: f.listeners["change"],
                     enabled: !f.readonly,
                     required: f.required,
                     fieldKey: fKey
