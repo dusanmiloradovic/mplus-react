@@ -1785,7 +1785,7 @@ export function getPhotoUpload(Wrapper) {
       this.state = { imgData: null, file: null, error: null, uploading: false };
       // two separate functions, so the user can preview. You can combine them into one if you need
     }
-    /** Get the picture form the webcam */
+    /** Get the picture form the webca or cameram */
     shoot() {
       if (!isCordovaApp) {
         const img64 = this.webcamRef.current.getScreenshot();
