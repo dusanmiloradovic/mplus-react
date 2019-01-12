@@ -1638,24 +1638,48 @@ const _uploadFile = (container, uploadMethod, file, doctype) => {
   const fd = new FormData();
   fd.append("docname", file.name);
   fd.append("doctype", doctype);
-  fd.append("file", file);
+  //  fd.append("file", file);
   const prom = kont[container].then(mbocont => {
     return new Promise((resolve, reject) => {
-      maximoplus.net.upload(
-        mbocont,
-        uploadMethod,
-        null,
-        fd,
-        function(ok) {
-          resolve(ok);
-        },
-        function(err) {
-          reject(err);
-        },
-        function(loaded, total) {
-          file.percloaded = Math.round(loaded / total);
-        }
-      );
+      if (!isCordovaApp) {
+        maximoplus.net.upload(
+          mbocont,
+          uploadMethod,
+          null,
+          fd,
+          function(ok) {
+            resolve(ok);
+          },
+          function(err) {
+            reject(err);
+          },
+          function(loaded, total) {
+            file.percloaded = Math.round(loaded / total);
+          }
+        );
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = evt => {
+          const blob = new Blob([evt.target.result], { type: "image/jpeg" });
+          fd.append("file", blob, file.name);
+          maximoplus.net.upload(
+            mbocont,
+            uploadMethod,
+            null,
+            fd,
+            function(ok) {
+              resolve(ok);
+            },
+            function(err) {
+              reject(err);
+            },
+            function(loaded, total) {
+              file.percloaded = Math.round(loaded / total);
+            }
+          );
+        };
+        reader.readAsArrayBuffer(file);
+      }
     });
   });
   return prom;
@@ -1802,7 +1826,7 @@ export function getPhotoUpload(Wrapper) {
           encodingType: Camera.EncodingType.JPEG,
           mediaType: Camera.MediaType.PICTURE,
           allowEdit: true,
-          correctOrientation: true //Corrects Android orientation quirks
+          correctOrientation: true // Corrects Android orientation quirks
         };
         navigator.camera.getPicture(
           pictureUri => {

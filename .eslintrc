@@ -19,7 +19,8 @@
   "globals": {
     "maximoplus": true,
     "process": true,
-    "cordova":true
+    "cordova":true,
+    "Camera":true
   },
   "rules": {
     // enable additional rules
