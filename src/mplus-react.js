@@ -657,7 +657,7 @@ export function getAppDocTypesPicker(Picker) {
     componentDidMount() {
       if (this.state.appDocType) return;
       kont[this.props.container].then(mboCont => {
-        const app = mboCont.getApp();
+        const app = "=" + mboCont.getApp();
         const appDocCont = new maximoplus.basecontrols.MboContainer(
           "appdoctype"
         );
@@ -671,7 +671,7 @@ export function getAppDocTypesPicker(Picker) {
     }
   }
   MPAppDoctypes.propTypes = {
-    container: PropTypes.sring
+    container: PropTypes.string
   };
   return MPAppDoctypes;
 }
@@ -1769,7 +1769,9 @@ export function getDoclinksUpload(Wrapper) {
  * @return {MPlusComponent}
  */
 export function getPhotoUpload(Wrapper) {
-  /** PhotoUpload component */
+  /** PhotoUpload component
+   * For Cordova you need to install camera and file plugins
+   */
   class PhotoUpload extends React.Component {
     /** Constructor, binds the functions
      * @param {object} props
@@ -1785,12 +1787,39 @@ export function getPhotoUpload(Wrapper) {
     }
     /** Get the picture form the webcam */
     shoot() {
-      const img64 = this.webcamRef.current.getScreenshot();
-      const rawImageData = img64.replace(/^data:image\/\w+;base64,/, "");
-      const arrayBuf = decode(rawImageData);
-      const fileName = "IMG-" + new Date().valueOf() + ".jpg";
-      const f = new File([arrayBuf], fileName, { type: "image/jpeg" });
-      this.setState({ imgData: img64, file: f, error: null });
+      if (!isCordovaApp) {
+        const img64 = this.webcamRef.current.getScreenshot();
+        const rawImageData = img64.replace(/^data:image\/\w+;base64,/, "");
+        const arrayBuf = decode(rawImageData);
+        const fileName = "IMG-" + new Date().valueOf() + ".jpg";
+        const f = new File([arrayBuf], fileName, { type: "image/jpeg" });
+        this.setState({ imgData: img64, file: f, error: null });
+      } else {
+        const options = {
+          quality: 50,
+          destinationType: Camera.DestinationType.FILE_URI,
+          sourceType: Camera.PictureSourceType.CAMERA,
+          encodingType: Camera.EncodingType.JPEG,
+          mediaType: Camera.MediaType.PICTURE,
+          allowEdit: true,
+          correctOrientation: true //Corrects Android orientation quirks
+        };
+        navigator.camera.getPicture(
+          pictureUri => {
+            window.resolveLocalFileSystemURL(
+              pictureUri,
+              fileEntry => {
+                fileEntry.file(f => {
+                  this.setState({ imgData: pictureUri, file: f, error: null });
+                });
+              },
+              console.log
+            );
+          },
+          console.log,
+          options
+        );
+      }
     }
     /** Removes the previous picture */
     removePhoto() {
@@ -1822,14 +1851,14 @@ export function getPhotoUpload(Wrapper) {
         .catch(err => this.setState({ uploading: false, error: err }));
     }
     /** React render method
-@return {React.Element}
-*/
+	@return {React.Element}
+    */
     render() {
       const webcamW = this.props.width ? this.props.width : 400;
       const webcamH = this.props.height ? this.props.height : 400;
       const displayEl = this.state.imgData ? (
         <img src={this.state.imgData} style={{ width: webcamW }} />
-      ) : (
+      ) : isCordovaApp ? null : (
         <WebCam
           ref={this.webcamRef}
           screenshotFormat="image/jpeg"
