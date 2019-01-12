@@ -1878,7 +1878,11 @@ export function getPhotoUpload(Wrapper) {
 	@return {React.Element}
     */
     render() {
-      const webcamW = this.props.width ? this.props.width : 400;
+      const webcamW = isCordovaApp
+        ? window.innerWidth
+        : this.props.width
+          ? this.props.width
+          : 400;
       const webcamH = this.props.height ? this.props.height : 400;
       const displayEl = this.state.imgData ? (
         <img src={this.state.imgData} style={{ width: webcamW }} />
