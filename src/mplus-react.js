@@ -542,6 +542,40 @@ export function getComponentAdapter(Adapter) {
   return MPAdapter;
 }
 
+/** Function to open the current document from the doclinks in cordova. Wnem the user has chosen the document,
+ * the doclinks contanier was navigated already to the desired row.  This function will use the cordova-plugin-file-opener2 and cordova-file-plugin
+ * to download the file and open in it with the browser viewer.
+ * @param {object} doclinksCont
+ */
+const cordovaOpenDoc = doclinksCont => {
+  const dlUrl = maximoplus.net.getDownloadURL(
+    this.state.doclinksCont,
+    "doclinks",
+    {}
+  );
+  const oReq = new XMLHttpRequest();
+  oReq.open("GET", dlUrl, true);
+  oReq.responseType = "blob";
+  oReq.onerror = error => {
+    //TODO display the error in global error handler
+    console.log(error);
+  };
+  oReq.onload = oEvent => {
+    const blob = oReq.response;
+    if (blob) {
+      const mimeType = oReq.getResponseHeader("content-type");
+      const contentDisposition = oReq.getResponseHeader("Content-Disposition");
+      const fileName = contentDisposition.substr(
+        contentDisposition.lastIndexOf("=") + 1
+      );
+        //Here use writer from file entry to  save the temp file then use file opener
+    } else {
+        //TODO again display error in globlerrorhandler
+        console.log("Error reading the file");
+    }
+  };
+};
+
 /** HOC to get the list viewer
  * @param {object} ListComp - a list component
  * @return {React.Component}
