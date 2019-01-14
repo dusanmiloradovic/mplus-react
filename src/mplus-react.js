@@ -850,6 +850,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
 
             if (maxrows) {
               const template = getListTemplate(this.props.listTemplate);
+              const Template = template; // for JSX
               if (template) {
                 // raw means don't render the row, return just the props, and parent will take care of rendering with that props
                 if (raw) {
@@ -860,7 +861,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
                   });
                 } else {
                   drs = maxrows.map(o => (
-                    <template {...o} key={o.data["_uniqueid"]} />
+                    <Template {...o} key={o.data["_uniqueid"]} />
                   ));
                 }
               }
