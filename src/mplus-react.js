@@ -548,16 +548,12 @@ export function getComponentAdapter(Adapter) {
  * @param {object} doclinksCont
  */
 const cordovaOpenDoc = doclinksCont => {
-  const dlUrl = maximoplus.net.getDownloadURL(
-    this.state.doclinksCont,
-    "doclinks",
-    {}
-  );
+  const dlUrl = maximoplus.net.getDownloadURL(doclinksCont, "doclinks", {});
   const oReq = new XMLHttpRequest();
   oReq.open("GET", dlUrl, true);
   oReq.responseType = "blob";
   oReq.onerror = error => {
-    //TODO display the error in global error handler
+    // TODO display the error in global error handler
     console.log(error);
   };
   oReq.onload = oEvent => {
@@ -596,9 +592,9 @@ const cordovaOpenDoc = doclinksCont => {
         },
         console.log
       );
-      //Here use writer from file entry to  save the temp file then use file opener
+      // Here use writer from file entry to  save the temp file then use file opener
     } else {
-      //TODO again display error in globlerrorhandler
+      // TODO again display error in globlerrorhandler
       console.log("Error reading the file");
     }
   };
@@ -622,15 +618,8 @@ export function getDoclinksViewer(ListComp) {
     }
     /** opens a document in browser or device */
     openDocument() {
-      if (isCordovaApp && cordova.InAppBrowser) {
-        cordova.InAppBrowser.open(
-          maximoplus.net.getDownloadURL(
-            this.state.doclinksCont,
-            "doclinks",
-            {}
-          ),
-          "_blank"
-        );
+      if (isCordovaApp) {
+        cordovaOpenDoc(this.state.doclinksCont);
         return;
       }
       window.open(
