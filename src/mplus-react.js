@@ -568,10 +568,38 @@ const cordovaOpenDoc = doclinksCont => {
       const fileName = contentDisposition.substr(
         contentDisposition.lastIndexOf("=") + 1
       );
-        //Here use writer from file entry to  save the temp file then use file opener
+      window.requestFileSystem(
+        window.TEMPORARY,
+        5 * 1024 * 1024,
+        function(fs) {
+          console.log("file system open: " + fs.name);
+          const dirEntry = fs.root;
+          dirEntry.getFile(
+            fileName,
+            { create: true, exclusive: false },
+            function(fileEntry) {
+              fileEntry.createWriter(fileWriter => {
+                fileWriter.onwriteend = () => {
+                  console.log("doc save to temp storage");
+                  const fullFilePath = fileEntry.fullPath;
+                  cordova.plugins.fileOpener2.open(fullFilePath, mimeType, {
+                    error: console.log,
+                    success: console.log
+                  });
+                };
+                fileWriter.onError = console.log;
+                fileWriter.write(blob);
+              });
+            },
+            console.log
+          );
+        },
+        console.log
+      );
+      //Here use writer from file entry to  save the temp file then use file opener
     } else {
-        //TODO again display error in globlerrorhandler
-        console.log("Error reading the file");
+      //TODO again display error in globlerrorhandler
+      console.log("Error reading the file");
     }
   };
 };
