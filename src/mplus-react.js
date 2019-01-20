@@ -1577,7 +1577,7 @@ export function getGLDialog(drawDialog, WrappedList) {
                 selectableF={pickerList.pickerf}
               />
             );
-            return drawDialog(segments, gllist, chooseF);
+              return drawDialog(segments, gllist, chooseF,this.props.forwardedRef);
           }}
         </Consumer>
       );

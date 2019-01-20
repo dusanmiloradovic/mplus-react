@@ -301,7 +301,7 @@ const GlSegments = props => {
   return <div>{segments}</div>;
 };
 
-const GLDialog = getGLDialog((segments, gllist, chooseF) => {
+const GLDialog = getGLDialog((segments, gllist, chooseF, forwardedRef) => {
   return (
     <div>
       <GlSegments segments={segments} />
