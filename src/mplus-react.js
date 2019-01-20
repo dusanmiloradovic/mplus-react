@@ -577,7 +577,7 @@ const cordovaOpenDoc = doclinksCont => {
               fileEntry.createWriter(fileWriter => {
                 fileWriter.onwriteend = () => {
                   console.log("doc save to temp storage");
-                  const fullFilePath = fileEntry.fullPath;
+                  const fullFilePath = fileEntry.toInternalURL();
                   cordova.plugins.fileOpener2.open(fullFilePath, mimeType, {
                     error: console.log,
                     success: console.log
@@ -598,6 +598,7 @@ const cordovaOpenDoc = doclinksCont => {
       console.log("Error reading the file");
     }
   };
+  oReq.send();
 };
 
 /** HOC to get the list viewer
