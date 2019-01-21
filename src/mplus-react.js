@@ -1578,7 +1578,12 @@ export function getGLDialog(drawDialog, WrappedList) {
                 selectableF={pickerList.pickerf}
               />
             );
-              return drawDialog(segments, gllist, chooseF,this.props.forwardedRef);
+            return drawDialog(
+              segments,
+              gllist,
+              chooseF,
+              this.props.forwardedRef
+            );
           }}
         </Consumer>
       );
@@ -1695,6 +1700,7 @@ const _uploadFile = (container, uploadMethod, file, doctype) => {
   const prom = kont[container].then(mbocont => {
     return new Promise((resolve, reject) => {
       if (!isCordovaApp) {
+        fd.append("file", file);
         maximoplus.net.upload(
           mbocont,
           uploadMethod,
