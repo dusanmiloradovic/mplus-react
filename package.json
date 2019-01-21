@@ -1,6 +1,6 @@
 {
   "name": "mplus-react",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "Basic MaximoPlus React template",
   "main": "distrollup/bundle.js",
   "unpkg": "distrollup/bundleweb.js",
