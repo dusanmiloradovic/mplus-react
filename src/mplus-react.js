@@ -1081,7 +1081,8 @@ If we call the maximo change handler for every field, Maximo may change the valu
                         norows: f.metadata.pickerrows,
                         type: f.metadata.maxType,
                         kind: "picker",
-                        key: fKey
+                        key: fKey,
+                        metadata: f.metadata
                       };
                     }
                     return (
@@ -1099,6 +1100,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                         norows={f.metadata.pickerrows}
                         type={f.metadata.maxType}
                         key={fKey}
+                        metadata={f.metadata}
                       />
                     );
                   } else {
