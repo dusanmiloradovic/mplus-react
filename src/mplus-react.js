@@ -1129,7 +1129,8 @@ If we call the maximo change handler for every field, Maximo may change the valu
                     immediateChangeListener: f.listeners["change"],
                     enabled: !f.readonly,
                     required: f.required,
-                    fieldKey: fKey
+                    fieldKey: fKey,
+                    metadata: f.metadata
                   };
                   if (f.metadata.hasLookup) {
                     if (f.metadata.gl) {
