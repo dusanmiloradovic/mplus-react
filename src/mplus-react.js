@@ -516,7 +516,13 @@ export function getComponentAdapter(Adapter) {
             const maxrows = value.maxrows;
             const rowValue = maxrows ? maxrows[rownum] : {}; // for the sake of simplicity, by default return only one object
             if (this.props.norows && this.props.norows > 1) {
-              return <Adapter maxrows={maxrows} ref={this.adapterRef} />;
+              return (
+                <Adapter
+                  maxrows={maxrows}
+                  setMaxValue={this.mp.setMaxValue}
+                  ref={this.adapterRef}
+                />
+              );
             }
             return <Adapter {...rowValue} ref={this.adapterRef} />;
           }}
