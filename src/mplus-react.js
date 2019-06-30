@@ -242,7 +242,7 @@ export class AppContainer extends React.Component {
    * @return {React.ReactElement}
    */
   render() {
-    return <div mboname={this.props.mboname} appname={this.props.appname} />;
+    return null;
   }
   /** Dispose the mp container */
   dispose() {
@@ -840,13 +840,13 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
      * @return {React.Element}
      */
     render() {
-      if (!this.Context) return <div />;
+      if (!this.Context) return null;
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
             if (!value) {
-              return <div />;
+              return null;
             }
             const waiting = value.waiting;
             const paginator = value.paginator;
@@ -896,7 +896,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       if (this.props.filterTemplate) {
         return drawFilterButton(this.showFilter);
       }
-      return <div />;
+      return null;
     }
     /** Internal */
     static get contextType() {
@@ -946,12 +946,12 @@ export function getPickerList(drawPickerOption, drawPicker) {
      * @return {React.Element}
      */
     render() {
-      if (!this.Context) return <div />;
+      if (!this.Context) return null;
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
-            if (!value) return <div />;
+            if (!value) return null;
             const maxrows = value.maxrows;
             let drs = [];
             if (maxrows) {
@@ -1059,7 +1059,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
      * @return {React.ReactElement}
      */
     render() {
-      if (!this.Context) return <div />;
+      if (!this.Context) return null;
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
@@ -1110,7 +1110,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                       />
                     );
                   } else {
-                    return raw ? { key: fKey } : <div key={fKey} />;
+                    return raw ? { key: fKey } : <React.Fragment key={fKey} />;
                   }
                 } else {
                   const _val = this.state.fieldValues[fKey]
@@ -1288,7 +1288,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
      * @return {React.ReactElement}
      */
     render() {
-      if (!this.Context) return <div />;
+      if (!this.Context) return null;
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
@@ -1357,11 +1357,11 @@ function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
      */
     render() {
       if (!this.props.dialogs || this.props.dialogs.length == 0) {
-        return <div />;
+        return null;
       }
       const currDialog = this.props.dialogs[this.props.dialogs.length - 1];
       if (!currDialog) {
-        return <div />;
+        return null;
       } else {
         const CurrDialog = getDialogF(currDialog);
         if (CurrDialog) {
@@ -1378,7 +1378,7 @@ function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
             </DialogWrapper>
           );
         }
-        return <div />;
+        return null;
       }
     }
   }
@@ -1433,7 +1433,7 @@ export function getDialogHolder(DialogWrapper, getDialogF, raw) {
       /*
 If both dialogwrapper and getdialogf is null, let the implementation manage the dialogs on itself
 */
-      if (!this.Context) return <div />;
+      if (!this.Context) return null;
       const Consumer = this.Context.Consumer;
       let Dialog = null;
       if (!raw) {
@@ -1443,7 +1443,7 @@ If both dialogwrapper and getdialogf is null, let the implementation manage the 
         return (
           <Consumer>
             {dialogs => {
-              if (!dialogs) return <div />;
+              if (!dialogs) return null;
               return <Dialog dialogs={dialogs} />;
             }}
           </Consumer>
@@ -1568,12 +1568,12 @@ export function getGLDialog(drawDialog, WrappedList) {
      * @return {React.Element}
      */
     render() {
-      if (!this.Context) return <div />;
+      if (!this.Context) return null;
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
           {value => {
-            if (!value || !value.segments || !value.pickerlist) return <div />;
+            if (!value || !value.segments || !value.pickerlist) return null;
             const segments = value.segments;
             const pickerList = value.pickerlist;
             const chooseF = value.chooseF;
@@ -1644,7 +1644,7 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
      * @return {React.ReactElement}
      */
     render() {
-      if (!this.Context) return <div />;
+      if (!this.Context) return null;
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
@@ -1652,7 +1652,7 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
             const section = value && value.section;
             const actions = value && value.actions;
             if (!section || !section.fields || !actions) {
-              return <div />;
+              return null;
             }
             let metadata = {
               ACTIONID: {
@@ -1835,7 +1835,7 @@ export function getDoclinksUpload(Wrapper) {
      */
     render() {
       return (
-        <div>
+        <>
           <Wrapper {...this.state} />
           <input
             ref={this.inputRef}
@@ -1845,7 +1845,7 @@ export function getDoclinksUpload(Wrapper) {
             onChange={ev => this.addFiles(ev.target.files)}
             id="filehidden"
           />
-        </div>
+        </>
       );
     }
   }
