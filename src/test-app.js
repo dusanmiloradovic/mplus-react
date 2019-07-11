@@ -255,7 +255,7 @@ const List = getList(
 );
 
 const WpList = props => {
-  const Template = listTemplates[props.templateId];
+  const Template = listTemplates[props.listTemplate];
 
   if (props.waiting) return <div>...</div>;
   return (
