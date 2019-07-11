@@ -260,9 +260,7 @@ const WpList = props => {
   if (props.waiting) return <div>...</div>;
   return (
     <div>
-      {props.data.map(o => (
-        <Template {...o} />
-      ))}
+      {props.data && props.data.map(o => <Template {...o} />)}
       <button onClick={ev => props.fetchMore(10)}>Fetch More</button>
     </div>
   );
@@ -513,7 +511,7 @@ class TestList extends React.Component {
   }
 }
 const DoclinksViewer = getDoclinksViewer(props => (
-  <TestList {...props} listTemplate="doclinks" />
+  <List2 {...props} listTemplate="doclinks" />
 ));
 
 const DoclinksUpload = getDoclinksUpload(props => {
@@ -620,7 +618,7 @@ class App extends React.Component {
         />
         <div className="flex">
           <div className="flex-item">
-            <TestList
+            <List2
               container="pocont"
               columns={["ponum", "description", "status"]}
               norows="20"

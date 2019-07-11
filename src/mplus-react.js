@@ -861,11 +861,13 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
               if (template) {
                 // raw means don't render the row, return just the props, and parent will take care of rendering with that props
                 if (raw) {
-                  drs = maxrows.map(o => {
-                    const _o = template(o);
-                    _o.key = o.data["_uniqueid"];
-                    return _o;
-                  });
+                  drs =
+                    maxrows &&
+                    maxrows.map(o => {
+                      const _o = template(o);
+                      _o.key = o.data["_uniqueid"];
+                      return _o;
+                    });
                 } else {
                   drs = maxrows.map(o => (
                     <Template {...o} key={o.data["_uniqueid"]} />
@@ -1026,10 +1028,12 @@ export function getSimpleList(WrappedList) {
             const _waiting =
               waiting && (!paginator || paginator.numrows != paginator.torow);
             let drs = [];
-            drs = maxrows.map(o => {
-              o.key = o.data["_uniqueid"];
-              return o;
-            });
+            drs =
+              maxrows &&
+              maxrows.map(o => {
+                o.key = o.data["_uniqueid"];
+                return o;
+              });
             return (
               <WrappedList
                 {...this.props}
@@ -1044,7 +1048,12 @@ export function getSimpleList(WrappedList) {
         </Consumer>
       );
     }
+    /** Internal */
+    static get contextType() {
+      return getRootContext();
+    }
   }
+
   MPSimpleList.propTypes = {
     container: PropTypes.string,
     listTemplate: PropTypes.string,
