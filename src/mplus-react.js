@@ -758,7 +758,7 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       if (this.props.dataSetCallback && !this.state) {
         this.props.dataSetCallback({
           fetchMore: this.fetchMore,
-          oageNext: this.pageNext,
+          pageNext: this.pageNext,
           pagePrev: this.pagePrev
         });
       }
@@ -909,6 +909,148 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
     filterTemplate: PropTypes.string
   };
   return MPList;
+}
+
+/** HOC to return the Simple List
+ * The difference from getList is that we will have only one argument - drawList
+ * @param {function} drawList - function that draws a List (top level)
+ * @return {MPlusComponent}
+ **/
+export function getSimpleList(WrappedList) {
+  /** Simple List component */
+  class MPSimpleList extends MPlusComponent {
+    /** Constructor, init the container from the core lib
+     * @param {object} props
+     */
+    constructor(props) {
+      super(props);
+      this.fetchMore = this.fetchMore.bind(this);
+      this.pageNext = this.pageNext.bind(this);
+      this.pagePrev = this.pagePrev.bind(this);
+      //      this.showFilter = this.showFilter.bind(this);
+      if (this.props.dataSetCallback && !this.state) {
+        this.props.dataSetCallback({
+          fetchMore: this.fetchMore,
+          pageNext: this.pageNext,
+          pagePrev: this.pagePrev
+        });
+      }
+
+      this.state = { dataSetInitialized: true };
+    }
+    /** init the component data*/
+    initData() {
+      this.mp.initData();
+    }
+
+    //    componentWillMount() {
+    //      super.componentWillMount();
+
+    //    }
+    /** Initializes underlying core component
+     * @param {object} mboCont
+     */
+    putContainer(mboCont) {
+      if (this.mp) {
+        return;
+      }
+
+      const mp = new maximoplus.re.Grid(
+        mboCont,
+        this.props.columns,
+        this.props.norows
+      );
+
+      const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
+      innerContexts[this.oid].mp = mp;
+      innerContexts[this.oid].wrapper = wrapper;
+      if (this.props.showWaiting) {
+        this.enableLocalWaitSpinner.bind(this)();
+      }
+      mp.renderDeferred();
+      if (
+        this.props.selectableF &&
+        typeof this.props.selectableF == "function"
+      ) {
+        mp.setSelectableF(this.props.selectableF);
+      }
+      if (this.props.initdata) {
+        mp.initData();
+      }
+    }
+    /** When function is called, the wait will be displayed locally*/
+    enableLocalWaitSpinner() {
+      // useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
+
+      this.mp.prepareCall = _ => {
+        if (!this.wrapper) return;
+        this.wrapper.setState("waiting", true);
+        this.wrapper.setState("startWait", Date.now());
+      };
+      this.mp.finishCall = _ => {
+        if (this.wrapper) {
+          this.wrapper.setState("waiting", false);
+        }
+      };
+    }
+    /**
+     * Fetch more records into list, used mostly for infinite scroll
+     * @param {number} numRows
+     */
+    fetchMore(numRows) {
+      this.mp.fetchMore(numRows);
+    }
+    /** If paging is use instead of infinite scroll, go to next page */
+    pageNext() {
+      this.mp.pageNext();
+    }
+    /** If paging is use instead of infinite scroll, go to previous page */
+    pagePrev() {
+      this.mp.pagePrev();
+    }
+    /** React render
+     * @return {React.Element}
+     */
+    render() {
+      if (!this.Context) return null;
+      const Consumer = this.Context.Consumer;
+      return (
+        <Consumer>
+          {value => {
+            if (!value) {
+              return null;
+            }
+            const waiting = value.waiting;
+            const paginator = value.paginator;
+            const maxrows = value.maxrows;
+            const _waiting =
+              waiting && (!paginator || paginator.numrows != paginator.torow);
+            let drs = [];
+            drs = maxrows.map(o => {
+              o.key = o.data["_uniqueid"];
+              return o;
+            });
+            return (
+              <WrappedList
+                {...this.props}
+                data={drs}
+                waiting={_waiting}
+                pageNext={this.pageNext}
+                pagePrev={this.pagePrev}
+                fetchMore={this.fetchMore}
+              />
+            );
+          }}
+        </Consumer>
+      );
+    }
+  }
+  MPSimpleList.propTypes = {
+    container: PropTypes.string,
+    listTemplate: PropTypes.string,
+    filterTemplate: PropTypes.string
+  };
+  return MPSimpleList;
 }
 
 /** HOC to get the picker list

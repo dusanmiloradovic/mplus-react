@@ -5,6 +5,7 @@ import {
   getPickerList,
   MPlusComponent,
   getList,
+  getSimpleList,
   getSection,
   getQbeSection,
   getDialogHolder,
@@ -253,6 +254,22 @@ const List = getList(
   )
 );
 
+const WpList = props => {
+  const Template = listTemplates[props.templateId];
+
+  if (props.waiting) return <div>...</div>;
+  return (
+    <div>
+      {props.data.map(o => (
+        <Template {...o} />
+      ))}
+      <button onClick={ev => props.fetchMore(10)}>Fetch More</button>
+    </div>
+  );
+};
+
+const List2 = getSimpleList(WpList);
+
 const DialogWrapper = props => {
   if (!props || props.length == 0) {
     return <div />;
@@ -384,9 +401,9 @@ class AppRoot extends React.Component {
     super(props);
     this.state = { needsLogin: false, version: 1 };
     //when we login, all the state needs to be reset. Instead of reloading the page, we will just increment the counter, which will in turn re-initialize all the children
-    maximoplus.core.globalFunctions.global_login_function = err => {
+    maximoplus.core.setOnLoggedOff(err => {
       this.setState({ needsLogin: true });
-    };
+    });
     this.dialogHolderRef = React.createRef();
     this.openDialog = this.openDialog.bind(this);
     this.closeDialog = this.closeDialog.bind(this);
@@ -725,9 +742,7 @@ class App extends React.Component {
   }
 }
 
-maximoplus.net.globalFunctions.serverRoot = function() {
-  return "http://localhost:8080";
-};
+maximoplus.net.setServerRoot("http://localhost:8080");
 window.onload = _ => {
   ReactDOM.render(<App />, document.getElementById("root"));
 };
