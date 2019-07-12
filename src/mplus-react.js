@@ -734,18 +734,13 @@ export function getAppDocTypesPicker(Picker) {
   return MPAppDoctypes;
 }
 
-/** HOC to retunr the List(Grid) component
- * @param {function} getListTemplate - function that retuns the JSX template of a list item
- * @param {function} drawFilterButton - function that draws a filter for list
- * @param {function} drawList - function that draws a List (top level)
- * @param {boolean} raw - if true, doesn't render the raws, implementing component does it. Some libraries require this
+/** HOC to return the Simple List
+ * @param {function} WrappedList - component that does the rendering
  * @return {MPlusComponent}
- */
-export function getList(getListTemplate, drawFilterButton, drawList, raw) {
-  // sometimes (like for ios template), the rows must not be rendered for the list, we just return the array of properties to be rendered in the parent list component
-
-  /** List component*/
-  class MPList extends MPlusComponent {
+ **/
+export function getSimpleList(WrappedList) {
+  /** Simple List component */
+  class MPSimpleList extends MPlusComponent {
     /** Constructor, init the container from the core lib
      * @param {object} props
      */
@@ -770,185 +765,6 @@ export function getList(getListTemplate, drawFilterButton, drawList, raw) {
       this.mp.initData();
     }
 
-    //    componentWillMount() {
-    //      super.componentWillMount();
-
-    //    }
-    /** Initializes underlying core component
-     * @param {object} mboCont
-     */
-    putContainer(mboCont) {
-      if (this.mp) {
-        return;
-      }
-
-      const mp = new maximoplus.re.Grid(
-        mboCont,
-        this.props.columns,
-        this.props.norows
-      );
-
-      const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
-      innerContexts[this.oid].mp = mp;
-      innerContexts[this.oid].wrapper = wrapper;
-      if (this.props.showWaiting) {
-        this.enableLocalWaitSpinner.bind(this)();
-      }
-      mp.renderDeferred();
-      if (
-        this.props.selectableF &&
-        typeof this.props.selectableF == "function"
-      ) {
-        mp.setSelectableF(this.props.selectableF);
-      }
-      if (this.props.initdata) {
-        mp.initData();
-      }
-    }
-    /** When function is called, the wait will be displayed locally*/
-    enableLocalWaitSpinner() {
-      // useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
-
-      this.mp.prepareCall = _ => {
-        if (!this.wrapper) return;
-        this.wrapper.setState("waiting", true);
-        this.wrapper.setState("startWait", Date.now());
-      };
-      this.mp.finishCall = _ => {
-        if (this.wrapper) {
-          this.wrapper.setState("waiting", false);
-        }
-      };
-    }
-    /**
-     * Fetch more records into list, used mostly for infinite scroll
-     * @param {number} numRows
-     */
-    fetchMore(numRows) {
-      this.mp.fetchMore(numRows);
-    }
-    /** If paging is use instead of infinite scroll, go to next page */
-    pageNext() {
-      this.mp.pageNext();
-    }
-    /** If paging is use instead of infinite scroll, go to previous page */
-    pagePrev() {
-      this.mp.pagePrev();
-    }
-
-    /** React render
-     * @return {React.Element}
-     */
-    render() {
-      if (!this.Context) return null;
-      const Consumer = this.Context.Consumer;
-      return (
-        <Consumer>
-          {value => {
-            if (!value) {
-              return null;
-            }
-            const waiting = value.waiting;
-            const paginator = value.paginator;
-            const maxrows = value.maxrows;
-            const _waiting =
-              waiting && (!paginator || paginator.numrows != paginator.torow);
-            let drs = [];
-
-            if (maxrows) {
-              const template = getListTemplate(this.props.listTemplate);
-              const Template = template; // for JSX
-              if (template) {
-                // raw means don't render the row, return just the props, and parent will take care of rendering with that props
-                if (raw) {
-                  drs =
-                    maxrows &&
-                    maxrows.map(o => {
-                      const _o = template(o);
-                      _o.key = o.data["_uniqueid"];
-                      return _o;
-                    });
-                } else {
-                  drs = maxrows.map(o => (
-                    <Template {...o} key={o.data["_uniqueid"]} />
-                  ));
-                }
-              }
-            }
-            return drawList(drs, this.getFilterButton(), _waiting);
-          }}
-        </Consumer>
-      );
-    }
-    /** Display the filter */
-    showFilter() {
-      const container = this.props.maxcontainer
-        ? this.props.maxcontainer
-        : kont[this.props.container];
-      openDialog(this.context, {
-        type: "filter",
-        maxcontainer: container,
-        filtername: this.props.filterTemplate
-      });
-    }
-    /** Draws filter button
-     * @return {React.Element}
-     */
-    getFilterButton() {
-      if (this.props.filterTemplate) {
-        return drawFilterButton(this.showFilter);
-      }
-      return null;
-    }
-    /** Internal */
-    static get contextType() {
-      return getRootContext();
-    }
-  }
-  MPList.propTypes = {
-    container: PropTypes.string,
-    listTemplate: PropTypes.string,
-    filterTemplate: PropTypes.string
-  };
-  return MPList;
-}
-
-/** HOC to return the Simple List
- * The difference from getList is that we will have only one argument - drawList
- * @param {function} drawList - function that draws a List (top level)
- * @return {MPlusComponent}
- **/
-export function getSimpleList(WrappedList) {
-  /** Simple List component */
-  class MPSimpleList extends MPlusComponent {
-    /** Constructor, init the container from the core lib
-     * @param {object} props
-     */
-    constructor(props) {
-      super(props);
-      this.fetchMore = this.fetchMore.bind(this);
-      this.pageNext = this.pageNext.bind(this);
-      this.pagePrev = this.pagePrev.bind(this);
-      //      this.showFilter = this.showFilter.bind(this);
-      if (this.props.dataSetCallback && !this.state) {
-        this.props.dataSetCallback({
-          fetchMore: this.fetchMore,
-          pageNext: this.pageNext,
-          pagePrev: this.pagePrev
-        });
-      }
-
-      this.state = { dataSetInitialized: true };
-    }
-    /** init the component data*/
-    initData() {
-      this.mp.initData();
-    }
-
-    //    componentWillMount() {
-    //      super.componentWillMount();
-
-    //    }
     /** Initializes underlying core component
      * @param {object} mboCont
      */
@@ -1042,11 +858,23 @@ export function getSimpleList(WrappedList) {
                 pageNext={this.pageNext}
                 pagePrev={this.pagePrev}
                 fetchMore={this.fetchMore}
+                showFilter={this.showFilter}
               />
             );
           }}
         </Consumer>
       );
+    }
+    /** Display the filter */
+    showFilter() {
+      const container = this.props.maxcontainer
+        ? this.props.maxcontainer
+        : kont[this.props.container];
+      openDialog(this.context, {
+        type: "filter",
+        maxcontainer: container,
+        filtername: this.props.filterTemplate
+      });
     }
     /** Internal */
     static get contextType() {
