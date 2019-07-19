@@ -373,7 +373,7 @@ export class MPlusComponent extends React.Component {
   get mp() {
     return innerContexts[this.oid] && innerContexts[this.oid].mp;
   }
-  /** getter for the MaximoPlus wraooer object */
+  /** getter for the MaximoPlus wrapper object */
   get wrapper() {
     return innerContexts[this.oid] && innerContexts[this.oid].wrapper;
   }

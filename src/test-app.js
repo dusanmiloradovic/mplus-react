@@ -156,7 +156,10 @@ const TextField = props => {
         {lookup}
         <input
           value={props.value ? props.value : ""}
-          onChange={ev => props.listener(ev.target.value)}
+          onChange={ev => {
+            console.log("calling on change with the value " + props.value);
+            return props.listener(ev.target.value);
+          }}
           onBlur={ev => {
             //for qbe no changeLstener
             if (props.changeListener) {
@@ -415,9 +418,8 @@ class AppRoot extends React.Component {
   }
   softReload() {
     this.setState({
-      version: this.state && this.state.version ? this.state.version + 1 : 0
+      needsLogin: false
     });
-    document.location.reload(); //temp
   }
   render() {
     return (
