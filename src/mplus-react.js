@@ -1115,7 +1115,8 @@ If we call the maximo change handler for every field, Maximo may change the valu
                     enabled: !f.readonly,
                     required: f.required,
                     fieldKey: fKey,
-                    metadata: f.metadata
+                    metadata: f.metadata,
+                    key: fKey
                   };
                   if (f.metadata.hasLookup) {
                     if (f.metadata.gl) {
