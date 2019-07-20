@@ -1,6 +1,6 @@
 {
   "name": "mplus-react",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Basic MaximoPlus React template",
   "main": "distrollup/bundle.js",
   "unpkg": "distrollup/bundleweb.js",
@@ -13,7 +13,6 @@
   "license": "ISC",
   "peerDependencies": {
     "react": "^16.4.1",
-    "maximoplus-core": "^2.1.24",
     "react-multiple-contexts": "^1.0.12"
   },
   "dependencies": {
@@ -33,7 +32,7 @@
     "eslint-config-google": "^0.11.0",
     "eslint-config-prettier": "^3.3.0",
     "eslint-plugin-react": "^7.12.3",
-    "maximoplus-core": "^2.1.24",
+    "maximoplus-core": "^2.1.25",
     "react": "^16.6.3",
     "react-dom": "^16.6.3",
     "react-multiple-contexts": "^1.0.12",
