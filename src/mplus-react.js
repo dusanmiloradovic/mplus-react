@@ -1243,7 +1243,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
           action: ev => this.filterDialog.closeDialog()
         });
       }
-      return drawSearchButtons(buttons);
+      return drawSearchButtons(buttons, this.props);
     }
     /** returns control actions
      * @return {array}
@@ -1297,7 +1297,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
                 return <WrappedTextField key={attrs.fieldKey} {...attrs} />; // try to put this as a function, to be able to override. There is no indirection, or maybe HOC
               });
             }
-            return drawFields(flds, buttons);
+            return drawFields(flds, buttons, this.props);
           }}
         </Consumer>
       );
