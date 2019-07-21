@@ -846,10 +846,12 @@ export function getSimpleList(WrappedList) {
             let drs = [];
             drs =
               maxrows &&
-              maxrows.map(o => {
-                o.key = o.data["_uniqueid"];
-                return o;
-              });
+              maxrows
+                .map(o => {
+                  o.key = o.data["_uniqueid"];
+                  return o;
+                })
+                .filter(({ key }) => key != undefined);
             return (
               <WrappedList
                 {...this.props}
