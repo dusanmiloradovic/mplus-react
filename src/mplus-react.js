@@ -134,7 +134,7 @@ class MaximoPlusWrapper {
             closeDialog(this.rootContext);
           }
           if (newDialogs.length > prevDialogs.length) {
-            openDialog(this.rootContext, newDialogs[0]);
+            openDialog(newDialogs[0], this.rootContext);
           }
         }
       }
@@ -174,7 +174,8 @@ We will have only one context and context provider for the whole application, th
 */
 
 // Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context. The method from opeing and closing the dialog will be in the dialogcontext, and it will call this functions
-export const openDialog = (rootContext, dialog) => {
+export const openDialog = (dialog, _rootContext) => {
+  const rootContext = _rootContext ? _rootContext : getRootContext();
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
@@ -187,7 +188,8 @@ export const openDialog = (rootContext, dialog) => {
     return [...dialogs, dialog];
   });
 };
-export const closeDialog = rootContext => {
+export const closeDialog = _rootContext => {
+  const rootContext = _rootContext ? _rootContext : getRootContext();
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
   }
@@ -872,11 +874,14 @@ export function getSimpleList(WrappedList) {
       const container = this.props.maxcontainer
         ? this.props.maxcontainer
         : kont[this.props.container];
-      openDialog(this.context, {
-        type: "filter",
-        maxcontainer: container,
-        filtername: this.props.filterTemplate
-      });
+      openDialog(
+        {
+          type: "filter",
+          maxcontainer: container,
+          filtername: this.props.filterTemplate
+        },
+        this.context
+      );
     }
     /** Internal */
     static get contextType() {
@@ -1401,7 +1406,7 @@ export function getDialogHolder(DialogWrapper, getDialogF, raw) {
     openDialog(dialog) {
       // can't access the openDialog and closeDialog functions directlry, becaise of the contexts
       // the dialogholder will have to be reffed from the main template, and there we can call this functions
-      openDialog(this.context, dialog);
+      openDialog(dialog, this.context);
     }
     /** Closes the currently open dialog */
     closeDialog() {
