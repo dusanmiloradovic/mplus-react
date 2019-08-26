@@ -589,10 +589,10 @@ class App extends React.Component {
     return (
       <AppRoot>
         <AppContainer
-          mboname="po"
+          mboname="postd"
           appname="po"
           id="pocont"
-          wfprocess="postatus"
+          wfprocess="pomain"
           ref={this.containerRef}
         />
         <RelContainer
@@ -633,7 +633,7 @@ class App extends React.Component {
               {({ openWorkflow, openDialog }) => {
                 return (
                   <>
-                    <button onClick={ev => openWorkflow("pocont", "POSTATUS")}>
+                    <button onClick={ev => openWorkflow("pocont", "POMAIN")}>
                       Open Workflow
                     </button>
                     <button
