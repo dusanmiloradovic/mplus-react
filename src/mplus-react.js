@@ -845,7 +845,7 @@ export function getSimpleList(WrappedList) {
             const maxrows = value.maxrows;
             const _waiting =
               waiting && (!paginator || paginator.numrows != paginator.torow);
-            const rowAction = ({ mxrow }) => {
+            const rowAction = mxrow => {
               this.mp.rowAction(mxrow);
             };
             let drs = [];
