@@ -845,12 +845,16 @@ export function getSimpleList(WrappedList) {
             const maxrows = value.maxrows;
             const _waiting =
               waiting && (!paginator || paginator.numrows != paginator.torow);
+            const rowAction = ({ mxrow }) => {
+              this.mp.rowAction(mxrow);
+            };
             let drs = [];
             drs =
               maxrows &&
               maxrows
                 .map(o => {
                   o.key = o.data["_uniqueid"];
+                  o.rowAction = rowAction;
                   return o;
                 })
                 .filter(({ key }) => key != undefined);
