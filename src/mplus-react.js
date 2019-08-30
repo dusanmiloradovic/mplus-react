@@ -958,7 +958,12 @@ export function getPickerList(drawPickerOption, drawPicker) {
                 );
               });
             }
-            return drawPicker(this.props.label, this.props.changeListener, drs);
+            return drawPicker(
+              this.props.label,
+              this.props.changeListener,
+              drs,
+              this.props
+            );
           }}
         </Consumer>
       );
