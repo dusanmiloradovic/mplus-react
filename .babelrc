@@ -18,5 +18,6 @@
         "NODE_ENV"
       ]
     }]
+    ,["@babel/plugin-proposal-class-properties"]
     ]
 }
