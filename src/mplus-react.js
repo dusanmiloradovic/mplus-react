@@ -751,6 +751,7 @@ export function getSimpleList(WrappedList) {
       this.fetchMore = this.fetchMore.bind(this);
       this.pageNext = this.pageNext.bind(this);
       this.pagePrev = this.pagePrev.bind(this);
+      this.rowAction = this.rowAction.bind(this);
       this.showFilter = this.showFilter.bind(this);
       if (this.props.dataSetCallback && !this.state) {
         this.props.dataSetCallback({
@@ -828,6 +829,17 @@ export function getSimpleList(WrappedList) {
     pagePrev() {
       this.mp.pagePrev();
     }
+
+    /**
+     * Row action is the function to be called when user selects the row on the list.
+     * By defualt it navigates to the selected row. If there is the user action defined
+     * it executes it as will execute it as well. Originally the core librariy was creating the closures for each row, but that is a huge performance hit.
+     * @param {number} mxrow
+     */
+    rowAction(mxrow) {
+      this.mp.rowAction(mxrow);
+    }
+
     /** React render
      * @return {React.Element}
      */
@@ -845,16 +857,14 @@ export function getSimpleList(WrappedList) {
             const maxrows = value.maxrows;
             const _waiting =
               waiting && (!paginator || paginator.numrows != paginator.torow);
-            const rowAction = mxrow => {
-              this.mp.rowAction(mxrow);
-            };
+
             let drs = [];
             drs =
               maxrows &&
               maxrows
                 .map(o => {
                   o.key = o.data["_uniqueid"];
-                  o.rowAction = rowAction;
+                  o.rowAction = this.rowAction;
                   return o;
                 })
                 .filter(({ key }) => key != undefined);
