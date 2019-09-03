@@ -862,6 +862,7 @@ export function getSimpleList(WrappedList) {
             drs =
               maxrows &&
               maxrows
+                .filter(o => o.data)
                 .map(o => {
                   o.key = o.data["_uniqueid"];
                   o.rowAction = this.rowAction;
