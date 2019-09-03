@@ -877,6 +877,7 @@ export function getSimpleList(WrappedList) {
                 pagePrev={this.pagePrev}
                 fetchMore={this.fetchMore}
                 showFilter={this.showFilter}
+                rowAction={this.rowAction}
               />
             );
           }}
