@@ -5,7 +5,7 @@ import { decode } from "base64-arraybuffer";
 import WebCam from "react-webcam";
 import PropTypes from "prop-types";
 
-const kontXF = {};
+const kont = {};
 
 export const shallowDiffers = (a, b) => {
   if (!a && b) return true;
