@@ -5,7 +5,7 @@ import { decode } from "base64-arraybuffer";
 import WebCam from "react-webcam";
 import PropTypes from "prop-types";
 
-const kont = {};
+const kontXF = {};
 
 export const shallowDiffers = (a, b) => {
   if (!a && b) return true;
@@ -1711,7 +1711,7 @@ export const save = contid => {
   kont[contid].then(mp => mp.save());
 };
 
-const _uploadFile = (container, uploadMethod, file, doctype) => {
+export const uploadFile = (container, uploadMethod, file, doctype) => {
   const fd = new FormData();
   fd.append("docname", file.name);
   fd.append("doctype", doctype);
@@ -1814,7 +1814,7 @@ export function getDoclinksUpload(Wrapper) {
       const uploadMethod = this.props.uploadMethod
         ? this.props.uploadMethod
         : "doclinks";
-      return _uploadFile(this.props.container, uploadMethod, file, doctype);
+      return uploadFile(this.props.container, uploadMethod, file, doctype);
     }
     /** Upload attached files
      * @param {string} doctype
@@ -1943,7 +1943,7 @@ export function getPhotoUpload(Wrapper) {
       const uploadMethod = this.props.uploadMethod
         ? this.props.uploadMethod
         : "doclinks";
-      _uploadFile(
+      uploadFile(
         this.props.container,
         uploadMethod,
         this.state.file,
