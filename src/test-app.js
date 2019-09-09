@@ -1,6 +1,7 @@
 import {
   AppContainer,
   RelContainer,
+  SingleMboContainer,
   animating,
   getPickerList,
   MPlusComponent,
@@ -610,8 +611,9 @@ class App extends React.Component {
           wfprocess="postatus"
           ref={this.containerRef}
         />
+        <SingleMboContainer id="posingle" container="pocont" />
         <RelContainer
-          container="pocont"
+          container="posingle"
           relationship="poline"
           id="polinecont"
         />
@@ -627,7 +629,7 @@ class App extends React.Component {
           </div>
           <div className="flex-item">
             <Section
-              container="pocont"
+              container="posingle"
               columns={[
                 "ponum",
                 "description",

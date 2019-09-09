@@ -785,7 +785,7 @@ export function getSimpleList(WrappedList) {
       const wrapper = new MaximoPlusWrapper(this.context, this.oid, mp);
       innerContexts[this.oid].mp = mp;
       innerContexts[this.oid].wrapper = wrapper;
-      if (this.props.showWaiting) {
+      if (!this.props.globalWaiting) {
         this.enableLocalWaitSpinner.bind(this)();
       }
       mp.renderDeferred();
@@ -855,8 +855,8 @@ export function getSimpleList(WrappedList) {
             const waiting = value.waiting;
             const paginator = value.paginator;
             const maxrows = value.maxrows;
-            const _waiting =
-              waiting && (!paginator || paginator.numrows != paginator.torow);
+            //            const _waiting =
+            //              waiting && (!paginator || paginator.numrows != paginator.torow);
 
             let drs = [];
             drs =
@@ -873,7 +873,7 @@ export function getSimpleList(WrappedList) {
               <WrappedList
                 {...this.props}
                 data={drs}
-                waiting={_waiting}
+                waiting={waiting}
                 pageNext={this.pageNext}
                 pagePrev={this.pagePrev}
                 fetchMore={this.fetchMore}
