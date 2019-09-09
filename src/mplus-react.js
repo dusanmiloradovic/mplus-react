@@ -853,7 +853,7 @@ export function getSimpleList(WrappedList) {
               return null;
             }
             const waiting = value.waiting;
-            const paginator = value.paginator;
+            //            const paginator = value.paginator;
             const maxrows = value.maxrows;
             //            const _waiting =
             //              waiting && (!paginator || paginator.numrows != paginator.torow);
