@@ -1711,6 +1711,15 @@ export const save = contid => {
   kont[contid].then(mp => mp.save());
 };
 
+export const getDownloadURL = (doclinkscontid, method, params) =>
+  kont[doclinkscontid].then(container =>
+    maximoplus.net.getDownloadURL(
+      container,
+      method ? method : "doclinks",
+      params ? params : {}
+    )
+  );
+
 export const uploadFile = (container, uploadMethod, file, doctype) => {
   const fd = new FormData();
   fd.append("docname", file.name);
