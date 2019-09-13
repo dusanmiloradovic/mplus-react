@@ -1700,6 +1700,10 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
   };
 }
 
+export const getLocalValue = (contid, column) => {
+  kont[contid].then(mp => mp.getFieldLocalValue(column));
+};
+
 export const reload = contid => {
   kont[contid].then(mp => {
     mp.reset();
