@@ -1701,7 +1701,11 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
 }
 
 export const getLocalValue = (contid, column) => {
-  kont[contid].then(mp => mp.getFieldLocalValue(column));
+  return kont[contid].then(mp => {
+    const ret = mp.getFieldLocalValue(column.toUpperCase());
+    //    console.log(column + "=" + ret);
+    return ret;
+  });
 };
 
 export const reload = contid => {

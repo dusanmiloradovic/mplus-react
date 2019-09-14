@@ -19,6 +19,7 @@ import {
   getDoclinksUpload,
   getPhotoUpload,
   getDoclinksViewer,
+  getLocalValue,
   save
 } from "./mplus-react.js";
 import React from "react";
@@ -740,6 +741,8 @@ class App extends React.Component {
     );
   }
 }
+
+window.getLocalValue = getLocalValue;
 
 maximoplus.net.setServerRoot("http://localhost:8080");
 window.onload = _ => {
