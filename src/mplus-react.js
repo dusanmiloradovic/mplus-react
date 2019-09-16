@@ -285,7 +285,7 @@ AppContainer.propTypes = {
 
 const getDepContainer = containerConstF => {
   /** helper class for dep contaniers */
-  class DepContainer extends React.Component {
+  class DepContainer extends React.PureComponent {
     /** Constructor, intializs the template
      * @param {object} props
      */
@@ -303,13 +303,26 @@ const getDepContainer = containerConstF => {
       return this.state.mp;
     }
     /** React lifecycle method use dto resolve the containers */
+    componentWillUnmount() {
+      this._isMounted = false;
+    }
+
+    /** React lifecycle method use dto resolve the containers */
     componentDidMount() {
+      this._isMounted = true;
       if (kont[this.props.id] && kont[this.props.id].resolved) {
-        kont[this.props.id].then(mp => this.setState({ mp: mp }));
+        kont[this.props.id].then(mp => {
+          if (this._isMounted) {
+            this.setState({ mp: mp });
+          }
+        });
         return;
       }
 
       kont[this.props.container].then(mboCont => {
+        if (!this._isMounted) {
+          return;
+        }
         const mp = containerConstF(mboCont, this.props);
         this.setState({ mp: mp });
         resolveContainer(this.props.id, mp);

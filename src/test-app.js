@@ -160,7 +160,7 @@ const TextField = props => {
           value={props.value ? props.value : ""}
           onChange={ev => {
             console.log("calling on change with the value " + props.value);
-            return props.listener(ev.target.value);
+            return props.listener && props.listener(ev.target.value);
           }}
           onBlur={ev => {
             //for qbe no changeLstener
@@ -606,7 +606,7 @@ class App extends React.Component {
     return (
       <AppRoot>
         <AppContainer
-          mboname="po"
+          mboname="postd"
           appname="po"
           id="pocont"
           wfprocess="postatus"
