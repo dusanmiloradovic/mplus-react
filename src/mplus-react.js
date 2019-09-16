@@ -7,13 +7,6 @@ import PropTypes from "prop-types";
 
 const kont = {};
 
-export const shallowDiffers = (a, b) => {
-  if (!a && b) return true;
-  for (const i in a) if (!(i in b)) return true;
-  for (const i in b) if (a[i] !== b[i]) return true;
-  return false;
-};
-
 const hash = value => {
   const _value = [];
   for (const k in value) {
@@ -373,7 +366,7 @@ export const SingleMboContainer = getDepContainer(
 );
 
 /** Basic React component class to be extended by all the visual components */
-export class MPlusComponent extends React.Component {
+export class MPlusComponent extends React.PureComponent {
   // the following tho methods should be overriden in the concrete implementations with
   // MPlusComponent.prototype.pushDialog = function (dialog)...
   /** Constructor, init the container from the core lib
@@ -445,20 +438,7 @@ In case the container property is passed, we have to make sure container is avai
       this.putContainer(this.props.maxcontainer);
     }
   }
-  /** React lifecycle method for performance controls
-   * @param {object} nextProps
-   * @param {object} nextState
-   * @return {boolean}
-   */
-  shouldComponentUpdate(nextProps, nextState) {
-    if (nextState.animating) {
-      return false;
-    }
-    return (
-      shallowDiffers(this.props, nextProps) ||
-      shallowDiffers(this.state, nextState)
-    );
-  }
+
   /** Method to be overriden by the implementations */
   putContainer() {
     throw Error("should override");
