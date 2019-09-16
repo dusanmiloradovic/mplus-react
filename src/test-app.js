@@ -259,7 +259,7 @@ class MPListItem extends React.PureComponent {
   }
 }
 
-const WpList = props => {
+const WpList = React.memo(props => {
   const Template = listTemplates[props.listTemplate];
 
   if (props.waiting) return <div>...</div>;
@@ -276,7 +276,7 @@ const WpList = props => {
       {filterButton}
     </div>
   );
-};
+});
 
 const List = getSimpleList(WpList);
 
