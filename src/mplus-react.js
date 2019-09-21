@@ -117,7 +117,9 @@ class MaximoPlusWrapper {
             continue;
           }
           let prevDialogs =
-            state.maxfields.length == 0 || !state.maxfields[j]
+            !state.maxfields ||
+            state.maxfields.length == 0 ||
+            !state.maxfields[j]
               ? []
               : state.maxfields[j].dialogs;
           if (!prevDialogs) {
