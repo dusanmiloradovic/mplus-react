@@ -611,6 +611,7 @@ class App extends React.Component {
           id="pocont"
           wfprocess="postatus"
           ref={this.containerRef}
+          offlineenabled={true}
         />
         <SingleMboContainer id="posingle" container="pocont" />
         <RelContainer
