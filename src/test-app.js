@@ -606,7 +606,7 @@ class App extends React.Component {
     return (
       <AppRoot>
         <AppContainer
-          mboname="postd"
+          mboname="po"
           appname="po"
           id="pocont"
           wfprocess="postatus"
@@ -698,22 +698,6 @@ class App extends React.Component {
             <QbeSection
               container="pocont"
               columns={["ponum", "description", "status", "shipvia"]}
-              qbePrepends={[
-                {
-                  virtualName: "from_orderdate",
-                  qbePrepend: ">=",
-                  attributeName: "orderdate",
-                  title: "Order Date From",
-                  position: "4"
-                },
-                {
-                  virtualName: "to_orderdate",
-                  qbePrepend: "<=",
-                  attributeName: "orderdate",
-                  title: "Order Date To",
-                  position: "5"
-                }
-              ]}
               metadata={{
                 SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
                 STATUS: {
