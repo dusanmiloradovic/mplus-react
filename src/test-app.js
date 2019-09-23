@@ -606,7 +606,7 @@ class App extends React.Component {
     return (
       <AppRoot>
         <AppContainer
-          mboname="po"
+          mboname="postd"
           appname="po"
           id="pocont"
           wfprocess="postatus"
