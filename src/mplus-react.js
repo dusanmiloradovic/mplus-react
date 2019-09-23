@@ -1130,7 +1130,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                     changeListener: () => {
                       const newFst = Object.assign({}, this.state.fieldValues);
                       const __vval = newFst[fKey];
-                      if (__vval) {
+                      if (__vval != undefined) {
                         // post the change only if there was change
                         delete newFst[fKey];
                         this.setState({ fieldValues: newFst });
@@ -1328,7 +1328,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
                   changeListener: () => {
                     const newFst = Object.assign({}, this.state.fieldValues);
                     const __vval = newFst[fKey];
-                    if (__vval) {
+                    if (__vval != undefined) {
                       // post the change only if there was change
                       delete newFst[fKey];
                       this.setState({ fieldValues: newFst });
