@@ -1193,11 +1193,19 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       this.clear = this.clear.bind(this);
       this.search = this.search.bind(this);
       this.runControlAction = this.runControlAction.bind(this);
+      this.changeInternalFieldValue = this.changeInternalFieldValue.bind(this);
+      this.state = { fieldValues: {} };
     }
     /**
      * Init uderlying core component
      * @param {object} mboCont
      */
+
+    changeInternalFieldValue(fieldKey, value) {
+      const newFieldValues = Object.assign({}, this.state.fieldValues);
+      newFieldValues[fieldKey] = value;
+      this.setState({ fieldValues: newFieldValues });
+    }
     putContainer(mboCont) {
       if (this.mp) {
         return;
