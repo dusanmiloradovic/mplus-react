@@ -1117,9 +1117,10 @@ If we call the maximo change handler for every field, Maximo may change the valu
                     return raw ? { key: fKey } : <React.Fragment key={fKey} />;
                   }
                 } else {
-                  const _val = this.state.fieldValues[fKey]
-                    ? this.state.fieldValues[fKey]
-                    : f.data;
+                  const _val =
+                    this.state.fieldValues[fKey] != undefined
+                      ? this.state.fieldValues[fKey]
+                      : f.data;
                   const attrs = {
                     label: f.metadata.title,
                     value: _val,
@@ -1196,16 +1197,20 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       this.changeInternalFieldValue = this.changeInternalFieldValue.bind(this);
       this.state = { fieldValues: {} };
     }
-    /**
-     * Init uderlying core component
-     * @param {object} mboCont
-     */
 
+    /** Value to be kept internally before sending to Maximo. React changes on every letter, maximo is designed to react on blur
+     * @param {string} fieldKey
+     * @param {string} value
+     */
     changeInternalFieldValue(fieldKey, value) {
       const newFieldValues = Object.assign({}, this.state.fieldValues);
       newFieldValues[fieldKey] = value;
       this.setState({ fieldValues: newFieldValues });
     }
+    /**
+     * Init uderlying core component
+     * @param {object} mboCont
+     */
     putContainer(mboCont) {
       if (this.mp) {
         return;
@@ -1310,12 +1315,28 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
             const buttons = this.getSearchButtons();
             if (value && value.maxfields) {
               flds = value.maxfields.map((f, counter) => {
+                const fKey = f.metadata.attributeName + counter;
+                const _val =
+                  this.state.fieldValues[fKey] != undefined
+                    ? this.state.fieldValues[fKey]
+                    : f.data;
                 const attrs = {
                   label: f.metadata.title,
-                  value: f.data,
+                  value: _val,
                   type: f.metadata.maxType,
                   enabled: true,
-                  listener: f.listeners["change"],
+                  changeListener: () => {
+                    const newFst = Object.assign({}, this.state.fieldValues);
+                    const __vval = newFst[fKey];
+                    if (__vval) {
+                      // post the change only if there was change
+                      delete newFst[fKey];
+                      this.setState({ fieldValues: newFst });
+                      f.listeners["change"](_val);
+                    }
+                  },
+                  listener: value => this.changeInternalFieldValue(fKey, value),
+                  immediateChangeListener: f.listeners["change"],
                   fieldKey: f.metadata.attributeName + counter
                 };
                 if (f.metadata.hasLookup) {
