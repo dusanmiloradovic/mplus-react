@@ -367,6 +367,16 @@ export const SingleMboContainer = getDepContainer(
   (mboCont, props) => new maximoplus.basecontrols.SingleMboContainer(mboCont)
 );
 
+export const MboCommandContainer = getDepContainer(
+  (mboCont, props) =>
+    new maximoplus.basecontrols.MboCommandContainer(
+      mboCont,
+      props.type,
+      props.command,
+      props.argControl
+    )
+);
+
 /** Basic React component class to be extended by all the visual components */
 export class MPlusComponent extends React.PureComponent {
   // the following tho methods should be overriden in the concrete implementations with
