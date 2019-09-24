@@ -2044,3 +2044,15 @@ export function getPhotoUpload(Wrapper) {
   };
   return PhotoUpload;
 }
+
+export const mboCommand = (kontId, command) => {
+  kont[kontId].then(mp => {
+    mp.mboCommand(command);
+  });
+};
+
+export const mboSetCommand = (kontId, command) => {
+  kont[kontId].then(mp => {
+    mp.mboSetCommand(command);
+  });
+};
