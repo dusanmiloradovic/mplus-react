@@ -2053,6 +2053,6 @@ export const mboCommand = (kontId, command) => {
 
 export const mboSetCommand = (kontId, command) => {
   kont[kontId].then(mp => {
-    mp.mboSetCommand(command);
+    mp.mbosetCommand(command);
   });
 };
