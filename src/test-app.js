@@ -606,7 +606,7 @@ class App extends React.Component {
     return (
       <AppRoot>
         <AppContainer
-          mboname="postd"
+          mboname="po"
           appname="po"
           id="pocont"
           wfprocess="postatus"
@@ -688,7 +688,7 @@ class App extends React.Component {
                       View Docs
                     </button>
 
-                    <button onClick={ev => save("pocont")}>Save</button>
+                    <button onClick={ev => save("posingle")}>Save</button>
                   </>
                 );
               }}

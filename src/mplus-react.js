@@ -1745,7 +1745,7 @@ export const getLocalValue = (contid, column) => {
 export const reload = contid => {
   kont[contid].then(mp => {
     mp.reset();
-    mp.moveTo(0);
+    mp.moveToRow(0);
   });
 };
 
