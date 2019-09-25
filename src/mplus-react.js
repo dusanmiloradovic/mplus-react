@@ -2047,12 +2047,12 @@ export function getPhotoUpload(Wrapper) {
 
 export const mboCommand = (kontId, command) => {
   kont[kontId].then(mp => {
-    mp.mboCommand(command);
+    return mp.mboCommand(command);
   });
 };
 
 export const mboSetCommand = (kontId, command) => {
   kont[kontId].then(mp => {
-    mp.mbosetCommand(command);
+    return mp.mbosetCommand(command);
   });
 };
