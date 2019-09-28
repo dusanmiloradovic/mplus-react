@@ -20,7 +20,9 @@ import {
   getPhotoUpload,
   getDoclinksViewer,
   getLocalValue,
-  save
+  save,
+  closeDialog,
+  mboSetCommand
 } from "./mplus-react.js";
 import React from "react";
 import { ContextPool } from "react-multiple-contexts";
@@ -58,7 +60,37 @@ const dialogs = {
   photoupload: dialog => (
     <PhotoUploadDialog container={dialog.container} doctype={dialog.doctype} />
   ),
-  doclinksview: dialog => <DoclinksViewer container={dialog.container} />
+  doclinksview: dialog => <DoclinksViewer container={dialog.container} />,
+  postatushandler: dialog => (
+    <>
+      <RelContainer
+        id="pochangestatus"
+        container="posingle"
+        relationship="pochangestatus"
+      />
+      <Section
+        container="pochangestatus"
+        columns={["status", "memo"]}
+        metadata={{
+          STATUS: {
+            hasLookup: "true",
+            listTemplate: "valuelist",
+            listColumns: ["value", "description"]
+          }
+        }}
+      />
+      <button
+        onClick={ev => {
+          mboSetCommand("pochangestatus", "execute").then(function(_) {
+            save("posingle");
+            closeDialog();
+          });
+        }}
+      >
+        OK
+      </button>
+    </>
+  )
 };
 
 const filterTemplates = {
@@ -689,6 +721,11 @@ class App extends React.Component {
                     </button>
 
                     <button onClick={ev => save("posingle")}>Save</button>
+                    <button
+                      onClick={ev => openDialog({ type: "postatushandler" })}
+                    >
+                      Change Status
+                    </button>
                   </>
                 );
               }}
