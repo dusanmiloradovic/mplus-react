@@ -10,8 +10,13 @@ const kont = {};
 const hash = value => {
   const _value = [];
   for (const k in value) {
-    if (typeof value[k] == "undefined" || typeof value[k] == "function")
+    if (
+      typeof value[k] == "undefined" ||
+      typeof value[k] == "function" ||
+      value[k] === null
+    )
       continue;
+
     if (typeof value[k] == "object" && value[k].getId) {
       _value.push(k);
       _value.push(value[k].getId()); // MaximoPlus object
@@ -959,7 +964,8 @@ export function getPickerList(drawPickerOption, drawPicker) {
         <Consumer>
           {value => {
             if (!value) return null;
-            const maxrows = value.maxrows;
+            const maxrows =
+              value.maxrows && value.maxrows.filter(({ data }) => data);
             let drs = [];
             if (maxrows) {
               drs = maxrows.map((object, i) => {
@@ -1101,7 +1107,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                         kind: "picker",
                         key: fKey,
                         metadata: f.metadata,
-                        pickerValue: f.picker.value
+                        pickerValue: f.data
                       };
                     }
                     return (
@@ -1120,7 +1126,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                         type={f.metadata.maxType}
                         key={fKey}
                         metadata={f.metadata}
-                        pickerValue={f.picker.value}
+                        pickerValue={f.data}
                       />
                     );
                   } else {
