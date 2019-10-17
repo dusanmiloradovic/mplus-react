@@ -1039,9 +1039,9 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       if (!mboCont || !this.props.columns || this.props.columns.length == 0)
         return;
       const mp = new maximoplus.re.Section(mboCont, this.props.columns);
-
-      if (this.props.metadata) {
-        mp.addColumnsMeta(this.props.metadata);
+      const metadata = this.props.metadata;
+      if (metadata) {
+        mp.addColumnsMeta(metadata);
       }
       mp.renderDeferred();
       mp.initData();
@@ -1052,7 +1052,23 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
 
       /*
 If we call the maximo change handler for every field, Maximo may change the values, while the user is typing (it is trimming the spaces for example). We will keep the values internally in the state, and pass 2 functions to the field: 1) function that changes this state that is called from onChange field handler, and 2) Maximo change function that is called from onblur
-*/
+      */
+      //i think this is the best place to initiate the offloading of the lists, because it will be done only once, and the conainer is avaliable
+      if (metadata) {
+        for (const column in metadata) {
+          const listColumns = metadata[column].listColumns;
+          const isPreloadOffline = metadata[column].preloadOffline;
+          const offlineReturnColumn = metadata[column].offlineReturnColumn;
+          if (isPreloadOffline && offlineReturnColumn) {
+            maximoplus.basecontrols.listToOffline(
+              mboCont,
+              column,
+              listColumns,
+              offlineReturnColumn
+            );
+          }
+        }
+      }
     }
     /** Value to be kept internally before sending to Maximo. React changes on every letter, maximo is designed to react on blur
      * @param {string} fieldKey
