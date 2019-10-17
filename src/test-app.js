@@ -675,7 +675,9 @@ class App extends React.Component {
                 SHIPVIA: {
                   hasLookup: "true",
                   listTemplate: "valuelist",
-                  filterTemplate: "valuelist"
+                  filterTemplate: "valuelist",
+                  preloadOffline: "true",
+                  offlineReturnColumn: "VALUE"
                 }
               }}
             />

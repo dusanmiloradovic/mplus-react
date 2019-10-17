@@ -1569,6 +1569,20 @@ export function getListDialog(WrappedList, drawList) {
         // clear the filter (check unmount from qbesection
       }
     }
+    componentDidMount() {
+      const fieldMeta = this.props.dialog.field.getMetadata();
+      const isPreloadOffline = fieldMeta.preloadOffline;
+      const offlineReturnColumn = fieldMeta.offlineReturnColumn;
+      const attributeName = fieldMeta.attributeName;
+      if (isPreloadOffline && offlineReturnColumn) {
+        maximoplus.basecontrols.listToOffline(
+          this.props.dialog.listContainer,
+          attributeName,
+          this.props.dialog.dialogCols,
+          offlineReturnColumn
+        );
+      }
+    }
   }
   MPListDialog.propTypes = {
     dialog: PropTypes.object
