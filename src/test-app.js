@@ -638,10 +638,10 @@ class App extends React.Component {
     return (
       <AppRoot>
         <AppContainer
-          mboname="postd"
+          mboname="po"
           appname="po"
           id="pocont"
-          wfprocess="pomain"
+          wfprocess="postatus"
           ref={this.containerRef}
           offlineenabled={true}
         />

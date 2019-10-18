@@ -1026,6 +1026,8 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
     constructor(props) {
       super(props);
       this.changeInternalFieldValue = this.changeInternalFieldValue.bind(this);
+      this.preloadOfflineList = this.preloadOfflineList.bind(this);
+      this.preloadedOfflineLists = {};
       this.state = { fieldValues: {} };
     }
     /**
@@ -1053,22 +1055,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       /*
 If we call the maximo change handler for every field, Maximo may change the values, while the user is typing (it is trimming the spaces for example). We will keep the values internally in the state, and pass 2 functions to the field: 1) function that changes this state that is called from onChange field handler, and 2) Maximo change function that is called from onblur
       */
-      //i think this is the best place to initiate the offloading of the lists, because it will be done only once, and the conainer is avaliable
-      if (metadata) {
-        for (const column in metadata) {
-          const listColumns = metadata[column].listColumns;
-          const isPreloadOffline = metadata[column].preloadOffline;
-          const offlineReturnColumn = metadata[column].offlineReturnColumn;
-          if (isPreloadOffline && offlineReturnColumn) {
-            maximoplus.basecontrols.listToOffline(
-              mboCont,
-              column,
-              listColumns,
-              offlineReturnColumn
-            );
-          }
-        }
-      }
+      // i think this is the best place to initiate the offloading of the lists, because it will be done only once, and the conainer is avaliable
     }
     /** Value to be kept internally before sending to Maximo. React changes on every letter, maximo is designed to react on blur
      * @param {string} fieldKey
@@ -1103,6 +1090,9 @@ If we call the maximo change handler for every field, Maximo may change the valu
             if (value && value.maxfields) {
               flds = value.maxfields.map((f, i) => {
                 const fKey = f.metadata.attributeName + i;
+                if (f.metadata.preloadOffline) {
+                  this.preloadOfflineList(f.metadata);
+                }
                 if (f.metadata.picker && f.picker) {
                   const lst = f.picker.list;
                   if (lst) {
@@ -1196,6 +1186,23 @@ If we call the maximo change handler for every field, Maximo may change the valu
         </Consumer>
       );
     }
+    /**
+     * preloadOfflineList if indicated by metadata
+     * @param {object} fieldMeta
+     */
+    preloadOfflineList(fieldMeta) {
+      const attributeName = fieldMeta.attributeName;
+      if (this.mp && !this.preloadedOfflineLists[attributeName]) {
+        this.preloadedOfflineLists[
+          attributeName
+        ] = maximoplus.basecontrols.listToOffline(
+          this.mp.getContainer(),
+          attributeName,
+          fieldMeta.listColumns,
+          fieldMeta.offlineReturnColumn
+        );
+      }
+    }
     /** Internal*/
     static get contextType() {
       return getRootContext();
@@ -1227,6 +1234,8 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       this.search = this.search.bind(this);
       this.runControlAction = this.runControlAction.bind(this);
       this.changeInternalFieldValue = this.changeInternalFieldValue.bind(this);
+      this.preloadOfflineList = this.preloadOfflineList.bind(this);
+      this.preloadedOfflineLists = {};
       this.state = { fieldValues: {} };
     }
 
@@ -1347,6 +1356,9 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
             const buttons = this.getSearchButtons();
             if (value && value.maxfields) {
               flds = value.maxfields.map((f, counter) => {
+                if (f.metadata.preloadOffline) {
+                  this.preloadOfflineList(f.metadata);
+                }
                 const fKey = f.metadata.attributeName + counter;
                 const _val =
                   this.state.fieldValues[fKey] != undefined
@@ -1389,6 +1401,23 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
     /** Internal */
     static get contextType() {
       return getRootContext();
+    }
+    /**
+     * preloadOfflineList if indicated by metadata
+     * @param {object} fieldMeta
+     */
+    preloadOfflineList(fieldMeta) {
+      const attributeName = fieldMeta.attributeName;
+      if (this.mp && !this.preloadedOfflineLists[attributeName]) {
+        this.preloadedOfflineLists[
+          attributeName
+        ] = maximoplus.basecontrols.listToOffline(
+          this.mp.getContainer(),
+          attributeName,
+          fieldMeta.listColumns,
+          fieldMeta.offlineReturnColumn
+        );
+      }
     }
   }
   MPQbeSection.propypes = {
@@ -1583,20 +1612,6 @@ export function getListDialog(WrappedList, drawList) {
       if (this.props.dialog.listContainer) {
         //  this.props.dialog.listContainer.reset();
         // clear the filter (check unmount from qbesection
-      }
-    }
-    componentDidMount() {
-      const fieldMeta = this.props.dialog.field.getMetadata();
-      const isPreloadOffline = fieldMeta.preloadOffline;
-      const offlineReturnColumn = fieldMeta.offlineReturnColumn;
-      const attributeName = fieldMeta.attributeName;
-      if (isPreloadOffline && offlineReturnColumn) {
-        maximoplus.basecontrols.listToOffline(
-          this.props.dialog.listContainer,
-          attributeName,
-          this.props.dialog.dialogCols,
-          offlineReturnColumn
-        );
       }
     }
   }
