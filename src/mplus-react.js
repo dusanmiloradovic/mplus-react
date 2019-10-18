@@ -874,7 +874,7 @@ export function getSimpleList(WrappedList) {
               maxrows
                 .filter(o => o.data)
                 .map(o => {
-                  o.key = o.data["_uniqueid"];
+                  o.key = o.data["_uniqueid"] || o.data["uniqueid"]; // for the offline
                   o.rowAction = this.rowAction;
                   return o;
                 })
