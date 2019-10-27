@@ -98,7 +98,7 @@ class MaximoPlusWrapper {
     this.mp = mp;
     this.rootContext = rootContext;
     mp.addWrappedComponent(this);
-    this.setState("mp", mp);
+    this.state = { mp: mp };
   }
   /** Method to be called from the core lib
    * @param {string} property
@@ -2108,9 +2108,36 @@ export const mboSetCommand = (kontId, command) => {
   });
 };
 
-export const displayOfflinePostErrors = Adapter => {
-  maximoplus.core.globalFunctions.globalOfflinePostError = errors => {
-    const errd = errors.map(e => <Adapter {...e} />);
-    return <>{errd}</>;
-  };
+export const getOfflineErrorDisplay = Adapter => {
+  /**
+Offline Error displayer component
+*/
+  class OfflineError extends React.Component {
+    /** Constructor
+     * @param {object} props
+     */
+    constructor(props) {
+      super(props);
+      this.displayErrors = this.displayErrors.bind(this);
+      maximoplus.core.globalFunctions.globalOfflinePostError = this.displayErrors;
+      this.state = { errors: [] };
+    }
+    /** Display the errors on the blobal error handler
+     * @param {array} errors
+     */
+    displayErrors(errors) {
+      this.setState({ errors: errors });
+    }
+    /**
+     * Main render function
+     * @return {React.ReactElement}
+     */
+    render() {
+      const errdisp = this.state.errors.map(e => <Adapter key={e.id} {...e} />);
+      return <>{errdisp}</>;
+    }
+  }
+
+  OfflineError.propTypes = {};
+  return OfflineError;
 };
