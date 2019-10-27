@@ -2092,3 +2092,10 @@ export const mboSetCommand = (kontId, command) => {
     return mp.mbosetCommand(command);
   });
 };
+
+export const displayOfflinePostErrors = Adapter => {
+  maximoplus.core.globalFunctions.globalOfflinePostError = errors => {
+    const errd = errors.map(e => <Adapter {...e} />);
+    return <>{errd}</>;
+  };
+};
