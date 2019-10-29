@@ -98,7 +98,7 @@ class MaximoPlusWrapper {
     this.mp = mp;
     this.rootContext = rootContext;
     mp.addWrappedComponent(this);
-    this.state = { mp: mp };
+    this.setState("mp", mp);
   }
   /** Method to be called from the core lib
    * @param {string} property
