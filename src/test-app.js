@@ -772,3 +772,8 @@ maximoplus.net.setServerRoot("http://localhost:8080");
 window.onload = _ => {
   ReactDOM.render(<App />, document.getElementById("root"));
 };
+
+//uncomment this to test the app start in offline mode
+maximoplus.core.globalFunctions.startedOffline = function() {
+  return Promise.resolve(false);
+};
