@@ -131,10 +131,10 @@ class MaximoPlusWrapper {
             prevDialogs = [];
           }
           if (newDialogs.length < prevDialogs.length) {
-            closeDialog(this.rootContext);
+            setTimeout(() => closeDialog(this.rootContext, 0));
           }
           if (newDialogs.length > prevDialogs.length) {
-            openDialog(newDialogs[0], this.rootContext);
+            setTimeout(() => openDialog(newDialogs[0], this.rootContext));
           }
         }
       }

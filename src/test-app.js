@@ -775,5 +775,5 @@ window.onload = _ => {
 
 //uncomment this to test the app start in offline mode
 maximoplus.core.globalFunctions.startedOffline = function() {
-  return Promise.resolve(false);
+    return Promise.resolve(true);
 };
