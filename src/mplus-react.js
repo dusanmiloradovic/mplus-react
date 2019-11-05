@@ -131,10 +131,10 @@ class MaximoPlusWrapper {
             prevDialogs = [];
           }
           if (newDialogs.length < prevDialogs.length) {
-            setTimeout(() => closeDialog(this.rootContext, 0));
+            setTimeout(() => closeDialog(this.rootContext), 0); // delays are to fix the react warning. Check for a better way to do it leter
           }
           if (newDialogs.length > prevDialogs.length) {
-            setTimeout(() => openDialog(newDialogs[0], this.rootContext));
+            setTimeout(() => openDialog(newDialogs[0], this.rootContext), 0);
           }
         }
       }
@@ -208,7 +208,7 @@ export const closeDialog = _rootContext => {
       }
       delete innerContexts[j];
     }
-    rootContext.removeMultipleInnerContexts(dff);
+    setTimeout(() => rootContext.removeMultipleInnerContexts(dff), 0);
     return newDialogs;
   });
 };
