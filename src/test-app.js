@@ -22,7 +22,10 @@ import {
   getLocalValue,
   save,
   closeDialog,
-  mboSetCommand
+  mboSetCommand,
+  reload,
+  preloadOffline,
+  setQbe
 } from "./mplus-react.js";
 import React from "react";
 import { ContextPool } from "react-multiple-contexts";
@@ -738,11 +741,16 @@ class App extends React.Component {
               container="pocont"
               columns={["ponum", "description", "status", "shipvia"]}
               metadata={{
-                SHIPVIA: { hasLookup: "true", listTemplate: "qbevaluelist" },
+                SHIPVIA: {
+                  hasLookup: "true",
+                  listTemplate: "qbevaluelist",
+                  offlineReturnColumn: "VALUE"
+                },
                 STATUS: {
                   hasLookup: "true",
                   listTemplate: "qbevaluelist",
-                  filterTemplate: "valuelist"
+                  filterTemplate: "valuelist",
+                  offlineReturnColumn: "VALUE"
                 }
               }}
             />
@@ -775,5 +783,9 @@ window.onload = _ => {
 
 //uncomment this to test the app start in offline mode
 maximoplus.core.globalFunctions.startedOffline = function() {
-    return Promise.resolve(true);
+  return Promise.resolve(false);
 };
+
+setQbe("pocont", "status", "wappr")
+  .then(() => reload("pocont"))
+  .then(() => preloadOffline());
