@@ -1786,7 +1786,7 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
 }
 
 export const getLocalValue = (contid, column) => {
-  return kont[contid].then(mp => {
+  return getDeferredContainer(contid).then(mp => {
     const ret = mp.getFieldLocalValue(column.toUpperCase());
     //    console.log(column + "=" + ret);
     return ret;
@@ -1794,18 +1794,18 @@ export const getLocalValue = (contid, column) => {
 };
 
 export const reload = contid => {
-  kont[contid].then(mp => {
+  getDeferredContainer(contid).then(mp => {
     mp.reset();
-    mp.moveToRow(0);
+    return mp.moveToRow(0);
   });
 };
 
 export const save = contid => {
-  kont[contid].then(mp => mp.save());
+  getDeferredContainer(contid).then(mp => mp.save());
 };
 
 export const getDownloadURL = (doclinkscontid, method, params) =>
-  kont[doclinkscontid].then(container =>
+  getDeferredContainer(doclinkscontid).then(container =>
     maximoplus.net.getDownloadURL(
       container,
       method ? method : "doclinks",
@@ -1818,7 +1818,7 @@ export const uploadFile = (container, uploadMethod, file, doctype) => {
   fd.append("docname", file.name);
   fd.append("doctype", doctype);
   //  fd.append("file", file);
-  const prom = kont[container].then(mbocont => {
+  const prom = getDeferredContainer(container).then(mbocont => {
     return new Promise((resolve, reject) => {
       if (!isCordovaApp) {
         fd.append("file", file);
@@ -2097,13 +2097,13 @@ export function getPhotoUpload(Wrapper) {
 }
 
 export const mboCommand = (kontId, command) => {
-  kont[kontId].then(mp => {
+  getDeferredContainer(kontId).then(mp => {
     return mp.mboCommand(command);
   });
 };
 
 export const mboSetCommand = (kontId, command) => {
-  kont[kontId].then(mp => {
+  getDeferredContainer(kontId).then(mp => {
     return mp.mbosetCommand(command);
   });
 };
@@ -2140,4 +2140,12 @@ Offline Error displayer component
 
   OfflineError.propTypes = {};
   return OfflineError;
+};
+
+export const preloadOffline = () => maximoplus.basecontrols.offload();
+
+export const setQbe = (contId, attributeName, qbe) => {
+  return getDeferredContainer(contId).then(mp => {
+    return mp.setQbe(attributeName, qbe);
+  });
 };
