@@ -15,11 +15,11 @@
     "react-multiple-contexts": "^1.0.12"
   },
   "dependencies": {
-    "base64-arraybuffer": "^0.1.5",
+    "base64-arraybuffer": "^0.2.0",
     "flyd": "^0.2.8",
     "js-md5": "^0.7.3",
     "prop-types": "^15.7.2",
-    "react-webcam": "^1.1.1"
+    "react-webcam": "^4.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.7.2",
@@ -28,19 +28,19 @@
     "@babel/preset-react": "^7.7.0",
     "babel-eslint": "^10.0.3",
     "babel-plugin-transform-inline-environment-variables": "^0.4.3",
-    "eslint": "^5.16.0",
-    "eslint-config-google": "^0.11.0",
-    "eslint-config-prettier": "^3.6.0",
+    "eslint": "^6.0.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-config-prettier": "^6.5.0",
     "eslint-plugin-react": "^7.16.0",
-    "maximoplus-core": "^2.5.1",
+    "maximoplus-core": "^2.5.2",
     "react": "^16.11.0",
     "react-dom": "^16.11.0",
-    "react-multiple-contexts": "^1.0.14",
-    "rollup": "^0.67.4",
+    "react-multiple-contexts": "^1.0.15",
+    "rollup": "^1.26.3",
     "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-commonjs": "^9.3.4",
-    "rollup-plugin-eslint": "^5.1.0",
-    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-eslint": "^7.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-replace": "^2.2.0"
   }
 }
