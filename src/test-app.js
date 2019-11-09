@@ -786,6 +786,8 @@ maximoplus.core.globalFunctions.startedOffline = function() {
   return Promise.resolve(false);
 };
 
-setQbe("pocont", "status", "wappr")
-  .then(() => reload("pocont"))
-  .then(() => preloadOffline());
+window.offline = () => {
+  setQbe("pocont", "status", "wappr")
+    .then(() => reload("pocont"))
+    .then(() => preloadOffline());
+};
