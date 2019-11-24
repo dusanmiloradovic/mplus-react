@@ -179,7 +179,7 @@ const RadioButton = getPickerList(
 //  }
 //}
 
-const TextField = props => {
+export const TextField = props => {
   let lookup =
     props.showLookupF && typeof props.showLookupF == "function" ? (
       <span onClick={props.showLookupF}>&#9167;</span>
@@ -209,9 +209,11 @@ const TextField = props => {
   );
 };
 
-const Section = getSection(TextField, RadioButton, flds => <div>{flds}</div>);
+export const Section = getSection(TextField, RadioButton, flds => (
+  <div>{flds}</div>
+));
 
-const QbeSection = getQbeSection(
+export const QbeSection = getQbeSection(
   TextField,
   (fields, buttons) => (
     <div>
@@ -232,13 +234,22 @@ const QbeSection = getQbeSection(
 const tickData = data =>
   data == "Y" ? <div className="tickData">&#x2713;</div> : <div />;
 
-const listTemplates = {
+export const listTemplates = {
   porow: ({ PONUM, STATUS, ORDERDATE, DESCRIPTION }) => (
     <div className="porowtemplate">
       <div>
         {PONUM} {STATUS}
       </div>
       <div>Order Date: {ORDERDATE}</div>
+      <div>{DESCRIPTION}</div>
+    </div>
+  ),
+  worow: ({ WONUM, STATUS, LOCATION, DESCRIPTION }) => (
+    <div className="porowtemplate">
+      <div>
+        {WONUM} {STATUS}
+      </div>
+      <div>Location: {LOCATION}</div>
       <div>{DESCRIPTION}</div>
     </div>
   ),
@@ -766,6 +777,30 @@ class App extends React.Component {
                 "gldebitacct"
               ]}
               metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
+            />
+          </div>
+        </div>
+      </AppRoot>
+    );
+  }
+}
+
+class AppWO extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    return (
+      <AppRoot>
+        <AppContainer mboname="workorder" appname="wotract" id="wotrack" />
+        <div className="flex">
+          <div className="flex-item">
+            <List
+              container="wocont"
+              columns={["wonum","location", "description", "status"]}
+              listtmplata="worow"
+              norows="20"
+              initdata="true"
             />
           </div>
         </div>

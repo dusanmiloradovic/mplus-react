@@ -2149,3 +2149,27 @@ export const setQbe = (contId, attributeName, qbe) => {
     return mp.setQbe(attributeName, qbe);
   });
 };
+
+export const addRow = contId => {
+  return getDeferredContainer(contId).then(mp => {
+    return mp.addNewRow();
+  });
+};
+
+export const addRowAt = (contId, index) => {
+  return getDeferredContainer(contId).then(mp => {
+    return mp.addNewRowAt(index);
+  });
+};
+
+export const delRow = contId => {
+  return getDeferredContainer(contId).then(mp => {
+    return mp.delRow();
+  });
+};
+
+export const unddelRow = contId => {
+  return getDeferredContainer(contId).then(mp => {
+    return mp.undelRow();
+  });
+};
