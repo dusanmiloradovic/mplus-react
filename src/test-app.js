@@ -253,6 +253,34 @@ export const listTemplates = {
       <div>{DESCRIPTION}</div>
     </div>
   ),
+  worktype: ({ WORKTYPE, WTYPEDESC }) => (
+    <div className="porowtemplate">
+      <div>{WORKTYPE}</div>
+      <div>{WTYPEDESC}</div>
+    </div>
+  ),
+  wplabor: ({ CRAFT, LABORHRS, SKILLLEVEL, "CRAFTSKILL.DESCRIPTION": foo }) => (
+    <div className="porowtemplate">
+      <div>
+        {CRAFT} {foo}
+      </div>
+      <div>Skill Level: {SKILLLEVEL}</div>
+      <div>
+        Duration:
+        {LABORHRS}
+      </div>
+    </div>
+  ),
+  wpmaterial: ({ ITEMNUM, DESCRIPTION, ITEMQTY, ORDERUNIT }) => (
+    <div className="porowtemplate">
+      <div>
+        {ITEMNUM} {DESCRIPTION}
+      </div>
+      <div>
+        {ITEMQTY} {ORDERUNIT}
+      </div>
+    </div>
+  ),
   valuelist: ({ VALUE, DESCRIPTION }) => (
     <div>
       <div>{VALUE}</div>
@@ -308,7 +336,7 @@ class MPListItem extends React.PureComponent {
 const WpList = React.memo(props => {
   const Template = listTemplates[props.listTemplate];
 
-  if (props.waiting) return <div>...</div>;
+  //  if (props.waiting) return <div>...</div>;
   const filterButton = props.filterTemplate ? (
     <button onClick={ev => props.showFilter()}>Filter</button>
   ) : null;
@@ -792,14 +820,72 @@ class AppWO extends React.Component {
   render() {
     return (
       <AppRoot>
-        <AppContainer mboname="workorder" appname="wotract" id="wotrack" />
+        <AppContainer mboname="workorder" appname="wotrack" id="wotrack" />
+        <RelContainer id="wplabor" container="wotrack" relationship="wplabor" />
+        <RelContainer
+          id="wpmaterial"
+          container="wotrack"
+          relationship="wpmaterial"
+        />
+
         <div className="flex">
           <div className="flex-item">
             <List
-              container="wocont"
-              columns={["wonum","location", "description", "status"]}
-              listtmplata="worow"
-              norows="20"
+              container="wotrack"
+              columns={["wonum", "location", "description", "status"]}
+              listTemplate="worow"
+              norows="30"
+              initdata="true"
+            />
+          </div>
+          <div className="flex-item">
+            <Section
+              container="wotrack"
+              columns={[
+                "wonum",
+                "description",
+                "location",
+                "siteid",
+                "unit",
+                "worktype",
+                "failurecode",
+                "problemcode",
+                "status",
+                "statusdate",
+                "targstartdate",
+                "schedstart",
+                "schedfinish",
+                "estdur"
+              ]}
+              metadata={{
+                WORKTYPE: {
+                  hasLookup: "true",
+                  listTemplate: "worktype",
+                  listColumns: ["worktype", "wtypedesc"]
+                }
+              }}
+            />
+          </div>
+          <div className="flexItem">
+            <List
+              container="wplabor"
+              columns={[
+                "craft",
+                "craftskill.description",
+                "laborhrs",
+                "skilllevel"
+              ]}
+              listTemplate="wplabor"
+              norows="30"
+              initdata="true"
+            />
+          </div>
+          <div className="flexItem">
+            <List
+              container="wpmaterial"
+              columns={["itemnum", "description", "itemqty", "orderunit"]}
+              listTemplate="wpmaterial"
+              norows="30"
               initdata="true"
             />
           </div>
@@ -813,7 +899,7 @@ window.getLocalValue = getLocalValue;
 
 maximoplus.net.setServerRoot("http://localhost:8080");
 window.onload = _ => {
-  ReactDOM.render(<App />, document.getElementById("root"));
+  ReactDOM.render(<AppWO />, document.getElementById("root"));
 };
 
 //uncomment this to test the app start in offline mode
