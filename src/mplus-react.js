@@ -2168,7 +2168,7 @@ export const delRow = contId => {
   });
 };
 
-export const unddelRow = contId => {
+export const undelRow = contId => {
   return getDeferredContainer(contId).then(mp => {
     return mp.undelRow();
   });

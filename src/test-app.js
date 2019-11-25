@@ -25,7 +25,8 @@ import {
   mboSetCommand,
   reload,
   preloadOffline,
-  setQbe
+  setQbe,
+  addRow
 } from "./mplus-react.js";
 import React from "react";
 import { ContextPool } from "react-multiple-contexts";
@@ -670,6 +671,56 @@ class PhotoUploadDialog extends React.Component {
     );
   }
 }
+
+const ViewActualsDialog = props => (
+  <div>
+    <RelContainer
+      id="laboractuals"
+      container="wotrack"
+      relationship="labtrans"
+    />
+    <List
+      container="laboractuals"
+      columns={["laborcode", "person.displayname", "regularhrs"]}
+      initdata="true"
+      norows="10"
+    />
+    <DialogContext.Consumer>
+      {({ openDialog }) => (
+        <button
+          onClick={ev => {
+            addRow("laboractuals");
+            openDialog({
+              type: "enterlaboractuals",
+              container: "laboractuals"
+            });
+          }}
+        >
+          Enter Actual Labor
+        </button>
+      )}
+    </DialogContext.Consumer>
+  </div>
+);
+
+const EnterActualsDialog = props => (
+  <div>
+    <Section
+      container="laboractuals"
+      columns={[
+        "craft",
+        "skillevel",
+        "startdate",
+        "starttime",
+        "regularhrs",
+        "payrate",
+        "finishdate",
+        "finishtime",
+        "linecost"
+      ]}
+    />
+  </div>
+);
 
 class App extends React.Component {
   constructor(props) {
