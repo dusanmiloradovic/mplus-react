@@ -532,6 +532,7 @@ export function getComponentAdapter(Adapter) {
                 <Adapter
                   maxrows={maxrows}
                   setMaxValue={this.mp.setMaxValue}
+                  setMaxRowValue={this.mp.setMaxRowValue}
                   ref={this.adapterRef}
                 />
               );
