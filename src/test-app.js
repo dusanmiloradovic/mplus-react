@@ -918,6 +918,19 @@ class AppWO extends React.Component {
             />
           </div>
           <div className="flexItem">
+            <QbeSection
+              container="wotrack"
+              columns={["wonum", "description", "status", "worktype"]}
+              metadata={{
+                STATUS: {
+                  hasLookup: "true",
+                  listTemplate: "qbevaluelist",
+                  listColumns: ["value", "description"]
+                }
+              }}
+            />
+          </div>
+          <div className="flexItem">
             <List
               container="wplabor"
               columns={[
