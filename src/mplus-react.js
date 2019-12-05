@@ -480,6 +480,8 @@ export function getComponentAdapter(Adapter) {
     constructor(props) {
       super(props);
       this.setMaxValue = this.setMaxValue.bind(this);
+      this.setMaxRowValue = this.setMaxRowValue.bind(this);
+      this.fetchMore = this.fetchMore.bind(this);
       this.adapterRef = React.createRef();
     }
     /** initialize the data for the control */
@@ -548,6 +550,20 @@ export function getComponentAdapter(Adapter) {
      */
     setMaxValue(column, value) {
       this.mp.setMaxValue(column, value);
+    }
+    /** Method to be called from the library or component to change the Maximo value on a row
+     * @param {number} rownum
+     * @param {string} column
+     * @param {string} value
+     */
+    setMaxRowValue(rownum, column, value) {
+      this.mp.setMaxRowValue(rownum, column, value);
+    }
+    /** Intially cmponent adapter gets just the number of rows defined in the constructor. Call this to get more rows from Maximo
+     * @param {number} rows
+     */
+    fetchMore(rows) {
+      this.mp.fetchMore(rows);
     }
     /** Internal getter*/
     static get contextType() {
