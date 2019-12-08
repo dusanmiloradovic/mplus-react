@@ -450,6 +450,29 @@ const TestComponentAdapter = getComponentAdapter(props => {
   );
 });
 
+const TestMultiRowsComponentAdapter = getComponentAdapter(props => {
+  if (!props || !props.maxrows) return null;
+  return (
+    <div>
+      {props.maxrows.map(({ data }) => (
+        <div key={data.PONUM}>
+          {data.PONUM}
+          ....
+          {data.STATUS}
+        </div>
+      ))}
+      <button
+        onClick={ev => {
+          console.log("fetch more");
+          props.fetchMore(5);
+        }}
+      >
+        More
+      </button>
+    </div>
+  );
+});
+
 class PickerVals extends React.Component {
   constructor(props) {
     super(props);
@@ -755,6 +778,13 @@ class App extends React.Component {
             />
           </div>
           <div className="flex-item">
+            <TestMultiRowsComponentAdapter
+              container="pocont"
+              columns={["ponum", "description", "status"]}
+              norows="20"
+            />
+          </div>
+          <div className="flex-item">
             <Section
               container="posingle"
               columns={[
@@ -963,7 +993,7 @@ window.getLocalValue = getLocalValue;
 
 maximoplus.net.setServerRoot("http://localhost:8080");
 window.onload = _ => {
-  ReactDOM.render(<AppWO />, document.getElementById("root"));
+  ReactDOM.render(<App />, document.getElementById("root"));
 };
 
 //uncomment this to test the app start in offline mode

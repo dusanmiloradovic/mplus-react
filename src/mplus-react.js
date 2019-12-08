@@ -482,22 +482,12 @@ export function getComponentAdapter(Adapter) {
       this.setMaxValue = this.setMaxValue.bind(this);
       this.setMaxRowValue = this.setMaxRowValue.bind(this);
       this.fetchMore = this.fetchMore.bind(this);
-      this.adapterRef = React.createRef();
     }
     /** initialize the data for the control */
     initData() {
       this.mp.initData();
     }
-    /** getter to get the value for the control
-     * @return {object}
-     */
-    get adapterValue() {
-      return (
-        this.adapterRef.current &&
-        this.adapterRef.current.getValue &&
-        this.adapterRef.current.getValue()
-      );
-    }
+
     /** Initialize the underlying MaximoPlus component
      * @param {object} mboCont
      */
@@ -533,13 +523,13 @@ export function getComponentAdapter(Adapter) {
               return (
                 <Adapter
                   maxrows={maxrows}
-                  setMaxValue={this.mp.setMaxValue}
-                  setMaxRowValue={this.mp.setMaxRowValue}
-                  ref={this.adapterRef}
+                  setMaxValue={this.setMaxValue}
+                  setMaxRowValue={this.setMaxRowValue}
+                  fetchMore={this.fetchMore}
                 />
               );
             }
-            return <Adapter {...rowValue} ref={this.adapterRef} />;
+            return <Adapter {...rowValue} />;
           }}
         </Consumer>
       );
@@ -549,7 +539,7 @@ export function getComponentAdapter(Adapter) {
      * @param {string} value
      */
     setMaxValue(column, value) {
-      this.mp.setMaxValue(column, value);
+      this.setMaxValue(column, value);
     }
     /** Method to be called from the library or component to change the Maximo value on a row
      * @param {number} rownum
@@ -571,8 +561,7 @@ export function getComponentAdapter(Adapter) {
     }
   }
   MPAdapter.propTypes = {
-    columns: PropTypes.array,
-    norows: PropTypes.number
+    columns: PropTypes.array
   };
   return MPAdapter;
 }
