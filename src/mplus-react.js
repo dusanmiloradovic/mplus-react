@@ -523,13 +523,12 @@ export function getComponentAdapter(Adapter) {
               return (
                 <Adapter
                   maxrows={maxrows}
-                  setMaxValue={this.setMaxValue}
                   setMaxRowValue={this.setMaxRowValue}
                   fetchMore={this.fetchMore}
                 />
               );
             }
-            return <Adapter {...rowValue} />;
+            return <Adapter {...rowValue} setMaxValue={this.setMaxValue}/>;
           }}
         </Consumer>
       );
