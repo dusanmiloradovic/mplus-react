@@ -473,6 +473,8 @@ const TestMultiRowsComponentAdapter = getComponentAdapter(props => {
   );
 });
 
+TestMultiRowsComponentAdapter.displayName = "TestCA";
+
 class PickerVals extends React.Component {
   constructor(props) {
     super(props);
@@ -999,6 +1001,10 @@ window.onload = _ => {
 //uncomment this to test the app start in offline mode
 maximoplus.core.globalFunctions.startedOffline = function() {
   return Promise.resolve(false);
+};
+
+const WrappedMap = props => {
+  return <MapView initialRegion={props.initialRegion} />;
 };
 
 window.offline = () => {

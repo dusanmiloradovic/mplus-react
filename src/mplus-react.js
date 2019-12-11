@@ -525,10 +525,17 @@ export function getComponentAdapter(Adapter) {
                   maxrows={maxrows}
                   setMaxRowValue={this.setMaxRowValue}
                   fetchMore={this.fetchMore}
+                  {...this.props}
                 />
               );
             }
-            return <Adapter {...rowValue} setMaxValue={this.setMaxValue}/>;
+            return (
+              <Adapter
+                {...this.props}
+                {...rowValue}
+                setMaxValue={this.setMaxValue}
+              />
+            );
           }}
         </Consumer>
       );
