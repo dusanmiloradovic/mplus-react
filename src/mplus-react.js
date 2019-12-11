@@ -482,6 +482,7 @@ export function getComponentAdapter(Adapter) {
       this.setMaxValue = this.setMaxValue.bind(this);
       this.setMaxRowValue = this.setMaxRowValue.bind(this);
       this.fetchMore = this.fetchMore.bind(this);
+      this.moveToRow = this.moveToRow.bind(this);
     }
     /** initialize the data for the control */
     initData() {
@@ -525,6 +526,7 @@ export function getComponentAdapter(Adapter) {
                   maxrows={maxrows}
                   setMaxRowValue={this.setMaxRowValue}
                   fetchMore={this.fetchMore}
+                  moveToRow={this.moveToRow}
                   {...this.props}
                 />
               );
@@ -560,6 +562,12 @@ export function getComponentAdapter(Adapter) {
      */
     fetchMore(rows) {
       this.mp.fetchMore(rows);
+    }
+    /** Moves undelyug container to row
+     * @param (number) rownum
+     */
+    moveToRow(rownum) {
+      this.mp.moveToRow(rownum);
     }
     /** Internal getter*/
     static get contextType() {
