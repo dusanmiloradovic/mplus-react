@@ -564,7 +564,7 @@ export function getComponentAdapter(Adapter) {
       this.mp.fetchMore(rows);
     }
     /** Moves undelyug container to row
-     * @param (number) rownum
+     * @param {number} rownum
      */
     moveToRow(rownum) {
       this.mp.moveToRow(rownum);
