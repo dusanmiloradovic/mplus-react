@@ -89,9 +89,10 @@ const innerContexts = {};
  */
 class MaximoPlusWrapper {
   /** Constructor, add the actual
-   * @param {object} rootContext
-   * @param {string} contextId
-   * @param {object} mp
+   * @constructor
+   * @param {object} rootContext - the root context of the application
+   * @param {string} contextId - the id of the component context
+   * @param {object} mp - the actual core library component
    */
   constructor(rootContext, contextId, mp) {
     this.contextId = contextId;
@@ -174,6 +175,32 @@ We will have only one context and context provider for the whole application, th
 */
 
 // Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context. The method from opeing and closing the dialog will be in the dialogcontext, and it will call this functions
+
+/**
+ * Dialog is an object with the information to be displayed. Dialog data can be passed from the library, or explicitely when we need to open the dialog.
+ * In addition to the properties below, any dialog implementation can have any numbe of arbitrary properties to be used internally in dialog implementation
+ *
+ * @typedef {Object} Dialog
+ * @property {string} type - The type of the dialog
+ */
+
+/**
+ * ListDialog is a special type of dialog opened directly from the MaximoPlus core library
+ *
+ * @typedef {Object} ListDialog
+ * @property {string} type - The type of the dialog, list or qbelist
+ * @property {object} listContainer - Container with the list of values
+ * @property {function} defaultAction - Action to be executed wehn the item ls picked from the list
+ * @property {string[]) listColumns - The list of columns to be displayed in dialog
+ * @preoprty {object} metadata - The underlying field metadata, used to get the list name and other custom metadata
+ */
+
+/**
+ * Opens a dialog
+ * @function
+ * @param {(Dialog|ListDialog)} dialog - dialog to open
+ * @param {object} [_rootContext] - internal
+ */
 export const openDialog = (dialog, _rootContext) => {
   const rootContext = _rootContext ? _rootContext : getRootContext();
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
@@ -188,6 +215,12 @@ export const openDialog = (dialog, _rootContext) => {
     return [...dialogs, dialog];
   });
 };
+
+/**
+ * Closes a dialog
+ * @function
+ */
+
 export const closeDialog = _rootContext => {
   const rootContext = _rootContext ? _rootContext : getRootContext();
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
@@ -213,10 +246,19 @@ export const closeDialog = _rootContext => {
   });
 };
 
+/**
+ * AppContainerProps - properties required for the AppContainer
+ *
+ * @typedef {Object} AppContainerProps
+ * @property {string} id - The id of the container
+ * @property {string} mboname - The Maximo Mbo name of the container
+ * @property {string} appname - The Maximo application name for the container
+ */
+
 /** The App Container, main application container for the app*/
 export class AppContainer extends React.Component {
   /** Constructor, init the container from the core lib
-   * @param {object} props
+   * @param {AppContainerProps} props
    */
   constructor(props) {
     super(props);
@@ -274,14 +316,29 @@ export class AppContainer extends React.Component {
   mboSetCommand(command) {
     return this.mp.mboSetCommand(command);
   }
+  /**
+   * React prop types
+   * @return {AppContainerProps}
+   */
+  static get propTypes() {
+    return {
+      id: PropTypes.string,
+      mboname: PropTypes.string,
+      appname: PropTypes.string,
+      offlineenabled: PropTypes.bool
+    };
+  }
 }
 
+/**
 AppContainer.propTypes = {
   id: PropTypes.string,
   mboname: PropTypes.string,
   appname: PropTypes.string,
   offlineenabled: PropTypes.bool
 };
+
+*/
 
 const getDepContainer = containerConstF => {
   /** helper class for dep contaniers */
@@ -564,7 +621,7 @@ export function getComponentAdapter(Adapter) {
       this.mp.fetchMore(rows);
     }
     /** Moves undelyug container to row
-     * @param (number) rownum
+     * @param {number} rownum
      */
     moveToRow(rownum) {
       this.mp.moveToRow(rownum);
