@@ -1,8 +1,6 @@
 import React from "react";
 import flyd from "flyd";
 import md5 from "js-md5";
-import { decode } from "base64-arraybuffer";
-import WebCam from "react-webcam";
 import PropTypes from "prop-types";
 
 const kont = {};
@@ -84,7 +82,8 @@ export const animating = flyd.stream(false);
 const innerContexts = {};
 // to simplify the things, we will calculate the id based on the props of the components, and then create the inner context. This will separate completely Maximoplus components from react components
 
-/** Wrapper class for the maximoplus core library. Instead of directly calling updates from MaximoPlus
+/** Internal.
+ * Wrapper class for the maximoplus core library. Instead of directly calling updates from MaximoPlus
  * the wrapper calls the updates. This is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
  */
 class MaximoPlusWrapper {
@@ -180,7 +179,7 @@ We will have only one context and context provider for the whole application, th
  * Dialog is an object with the information to be displayed. Dialog data can be passed from the library, or explicitely when we need to open the dialog.
  * In addition to the properties below, any dialog implementation can have any numbe of arbitrary properties to be used internally in dialog implementation
  *
- * @typedef {Object} Dialog
+ * @typedef {Object} GeneralDialog
  * @property {string} type - The type of the dialog
  */
 
@@ -198,7 +197,7 @@ We will have only one context and context provider for the whole application, th
 /**
  * Opens a dialog
  * @function
- * @param {(Dialog|ListDialog)} dialog - dialog to open
+ * @param {(GeneralDialog|ListDialog)} dialog - dialog to open
  * @param {object} [_rootContext] - internal
  */
 export const openDialog = (dialog, _rootContext) => {
@@ -330,18 +329,9 @@ export class AppContainer extends React.Component {
   }
 }
 
-/**
-AppContainer.propTypes = {
-  id: PropTypes.string,
-  mboname: PropTypes.string,
-  appname: PropTypes.string,
-  offlineenabled: PropTypes.bool
-};
-
-*/
 
 const getDepContainer = containerConstF => {
-  /** helper class for dep contaniers */
+  /** Internal. helper class for dep contaniers */
   class DepContainer extends React.PureComponent {
     /** Constructor, intializs the template
      * @param {object} props
@@ -635,135 +625,6 @@ export function getComponentAdapter(Adapter) {
     columns: PropTypes.array
   };
   return MPAdapter;
-}
-
-/** Function to open the current document from the doclinks in cordova. Wnem the user has chosen the document,
- * the doclinks contanier was navigated already to the desired row.  This function will use the cordova-plugin-file-opener2 and cordova-file-plugin
- * to download the file and open in it with the browser viewer.
- * @param {object} doclinksCont
- */
-const cordovaOpenDoc = doclinksCont => {
-  const dlUrl = maximoplus.net.getDownloadURL(doclinksCont, "doclinks", {});
-  const oReq = new XMLHttpRequest();
-  oReq.open("GET", dlUrl, true);
-  oReq.responseType = "blob";
-  oReq.onerror = error => {
-    // TODO display the error in global error handler
-    console.log(error);
-  };
-  oReq.onload = oEvent => {
-    const blob = oReq.response;
-    if (blob) {
-      const mimeType = oReq.getResponseHeader("content-type");
-      const contentDisposition = oReq.getResponseHeader("Content-Disposition");
-      const fileName = contentDisposition.substr(
-        contentDisposition.lastIndexOf("=") + 1
-      );
-      window.requestFileSystem(
-        window.TEMPORARY,
-        5 * 1024 * 1024,
-        function(fs) {
-          console.log("file system open: " + fs.name);
-          const dirEntry = fs.root;
-          dirEntry.getFile(
-            fileName,
-            { create: true, exclusive: false },
-            function(fileEntry) {
-              fileEntry.createWriter(fileWriter => {
-                fileWriter.onwriteend = () => {
-                  console.log("doc save to temp storage");
-                  const fullFilePath = fileEntry.toInternalURL();
-                  cordova.plugins.fileOpener2.open(fullFilePath, mimeType, {
-                    error: console.log,
-                    success: console.log
-                  });
-                };
-                fileWriter.onError = console.log;
-                fileWriter.write(blob);
-              });
-            },
-            console.log
-          );
-        },
-        console.log
-      );
-      // Here use writer from file entry to  save the temp file then use file opener
-    } else {
-      // TODO again display error in globlerrorhandler
-      console.log("Error reading the file");
-    }
-  };
-  oReq.send();
-};
-
-/** HOC to get the list viewer
- * @param {object} ListComp - a list component
- * @return {React.Component}
- */
-export function getDoclinksViewer(ListComp) {
-  /** Doclinks viewer */
-  class DoclinksViewer extends React.Component {
-    /** Constructor, bind the functions
-     * @param {object} props
-     */
-    constructor(props) {
-      super(props);
-      this.currentRef = React.createRef();
-      this.openDocument = this.openDocument.bind(this);
-      this.state = { doclinksCont: null };
-    }
-    /** opens a document in browser or device */
-    openDocument() {
-      if (isCordovaApp) {
-        cordovaOpenDoc(this.state.doclinksCont);
-        return;
-      }
-      window.open(
-        maximoplus.net.getDownloadURL(this.state.doclinksCont, "doclinks", {}),
-        "_blank"
-      );
-    }
-    /** React lifecycle method to init the contaniers */
-    componentDidMount() {
-      if (this.state.doclinksCont) {
-        return;
-      }
-
-      kont[this.props.container].then(mboCont => {
-        this.setState({
-          doclinksCont: new maximoplus.basecontrols.RelContainer(
-            mboCont,
-            "doclinks"
-          )
-        });
-      });
-    }
-    /** React render method
-     * @return {React.Element}
-     */
-    render() {
-      if (!this.state.doclinksCont) return null;
-      return (
-        <ListComp
-          norows="15"
-          initdata={true}
-          columns={[
-            "document",
-            "doctype",
-            "description",
-            "changeby",
-            "changedate"
-          ]}
-          maxcontainer={this.state.doclinksCont}
-          selectableF={this.openDocument}
-        />
-      );
-    }
-  }
-  DoclinksViewer.propTypes = {
-    container: PropTypes.string
-  };
-  return DoclinksViewer;
 }
 
 /** HOC to get the Picker
@@ -1941,237 +1802,6 @@ export const uploadFile = (container, uploadMethod, file, doctype) => {
   });
   return prom;
 };
-
-/** the functions for attaching, etc. should be accessed from ref. Wrapper will be there just to display the currently attached files and errors 
-@param{object} Wrapper
-@return {MPlusComponent}
-*/
-export function getDoclinksUpload(Wrapper) {
-  /** Doclinks Upload Component */
-  class DoclinksUpload extends React.Component {
-    /** Constructor, binds the change function
-     * @param {object} props
-     */
-    constructor(props) {
-      super(props);
-      this.inputRef = React.createRef();
-      this.state = { files: [], uploading: false };
-      this.addFiles = this.addFiles.bind(this);
-      this.attachFiles = this.attachFiles.bind(this);
-      this.removeFile = this.removeFile.bind(this);
-      this.uploadFies = this.uploadFiles.bind(this);
-    }
-    /** Internal methid to attach the files */
-    attachFiles() {
-      this.inputRef.current.click();
-    }
-    /** Add the files before the upload
-     * @param {array} files
-     */
-    addFiles(files) {
-      this.setState((state, props) => {
-        return { files: [...state.files, ...files] };
-      });
-    }
-    /** Remove the file from the list of uploaded
-     * @param {number} index
-     */
-    removeFile(index) {
-      this.setState((state, props) => {
-        const fls = state.files;
-        return {
-          files: fls.slice(0, index - 1).concat(fls.slice(index, fls.length))
-        };
-      });
-    }
-    /** Upload one file
-     * @param{File} file
-     * @param{string} doctype
-     * @return {Promise}
-     */
-    uploadFile(file, doctype) {
-      const uploadMethod = this.props.uploadMethod
-        ? this.props.uploadMethod
-        : "doclinks";
-      return uploadFile(this.props.container, uploadMethod, file, doctype);
-    }
-    /** Upload attached files
-     * @param {string} doctype
-     */
-    async uploadFiles(doctype) {
-      this.setState({ uploading: true });
-      const errors = {};
-      for (let j = 0; j < this.state.files.length; j++) {
-        try {
-          await this.uploadFile(this.state.files[j], doctype);
-          this.setState(state => {
-            const finished = state.finished;
-            if (!finished) {
-              return { finished: [j] };
-            }
-            const _finished = [...finished, j];
-            return { finished: _finished };
-          });
-        } catch (err) {
-          errors[j] = err;
-        }
-      }
-      this.setState({ errors: errors, uploading: false, files: [] });
-    }
-    /**
-     * React  render function
-     * @return {React.ReactElement}
-     */
-    render() {
-      return (
-        <>
-          <Wrapper {...this.state} />
-          <input
-            ref={this.inputRef}
-            type="file"
-            style={{ display: "none" }}
-            multiple
-            onChange={ev => this.addFiles(ev.target.files)}
-            id="filehidden"
-          />
-        </>
-      );
-    }
-  }
-  DoclinksUpload.propTypes = {
-    container: PropTypes.string,
-    uploadMethod: PropTypes.string
-  };
-  return DoclinksUpload;
-}
-
-/** HOC to get photo upload component
- * @param {object} Wrapper
- * @return {MPlusComponent}
- */
-export function getPhotoUpload(Wrapper) {
-  /** PhotoUpload component
-   * For Cordova you need to install camera and file plugins
-   */
-  class PhotoUpload extends React.Component {
-    /** Constructor, binds the functions
-     * @param {object} props
-     */
-    constructor(props) {
-      super(props);
-      this.webcamRef = React.createRef();
-      this.uploadPhoto = this.uploadPhoto.bind(this);
-      this.shoot = this.shoot.bind(this);
-      this.removePhoto = this.removePhoto.bind(this);
-      this.state = { imgData: null, file: null, error: null, uploading: false };
-      // two separate functions, so the user can preview. You can combine them into one if you need
-    }
-    /** Get the picture form the webca or cameram */
-    shoot() {
-      if (!isCordovaApp) {
-        const img64 = this.webcamRef.current.getScreenshot();
-        const rawImageData = img64.replace(/^data:image\/\w+;base64,/, "");
-        const arrayBuf = decode(rawImageData);
-        const fileName = "IMG-" + new Date().valueOf() + ".jpg";
-        const f = new File([arrayBuf], fileName, { type: "image/jpeg" });
-        this.setState({ imgData: img64, file: f, error: null });
-      } else {
-        const options = {
-          quality: 50,
-          destinationType: Camera.DestinationType.FILE_URI,
-          sourceType: Camera.PictureSourceType.CAMERA,
-          encodingType: Camera.EncodingType.JPEG,
-          mediaType: Camera.MediaType.PICTURE,
-          allowEdit: true,
-          correctOrientation: true // Corrects Android orientation quirks
-        };
-        navigator.camera.getPicture(
-          pictureUri => {
-            window.resolveLocalFileSystemURL(
-              pictureUri,
-              fileEntry => {
-                fileEntry.file(f => {
-                  this.setState({ imgData: pictureUri, file: f, error: null });
-                });
-              },
-              console.log
-            );
-          },
-          console.log,
-          options
-        );
-      }
-    }
-    /** Removes the previous picture */
-    removePhoto() {
-      this.setState({
-        imgData: null,
-        file: null,
-        eror: null,
-        uploading: false
-      });
-    }
-    /** Uploads the picture
-     * @param {string} doctype
-     */
-    uploadPhoto(doctype) {
-      if (!this.state.file) {
-        this.setState({ error: "No image ready for upload" });
-        return;
-      }
-      const uploadMethod = this.props.uploadMethod
-        ? this.props.uploadMethod
-        : "doclinks";
-      uploadFile(
-        this.props.container,
-        uploadMethod,
-        this.state.file,
-        doctype || this.props.doctype
-      )
-        .then(_ => this.removePhoto())
-        .catch(err => this.setState({ uploading: false, error: err }));
-    }
-    /** React render method
-	@return {React.Element}
-    */
-    render() {
-      const webcamW = isCordovaApp
-        ? window.innerWidth
-        : this.props.width
-          ? this.props.width
-          : 400;
-      const webcamH = this.props.height ? this.props.height : 400;
-      const displayEl = this.state.imgData ? (
-        <img src={this.state.imgData} style={{ width: webcamW }} />
-      ) : isCordovaApp ? null : (
-        <WebCam
-          ref={this.webcamRef}
-          screenshotFormat="image/jpeg"
-          audio={false}
-          width={webcamW}
-          height={webcamH}
-        />
-      );
-      // these two properties sent to wrapper will be used to codnitionally display buttons
-      return (
-        <Wrapper
-          readyForUpload={!this.state.uploading && this.state.file}
-          canTakePhoto={!this.state.file}
-        >
-          {displayEl}
-        </Wrapper>
-      );
-    }
-  }
-  PhotoUpload.propTypes = {
-    container: PropTypes.string,
-    uploadMethod: PropTypes.string,
-    doctype: PropTypes.string,
-    width: PropTypes.number,
-    height: PropTypes.number
-  };
-  return PhotoUpload;
-}
 
 export const mboCommand = (kontId, command) => {
   getDeferredContainer(kontId).then(mp => {
