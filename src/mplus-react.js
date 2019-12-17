@@ -176,6 +176,17 @@ We will have only one context and context provider for the whole application, th
 // Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context. The method from opeing and closing the dialog will be in the dialogcontext, and it will call this functions
 
 /**
+ * Standard Maximo callback functi0n. Always called without the parameters
+ * @callback noErrorCallback
+ */
+
+/**
+ * Standard Maximo error callback function. It always has one error parameter - error object
+ * @callback errorCallback
+ * @param {object} error
+ */
+
+/**
  * Dialog is an object with the information to be displayed. Dialog data can be passed from the library, or explicitely when we need to open the dialog.
  * In addition to the properties below, any dialog implementation can have any numbe of arbitrary properties to be used internally in dialog implementation
  *
@@ -328,7 +339,6 @@ export class AppContainer extends React.Component {
     };
   }
 }
-
 
 const getDepContainer = containerConstF => {
   /** Internal. helper class for dep contaniers */
@@ -1849,34 +1859,124 @@ Offline Error displayer component
   return OfflineError;
 };
 
+/**
+* Preloads all the data to offline. All the records from the main container and all the related coontainers will be stored to offline. Make sure that number of records to be fetched is limited, otherwise the performance hit will happen
+
+* @function
+* 
+*/
 export const preloadOffline = () => maximoplus.basecontrols.offload();
 
+/**
+ * Sets the QBE on the container
+ * @function
+ * @param {string} contId - the id of the container
+ * @param {string} attributeName - the name of the Mbo attribute
+ * @param {string} qbe - the Maximo QBE expression for an attribute
+ */
 export const setQbe = (contId, attributeName, qbe) => {
   return getDeferredContainer(contId).then(mp => {
     return mp.setQbe(attributeName, qbe);
   });
 };
 
+/**
+ * Adds a row to the container
+ * @function
+ * @param {string} contId - The id of the container
+ */
 export const addRow = contId => {
   return getDeferredContainer(contId).then(mp => {
     return mp.addNewRow();
   });
 };
 
+/**
+ * Adds a row to the container at an index
+ * @function
+ * @param {string} contId - The id of the container
+ * @param {number} index - The position of the new row in the MboSer
+ */
 export const addRowAt = (contId, index) => {
   return getDeferredContainer(contId).then(mp => {
     return mp.addNewRowAt(index);
   });
 };
 
+/**
+ * Deletes a current row from the container
+ * @function
+ * @param {string} contId - The id of the container
+ */
 export const delRow = contId => {
   return getDeferredContainer(contId).then(mp => {
     return mp.delRow();
   });
 };
 
+/**
+ * Undeletes a current row from the container
+ * @function
+ * @param {string} contId - The id of the container
+ */
 export const undelRow = contId => {
   return getDeferredContainer(contId).then(mp => {
     return mp.undelRow();
   });
 };
+
+/**
+ * Sets a function that will be called when a top level wain on application is required(most probably to display the wait spinner)
+ * @fucntion
+ * @param {function} setWaitF - Function to be called when the wait is required
+ */
+export const setGlobalWait = setWaitF => {
+  maximoplus.core.globalFunctions.globalDisplayWaitCursor = setWaitF;
+};
+
+/**
+ * Sets a function that will be called when a top level wain on application is no longer required(most probably to rempve the wait spinner)
+ * @fucntion
+ * @param {function} removeWaitF - Function to be called when the wait is no longer required
+ */
+export const removeGlobalWait = removeWaitF => {
+  maximoplus.core.globalFunctions.globalRemoveWaitCursor = removeWaitF;
+};
+
+/**
+ *  Server root is the URL of the MaximoPlus server
+ * @fucntion
+ * @param {string} SERVER_ROOT - The URL of the MaximoPlus server
+ */
+export const setServerRoot = SERVER_ROOT => {
+  maximoplus.net.globalFunctions.serverRoot = () => {
+    return SERVER_ROOT;
+  };
+};
+
+/**
+ * Login to Maixmo
+* @function
+ * @param {string} username
+ * @param {string} password
+ * @param {noErrorCallback}  callbackF - The function to be called upon successful login
+ * @param {errorCallback}  errbackF - The function to be called upon login error
+ */
+export const maxLogin = (username, password, callbackF, errbackF) => {
+  maximoplus.core.max_login(username, password, callbackF, errbackF);
+};
+
+/**
+* Get SQLite database callback, called by the core library to get the instance of the SQLite database. Check db.js in React Native template for an example
+* @callback getSQLDBCallback
+*/
+
+/**
+* Sets the SQL database callback
+* @function
+* @param {getSQLDBCallback} getSQLDatabase
+*/
+export const setSQLDBCallback = getSQLDatabase=>{
+    maximoplus.sqlite.globalFunctions.getSQLDatabase =getSQLDatabase;
+};
+
