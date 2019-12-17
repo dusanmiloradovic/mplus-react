@@ -1827,9 +1827,9 @@ export const mboSetCommand = (kontId, command) => {
 
 export const getOfflineErrorDisplay = Adapter => {
   /**
-Offline Error displayer component
-*/
-  class OfflineError extends React.Component {
+   * Internal. Offline Error displayer component
+   */
+  class OfflineErrorDP extends React.Component {
     /** Constructor
      * @param {object} props
      */
@@ -1855,15 +1855,15 @@ Offline Error displayer component
     }
   }
 
-  OfflineError.propTypes = {};
-  return OfflineError;
+  OfflineErrorDP.propTypes = {};
+  return OfflineErrorDP;
 };
 
 /**
 * Preloads all the data to offline. All the records from the main container and all the related coontainers will be stored to offline. Make sure that number of records to be fetched is limited, otherwise the performance hit will happen
 
 * @function
-* 
+* @return {void}
 */
 export const preloadOffline = () => maximoplus.basecontrols.offload();
 
@@ -1873,6 +1873,7 @@ export const preloadOffline = () => maximoplus.basecontrols.offload();
  * @param {string} contId - the id of the container
  * @param {string} attributeName - the name of the Mbo attribute
  * @param {string} qbe - the Maximo QBE expression for an attribute
+ * @return {Promise}
  */
 export const setQbe = (contId, attributeName, qbe) => {
   return getDeferredContainer(contId).then(mp => {
@@ -1884,6 +1885,7 @@ export const setQbe = (contId, attributeName, qbe) => {
  * Adds a row to the container
  * @function
  * @param {string} contId - The id of the container
+ * @return {Promise}
  */
 export const addRow = contId => {
   return getDeferredContainer(contId).then(mp => {
@@ -1896,6 +1898,7 @@ export const addRow = contId => {
  * @function
  * @param {string} contId - The id of the container
  * @param {number} index - The position of the new row in the MboSer
+ * @return {Promise}
  */
 export const addRowAt = (contId, index) => {
   return getDeferredContainer(contId).then(mp => {
@@ -1907,6 +1910,7 @@ export const addRowAt = (contId, index) => {
  * Deletes a current row from the container
  * @function
  * @param {string} contId - The id of the container
+ * @return {Promise}
  */
 export const delRow = contId => {
   return getDeferredContainer(contId).then(mp => {
@@ -1918,6 +1922,7 @@ export const delRow = contId => {
  * Undeletes a current row from the container
  * @function
  * @param {string} contId - The id of the container
+ * @return {Promise}
  */
 export const undelRow = contId => {
   return getDeferredContainer(contId).then(mp => {
@@ -1929,6 +1934,7 @@ export const undelRow = contId => {
  * Sets a function that will be called when a top level wain on application is required(most probably to display the wait spinner)
  * @fucntion
  * @param {function} setWaitF - Function to be called when the wait is required
+ * @return {void}
  */
 export const setGlobalWait = setWaitF => {
   maximoplus.core.globalFunctions.globalDisplayWaitCursor = setWaitF;
@@ -1938,6 +1944,7 @@ export const setGlobalWait = setWaitF => {
  * Sets a function that will be called when a top level wain on application is no longer required(most probably to rempve the wait spinner)
  * @fucntion
  * @param {function} removeWaitF - Function to be called when the wait is no longer required
+ * @return {void}
  */
 export const removeGlobalWait = removeWaitF => {
   maximoplus.core.globalFunctions.globalRemoveWaitCursor = removeWaitF;
@@ -1947,6 +1954,7 @@ export const removeGlobalWait = removeWaitF => {
  *  Server root is the URL of the MaximoPlus server
  * @fucntion
  * @param {string} SERVER_ROOT - The URL of the MaximoPlus server
+ * @return {void}
  */
 export const setServerRoot = SERVER_ROOT => {
   maximoplus.net.globalFunctions.serverRoot = () => {
@@ -1956,27 +1964,60 @@ export const setServerRoot = SERVER_ROOT => {
 
 /**
  * Login to Maixmo
-* @function
+ * @function
  * @param {string} username
  * @param {string} password
  * @param {noErrorCallback}  callbackF - The function to be called upon successful login
  * @param {errorCallback}  errbackF - The function to be called upon login error
+ * @return {void}
  */
 export const maxLogin = (username, password, callbackF, errbackF) => {
   maximoplus.core.max_login(username, password, callbackF, errbackF);
 };
 
 /**
-* Get SQLite database callback, called by the core library to get the instance of the SQLite database. Check db.js in React Native template for an example
-* @callback getSQLDBCallback
-*/
+ * Get SQLite database callback, called by the core library to get the instance of the SQLite database. Check db.js in React Native template for an example
+ * @callback getSQLDBCallback
+ */
 
 /**
-* Sets the SQL database callback
-* @function
-* @param {getSQLDBCallback} getSQLDatabase
-*/
-export const setSQLDBCallback = getSQLDatabase=>{
-    maximoplus.sqlite.globalFunctions.getSQLDatabase =getSQLDatabase;
+ * Sets the SQL database callback
+ * @function
+ * @param {getSQLDBCallback} getSQLDatabase
+ */
+export const setSQLDBCallback = getSQLDatabase => {
+  maximoplus.sqlite.globalFunctions.getSQLDatabase = getSQLDatabase;
 };
 
+/**
+ * Sets an application state Online or Offline. Useful for the testing, and automated in template
+ * @function
+ * @param {boolean} offline - if true, sets the application offline, otherwise bring it back online
+ * @return {void}
+ */
+export const setOffline = offline => {
+  maximoplus.core.setOffline(offline);
+};
+
+/**
+* Offline error for one record
+* @typedef {Object} OfflineError
+* @property {object} data - the offline 
+data record that failed to save to Maximo
+* @property {string} message - the error message for the offline record that failed to save to Maxiom
+**/
+
+/**
+ * @callback offlineErrorsCallback
+ * @param{OfflineError[]} errors
+ */
+
+/**
+ * Set callback for displaying the offline errore
+ * @function
+ * @param {offlineErrorsCallback} offlineErrorsCb
+ * @return {void}
+ */
+export const setOfflineErrorsCb = offlineErrorsCb => {
+  maximoplus.core.globalFunctions.globalOfflinePostError = offlineErrorsCb;
+};
