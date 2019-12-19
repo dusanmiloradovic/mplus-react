@@ -1976,6 +1976,16 @@ export const maxLogin = (username, password, callbackF, errbackF) => {
 };
 
 /**
+* The callback function is called when the user is logged off from Maximo
+* Usually it opens the login dialog
+* @function
+* @param {errorCallback} openLgoinDialog - The callback function to be called once the user has been logged off
+*/
+export const setOnLoggedOff = openLoginDialog=>{
+    maximoplus.core.setOnLoggedOff=openLoginDialog;
+};
+
+/**
  * Get SQLite database callback, called by the core library to get the instance of the SQLite database. Check db.js in React Native template for an example
  * @callback getSQLDBCallback
  */
