@@ -88,6 +88,7 @@ const innerContexts = {};
  */
 class MaximoPlusWrapper {
   /** Constructor, add the actual
+   * @private
    * @constructor
    * @param {object} rootContext - the root context of the application
    * @param {string} contextId - the id of the component context
@@ -227,7 +228,7 @@ export const openDialog = (dialog, _rootContext) => {
 };
 
 /**
- * Closes a dialog
+ * Closes a dialog The dialogs are always put on stack, so it closes the last opened.
  * @function
  */
 
@@ -341,7 +342,9 @@ export class AppContainer extends React.Component {
 }
 
 const getDepContainer = containerConstF => {
-  /** Internal. helper class for dep contaniers */
+  /** Internal. helper class for dep contaniers
+   * @private
+   */
   class DepContainer extends React.PureComponent {
     /** Constructor, intializs the template
      * @param {object} props
@@ -421,10 +424,35 @@ const getDepContainer = containerConstF => {
   return DepContainer;
 };
 
+/**
+ * RelContainerProps - properties required for RelContainer
+ * @typedef {Object} RelContainerProps
+ * @property {string} id - The id of the container
+ * @property {string} conatiner - The id of the parent container
+ * @property {string} relationship - The relationship name, as defined in Maximo database configuration
+ */
+
+/**
+ * RelContainer - The container bound by the MboSet as defined in the Maximo Database Configuration
+ * @typeof {React.Component}
+ * @param {RelContainerProps} props
+ */
 export const RelContainer = getDepContainer((mboCont, props) => {
   return new maximoplus.basecontrols.RelContainer(mboCont, props.relationship);
 });
 
+/**
+ * SingleMboContainerProps - properties required for a SingleMboContainer
+ * @typedef {Object} SingleMboContainerProps
+ * @property {string} id - The id of the container
+ * @property {string} container - The id of the parent container
+ */
+
+/**
+ * This container creates as a separate MboSet with one Mbo only. This Mbo has the same id as a current Mbo in parent MboSet.
+ * @typeof {React.Component}
+ * @param {SingleMboContainerProps} props
+ */
 export const SingleMboContainer = getDepContainer(
   (mboCont, props) => new maximoplus.basecontrols.SingleMboContainer(mboCont)
 );
@@ -439,7 +467,10 @@ export const MboCommandContainer = getDepContainer(
     )
 );
 
-/** Basic React component class to be extended by all the visual components */
+/** Internal. Basic React component class to be extended by all the visual components
+ * @typeof {React.Component}
+ * @private
+ */
 export class MPlusComponent extends React.PureComponent {
   // the following tho methods should be overriden in the concrete implementations with
   // MPlusComponent.prototype.pushDialog = function (dialog)...
@@ -524,15 +555,23 @@ MPlusComponent.propTypes = {
   maxcontainer: PropTypes.object
 };
 
+/**
+ * Adapter
+ */
+
 /** HOC for component adapter
+ * @typeof {function}
  * @param {object} Adapter
- * @return {MPlusComponent}
+ * @return {MPAdapter}
  */
 export function getComponentAdapter(Adapter) {
-  /** Adapter for integrating 3rd party libraries and controls */
+  /** Adapter for integrating 3rd party libraries and controls
+   * @private
+   */
   class MPAdapter extends MPlusComponent {
     /** constructor init the refs and bind
      * @param {object} props
+     * @private
      */
     constructor(props) {
       super(props);
@@ -1976,13 +2015,13 @@ export const maxLogin = (username, password, callbackF, errbackF) => {
 };
 
 /**
-* The callback function is called when the user is logged off from Maximo
-* Usually it opens the login dialog
-* @function
-* @param {errorCallback} openLgoinDialog - The callback function to be called once the user has been logged off
-*/
-export const setOnLoggedOff = openLoginDialog=>{
-    maximoplus.core.setOnLoggedOff=openLoginDialog;
+ * The callback function is called when the user is logged off from Maximo
+ * Usually it opens the login dialog
+ * @function
+ * @param {errorCallback} openLgoinDialog - The callback function to be called once the user has been logged off
+ */
+export const setOnLoggedOff = openLoginDialog => {
+  maximoplus.core.setOnLoggedOff = openLoginDialog;
 };
 
 /**
