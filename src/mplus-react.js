@@ -85,6 +85,7 @@ const innerContexts = {};
 /** Internal.
  * Wrapper class for the maximoplus core library. Instead of directly calling updates from MaximoPlus
  * the wrapper calls the updates. This is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
+ * @private
  */
 class MaximoPlusWrapper {
   /** Constructor, add the actual
@@ -556,13 +557,61 @@ MPlusComponent.propTypes = {
 };
 
 /**
- * Adapter
+ * AdapterProps - React properties of an adapter
+ * @typedef {Object} AdapterProps
+ * @property {Object} data - In case of the single-row Component Adapter, data attribute gives data for all the columns defined in the adapter
+ * @property {function} setMaxValue In case of the single-row Component Adapter, this function is used to change the value of the current Maximo record. The function signature is setMaxValue(attributeName, value)
+ * @property{Array} maxrows In case of the multi-rows Component Adapter, maxrows gives the array of data
+ * @property {function} fetchMoew In case of the multi-rows Component Adapter, if we need to get more data for Maximo, we need to use this function. The signature is fetchMore(numberOfRows)
+ * @property {function} setMaxRowValue In case of the multi-tows Component Adapter, sets the value of the Maximo attribute. The signature is setMaxRowValue(rowNum, attributeName, value)
  */
+
+/**
+ * Adapter - React Component used as an iterface to MaximoPlus. Use it to define the new component, or adapt the existing React Components into MaximoPlus
+ * @typedef {React.Component} Adapter
+ * @property {AdapterProps} props
+ */
+
+/** Adapted - MaximoPlus React Component ready to be used in an MaximoPlus app, a result of the getComponentAdapter function call
+* @typedef {React.Component} Adapted
+@
+*/
 
 /** HOC for component adapter
  * @typeof {function}
  * @param {object} Adapter
  * @return {MPAdapter}
+ * @example
+ * const TestMultiRowsComponentAdapter = getComponentAdapter(props => {
+ *   if (!props || !props.maxrows) return null;
+ *   return (
+ *     <View>
+ *       {props.maxrows.map(({ data }) => (
+ *         <View key={data.PONUM}>
+ *           {data.PONUM}
+ *           ....
+ *           {data.STATUS}
+ *         </View>
+ *       ))}
+ *       <Button
+ *         onClick={ev => {
+ *           console.log("fetch more");
+ *           props.fetchMore(5);
+ *         }}
+ *       >
+ *         More
+ *       </Button>
+ *     </View>
+ *   );
+ * });
+*
+*
+*  <TestMultiRowsComponentAdapter
+*    container="pocont"
+*    columns={["ponum", "description", "status"]}
+*    norows="20"
+ />
+
  */
 export function getComponentAdapter(Adapter) {
   /** Adapter for integrating 3rd party libraries and controls
@@ -684,7 +733,9 @@ export function getAppDocTypesPicker(Picker) {
   // picker shouuld be the component, that has the state value. We will get the value by ref forwarding
 
   const AppDocPicker = getComponentAdapter(Picker);
-  /** AppDocTypes picker */
+  /** AppDocTypes picker
+   * @private
+   */
   class MPAppDoctypes extends React.Component {
     /** Constructor, init the ref
      * @param {object} props
