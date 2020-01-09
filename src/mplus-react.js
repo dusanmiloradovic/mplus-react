@@ -572,15 +572,23 @@ MPlusComponent.propTypes = {
  * @property {AdapterProps} props
  */
 
+/**
+ * React properties of an adapted component for Component Adapter
+ * @typedef {Object} AdaptedProps
+ * @property {string} contanier The id of the underlying container
+ * @property {Array} columns  The Mbo columns included in adapter data
+ * @property {number} norows Initial number of rows fetched. If omitted, only one record is fetched
+ */
+
 /** Adapted - MaximoPlus React Component ready to be used in an MaximoPlus app, a result of the getComponentAdapter function call
-* @typedef {React.Component} Adapted
-@
-*/
+ * @typedef {React.Component} Adapted
+ * @property }AdaptedProps} props
+ */
 
 /** HOC for component adapter
  * @typeof {function}
- * @param {object} Adapter
- * @return {MPAdapter}
+ * @param {Adapter} Adapter
+ * @return {Adapted}
  * @example
  * const TestMultiRowsComponentAdapter = getComponentAdapter(props => {
  *   if (!props || !props.maxrows) return null;
@@ -728,6 +736,7 @@ export function getComponentAdapter(Adapter) {
 /** HOC to get the Picker
  * @param {object} Picker
  * @return {MPlusComponent}
+ * @private
  */
 export function getAppDocTypesPicker(Picker) {
   // picker shouuld be the component, that has the state value. We will get the value by ref forwarding
@@ -784,7 +793,8 @@ export function getAppDocTypesPicker(Picker) {
   return MPAppDoctypes;
 }
 
-/** HOC to return the Simple List
+/** HOC to return the Simple List.
+* For an example, take a look at implementation of List in React Native template
  * @param {function} WrappedList - component that does the rendering
  * @return {MPlusComponent}
  **/
