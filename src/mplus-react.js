@@ -794,7 +794,7 @@ export function getAppDocTypesPicker(Picker) {
 }
 
 /** HOC to return the Simple List.
-* For an example, take a look at implementation of List in React Native template
+ * For an example, take a look at implementation of List in React Native template
  * @param {function} WrappedList - component that does the rendering
  * @return {MPlusComponent}
  **/
@@ -1536,13 +1536,16 @@ function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
 // If there is no oid, the dialog should have the cleanContext, that should clean context on each MaximoPlus component
 
 /** HOC to get the dialog holder
+ * @private
  * @param {object} DialogWrapper
  * @param {function} getDialogF
  * @param {boolean} raw
  * @return {MPlusComponent}
  */
 export function getDialogHolder(DialogWrapper, getDialogF, raw) {
-  /** Dialog holder */
+  /** Dialog holder
+   * @private
+   */
   class MPDialogHolder extends React.Component {
     /** Constructor, binds the open and close dialog functions
      * @param {object} props
@@ -1625,12 +1628,16 @@ If both dialogwrapper and getdialogf is null, let the implementation manage the 
 }
 
 /** HOC to return the List Dialog
+ * not implemented in RN templage, maybe remove
  * @param {object} WrappedList
  * @param {function} drawList
+ * @private
  * @return {MPlusComponent}
  */
 export function getListDialog(WrappedList, drawList) {
-  /** List Dialog components */
+  /** List Dialog components
+   * @private
+   */
   class MPListDialog extends React.Component {
     /**
      * React render function
@@ -1670,6 +1677,8 @@ export function getListDialog(WrappedList, drawList) {
 }
 
 /** Function to return the filter dialog
+ * Not implemented in RN template, consider for removing
+ * @private
  * @param {function} getFilter - function to get the filter
  * @param {function} drawFilter - draw the filter
  * @return {MPlusComponent}
@@ -1682,6 +1691,7 @@ export function getFilterDialog(getFilter, drawFilter) {
  * @param {function} drawDialog - function to draw the gl dialog
  * @param {MPlusComponent} WrappedList - List component
  * @return {MPlusComponent}
+ * @private not yet in RN template
  */
 export function getGLDialog(drawDialog, WrappedList) {
   // glindividualsegment is a function of object with the following keys:
@@ -1692,7 +1702,9 @@ export function getGLDialog(drawDialog, WrappedList) {
   // drawSegments is  a function that draws all the segments into one gl (arg - array of above objects)
   // drawDialog draws the final dialog from all these
   // WrappedList - concreate List implementation
-  /** GL Dialog component */
+  /** GL Dialog component
+   * @private
+   */
   class MPGLDialog extends MPlusComponent {
     /** React lifecycle component */
     componentDidMount() {
@@ -1749,13 +1761,35 @@ export function getGLDialog(drawDialog, WrappedList) {
   return MPGLDialog;
 }
 
-/** HOC to return the workflow dialog
- * @param {MPlusComponent} WrappedSection
- * @param {function} drawDialog
- * @return {MPlusComponent}
+/**
+ * @callback drawDialog A function to draw a workflow dialog
+ * @param {Array} buttons The array of objects with labels and functions to be executed, depends on the stage of the workflow
+ * @param {Object} section - The Section child component
+ * @param {string} title The title of the current workflow step
+ * @param {Array} warnings If routing the workflow returns messages or errors from the server, in the next step they will come to the workflow component
+ */
+
+/** Workflow component props
+ * @typedef {Object} WFProps
+ * @property {string} container The id of the Application Container
+ * @property {string} processName The name of the main active WF process on the container
+ */
+
+/** Workflow component
+ * @typedef {React.Component} Workflow
+ * @param {WFProps} props
+ *
+ */
+
+/** HOC to return the workflow component - Check the RN template implementation for an example
+ * @param {Object} WrappedSection The Section component to draw the dialogs
+ * @param {drawDialog} drawDialog
+ * @return {Workflow}
  */
 export function getWorkflowDialog(WrappedSection, drawDialog) {
-  /** Workflow dialog component */
+  /** Workflow dialog component
+   * @private
+   */
   return class MPWorkflowDialog extends MPlusComponent {
     /** Constructor, inits the state
      * @param {object} props
@@ -1833,6 +1867,13 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
   };
 }
 
+/**
+ * Gets the attribute value of the current row in a contaniner.
+ * @function
+ * @param {string} contid The id of the container
+ * @param {strong} column The attribute name in the Mbo. It must be defined in any component bound to the container, otherwise the value will be empty
+ * @returns {Promise}
+ */
 export const getLocalValue = (contid, column) => {
   return getDeferredContainer(contid).then(mp => {
     const ret = mp.getFieldLocalValue(column.toUpperCase());
@@ -1841,6 +1882,11 @@ export const getLocalValue = (contid, column) => {
   });
 };
 
+/**
+ * Discard the changes in a container, and reloads the application data from the server
+ * @function
+ * @param{string} contid The id of the container
+ */
 export const reload = contid => {
   getDeferredContainer(contid).then(mp => {
     mp.reset();
@@ -1848,10 +1894,22 @@ export const reload = contid => {
   });
 };
 
+/**
+ * Saves the changes for the Application Container
+ * @function
+ * @param {string} contid The id of the application container
+ */
 export const save = contid => {
   getDeferredContainer(contid).then(mp => mp.save());
 };
 
+/**
+ * Constructs the server URL for download, based on the DOCLINKS container id
+ * @function
+ * @param {string} doclinkscontid The id of the DOCLINKS container
+ * @param {string?} method By default it is "doclinks". It is possible to creaate the custom download methods, contact the support for detaild
+ * @param {Array?} params For the custom dowload method, the optional list of parameters
+ */
 export const getDownloadURL = (doclinkscontid, method, params) =>
   getDeferredContainer(doclinkscontid).then(container =>
     maximoplus.net.getDownloadURL(
@@ -1861,6 +1919,21 @@ export const getDownloadURL = (doclinkscontid, method, params) =>
     )
   );
 
+/**
+ * File object for React Native
+ * @typedef {Object} RNFile
+ * @property {string} name The name of the file
+ * @property {string} url The URL pointing to the file. In React Native we get it when using the File Picker or Photo navigation, check RN template for example
+ * @property {string} type The MIME type of the file
+ */
+
+/**
+ * Uploads a  file to Maximo. By default it uses the standard Maximo DOCLINKS, althugh the custom upload is possible
+ * @function
+ * @param {string} container The id of the container
+ * @param {string} uploadMethod By default, it is "doclinks". The custom upload methods are possible. For details contact our support
+ * @param {File|RNFile} file The file to upload. In React Native, the standard File interface from the Web API is not implemented, we need to pass the object with name, url and type properties
+ */
 export const uploadFile = (container, uploadMethod, file, doctype) => {
   const fd = new FormData();
   fd.append("docname", file.name);
