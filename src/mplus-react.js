@@ -1872,7 +1872,7 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
  * @function
  * @param {string} contid The id of the container
  * @param {strong} column The attribute name in the Mbo. It must be defined in any component bound to the container, otherwise the value will be empty
- * @returns {Promise}
+ * @return {Promise}
  */
 export const getLocalValue = (contid, column) => {
   return getDeferredContainer(contid).then(mp => {
@@ -1886,9 +1886,10 @@ export const getLocalValue = (contid, column) => {
  * Discard the changes in a container, and reloads the application data from the server
  * @function
  * @param{string} contid The id of the container
+ * @return {Promise}
  */
 export const reload = contid => {
-  getDeferredContainer(contid).then(mp => {
+  return getDeferredContainer(contid).then(mp => {
     mp.reset();
     return mp.moveToRow(0);
   });
@@ -1898,9 +1899,10 @@ export const reload = contid => {
  * Saves the changes for the Application Container
  * @function
  * @param {string} contid The id of the application container
+ * @return {Promise}
  */
 export const save = contid => {
-  getDeferredContainer(contid).then(mp => mp.save());
+  return getDeferredContainer(contid).then(mp => mp.save());
 };
 
 /**
@@ -1909,6 +1911,7 @@ export const save = contid => {
  * @param {string} doclinkscontid The id of the DOCLINKS container
  * @param {string?} method By default it is "doclinks". It is possible to creaate the custom download methods, contact the support for detaild
  * @param {Array?} params For the custom dowload method, the optional list of parameters
+ * @return {string}
  */
 export const getDownloadURL = (doclinkscontid, method, params) =>
   getDeferredContainer(doclinkscontid).then(container =>
@@ -1933,6 +1936,8 @@ export const getDownloadURL = (doclinkscontid, method, params) =>
  * @param {string} container The id of the container
  * @param {string} uploadMethod By default, it is "doclinks". The custom upload methods are possible. For details contact our support
  * @param {File|RNFile} file The file to upload. In React Native, the standard File interface from the Web API is not implemented, we need to pass the object with name, url and type properties
+ * @param {string} doctype The Maximo document type
+ * @return {Promise}
  */
 export const uploadFile = (container, uploadMethod, file, doctype) => {
   const fd = new FormData();
@@ -1986,12 +1991,24 @@ export const uploadFile = (container, uploadMethod, file, doctype) => {
   return prom;
 };
 
+/**
+ * Runs a Mbo command on the container
+ * @function
+ * @param {string} kontId The id of the contaienr
+ * @param {string} command The method name on Mbo
+ */
 export const mboCommand = (kontId, command) => {
   getDeferredContainer(kontId).then(mp => {
     return mp.mboCommand(command);
   });
 };
 
+/**
+ * Runs a Mbo command on the container
+ * @function
+ * @param {string} kontId The id of the contaienr
+ * @param {string} command The method name on Mbo
+ */
 export const mboSetCommand = (kontId, command) => {
   getDeferredContainer(kontId).then(mp => {
     return mp.mbosetCommand(command);
@@ -2152,7 +2169,7 @@ export const maxLogin = (username, password, callbackF, errbackF) => {
  * The callback function is called when the user is logged off from Maximo
  * Usually it opens the login dialog
  * @function
- * @param {errorCallback} openLgoinDialog - The callback function to be called once the user has been logged off
+ * @param {errorCallback} openLoginDialog - The callback function to be called once the user has been logged off
  */
 export const setOnLoggedOff = openLoginDialog => {
   maximoplus.core.setOnLoggedOff = openLoginDialog;
