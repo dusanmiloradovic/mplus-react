@@ -1762,7 +1762,8 @@ export function getGLDialog(drawDialog, WrappedList) {
 }
 
 /**
- * @callback drawDialog A function to draw a workflow dialog
+ * A function to draw a workflow dialog
+ * @callback drawDialog
  * @param {Array} buttons The array of objects with labels and functions to be executed, depends on the stage of the workflow
  * @param {Object} section - The Section child component
  * @param {string} title The title of the current workflow step
