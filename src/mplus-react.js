@@ -2007,7 +2007,7 @@ export const mboCommand = (kontId, command) => {
  * Runs a Mbo command on the container
  * @function
  * @param {string} kontId The id of the contaienr
- * @param {string} command The method name on Mbo
+ * @param {string} command The method name on MboSet
  */
 export const mboSetCommand = (kontId, command) => {
   getDeferredContainer(kontId).then(mp => {
