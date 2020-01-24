@@ -178,26 +178,26 @@ We will have only one context and context provider for the whole application, th
 // Dialogs will use special inner context named "dialogs". Dialog holder component willl setup this context. The method from opeing and closing the dialog will be in the dialogcontext, and it will call this functions
 
 /**
- * Standard Maximo callback functi0n. Always called without the parameters
+ * Standard Maximo callback functi0n. Always called without the parameters.
  * @callback noErrorCallback
  */
 
 /**
- * Standard Maximo error callback function. It always has one error parameter - error object
+ * Standard Maximo error callback function. It always has one error parameter - an error object.
  * @callback errorCallback
  * @param {object} error
  */
 
 /**
- * Dialog is an object with the information to be displayed. Dialog data can be passed from the library, or explicitely when we need to open the dialog.
- * In addition to the properties below, any dialog implementation can have any numbe of arbitrary properties to be used internally in dialog implementation
+ * A dialog is an object with the information to be displayed. Dialog data can be passed from the library, or explicitly when we need to open the dialog.
+ * In addition to the properties below, any dialog implementation can have any number of arbitrary properties to be used internally in dialog implementation.
  *
  * @typedef {Object} GeneralDialog
  * @property {string} type - The type of the dialog
  */
 
 /**
- * ListDialog is a special type of dialog opened directly from the MaximoPlus core library
+ * ListDialog is a particular type of dialog opened directly from the MaximoPlus core library.
  *
  * @typedef {Object} ListDialog
  * @property {string} type - The type of the dialog, list or qbelist
@@ -229,7 +229,7 @@ export const openDialog = (dialog, _rootContext) => {
 };
 
 /**
- * Closes a dialog The dialogs are always put on stack, so it closes the last opened.
+ * Closes a dialog The dialogs are always put on the stack, so it closes the last opened.
  * @function
  */
 
@@ -300,13 +300,13 @@ export class AppContainer extends React.Component {
   render() {
     return null;
   }
-  /** Dispose the mp container */
+  /** Disposes of the mp container */
   dispose() {
     // we will explicitely delete the cotnainer, and that will happen only for dynamic pages (dialogs)
     this.mp.dispose();
     delete kont[this.props.id];
   }
-  /** Save all the pending changes in container */
+  /** Save all the pending changes in the container. */
   save() {
     this.state.mp.save();
   }
@@ -314,7 +314,7 @@ export class AppContainer extends React.Component {
   rollback() {
     this.mp.rollback();
   }
-  /** Execute the mbocommand on the container
+  /** Execute the mbo command on the container
    * @param {string} command
    * @return {Promise}
    */
@@ -450,7 +450,7 @@ export const RelContainer = getDepContainer((mboCont, props) => {
  */
 
 /**
- * This container creates as a separate MboSet with one Mbo only. This Mbo has the same id as a current Mbo in parent MboSet.
+ * This container creates a separate MboSet with one Mbo only. This Mbo has the same id as a current Mbo in parent MboSet.
  * @typeof {React.Component}
  * @param {SingleMboContainerProps} props
  */
@@ -567,7 +567,7 @@ MPlusComponent.propTypes = {
  */
 
 /**
- * Adapter - React Component used as an iterface to MaximoPlus. Use it to define the new component, or adapt the existing React Components into MaximoPlus
+ * Adapter - React Component used as an interface to MaximoPlus. Use it to define the new component, or adapt the existing React Components into MaximoPlus
  * @typedef {React.Component} Adapter
  * @property {AdapterProps} props
  */
@@ -580,12 +580,12 @@ MPlusComponent.propTypes = {
  * @property {number} norows Initial number of rows fetched. If omitted, only one record is fetched
  */
 
-/** Adapted - MaximoPlus React Component ready to be used in an MaximoPlus app, a result of the getComponentAdapter function call
+/** Adapted - MaximoPlus React Component ready to be used in a MaximoPlus app, a result of the getComponentAdapter function call.
  * @typedef {React.Component} Adapted
  * @property }AdaptedProps} props
  */
 
-/** HOC for component adapter
+/** HOC for a component adapter
  * @typeof {function}
  * @param {Adapter} Adapter
  * @return {Adapted}
@@ -794,7 +794,7 @@ export function getAppDocTypesPicker(Picker) {
 }
 
 /** HOC to return the Simple List.
- * For an example, take a look at implementation of List in React Native template
+ * For example, take a look at the implementation of List in React Native template.
  * @param {function} WrappedList - component that does the rendering
  * @return {MPlusComponent}
  **/
@@ -857,7 +857,7 @@ export function getSimpleList(WrappedList) {
         mp.initData();
       }
     }
-    /** When function is called, the wait will be displayed locally*/
+    /** When MaximoPlus calls this function, the wait indicator will be displayed locally.*/
     enableLocalWaitSpinner() {
       // useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
 
@@ -873,25 +873,24 @@ export function getSimpleList(WrappedList) {
       };
     }
     /**
-     * Fetch more records into list, used mostly for infinite scroll
+     * Fetch more records into the list, used mostly for infinite scrolling.
      * @param {number} numRows
      */
     fetchMore(numRows) {
       this.mp.fetchMore(numRows);
     }
-    /** If paging is use instead of infinite scroll, go to next page */
+    /** If paging is used instead of infinite scroll, go to the next page
     pageNext() {
       this.mp.pageNext();
     }
-    /** If paging is use instead of infinite scroll, go to previous page */
+    /** If paging is used instead of infinite scrolling, go to the previous page.
     pagePrev() {
       this.mp.pagePrev();
     }
 
     /**
-     * Row action is the function to be called when user selects the row on the list.
-     * By defualt it navigates to the selected row. If there is the user action defined
-     * it executes it as will execute it as well. Originally the core librariy was creating the closures for each row, but that is a huge performance hit.
+     * Row action is the function to be called when the user selects the row on the list.
+     * By default, it navigates to the selected row. If there is the user action defined, it executes it as well.
      * @param {number} mxrow
      */
     rowAction(mxrow) {
@@ -1079,7 +1078,7 @@ export function getSection(WrappedTextField, WrappedPicker, drawFields) {
       this.state = { fieldValues: {} };
     }
     /**
-     * Init uderlying core component
+     * Init underlying core component
      * @param {object} mboCont
      */
     putContainer(mboCont) {
@@ -1105,7 +1104,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
       */
       // i think this is the best place to initiate the offloading of the lists, because it will be done only once, and the conainer is avaliable
     }
-    /** Value to be kept internally before sending to Maximo. React changes on every letter, maximo is designed to react on blur
+    /** Value to be kept internally before sending it to Maximo. React changes on every letter, Maximo is designed to react on blur.
      * @param {string} fieldKey
      * @param {string} value
      */
@@ -1114,7 +1113,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
       newFieldValues[fieldKey] = value;
       this.setState({ fieldValues: newFieldValues });
     }
-    /** React lifecycle, used to add the meta
+    /** React lifecycle, used to add the meta.
      * @param {object} prevProps
      */
     componentDidUpdate(prevProps) {
@@ -1287,7 +1286,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       this.state = { fieldValues: {} };
     }
 
-    /** Value to be kept internally before sending to Maximo. React changes on every letter, maximo is designed to react on blur
+    /** Value to be kept internally before sending it to Maximo. React changes on every letter, Maximo is designed to react on blur,
      * @param {string} fieldKey
      * @param {string} value
      */
@@ -1297,7 +1296,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       this.setState({ fieldValues: newFieldValues });
     }
     /**
-     * Init uderlying core component
+     * Init underlying core component
      * @param {object} mboCont
      */
     putContainer(mboCont) {
@@ -1344,7 +1343,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
     componentWillUnmount() {
       //      if (this.mp) this.mp.clearQbe();
     }
-    /** Perform the seaarch for the entered qbe */
+    /** Perform the search for the entered qbe */
     search() {
       this.mp.getContainer().reset();
       if (this.props.indialog) {
@@ -1353,7 +1352,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
         closeDialog(this.context); // dialogs will be modal. If i can access the search, and there are dialogs, that means I clicked search from the dialog. If there are no dialogs, this command doesn't do anything
       }
     }
-    /** Get the search buttons for the qbe control
+    /** Get the search buttons for the qbe control.
      * @return {array}
      */
     getSearchButtons() {
@@ -1377,7 +1376,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       // this is the "interface" method - we can use it for all the types of controls
       return this.getSearchButtons();
     }
-    /** Runs the control aciton (clear or search)
+    /** Runs the control action (clear or search)
      * @param {string} actionKey
      */
     runControlAction(actionKey) {
@@ -1869,10 +1868,10 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
 }
 
 /**
- * Gets the attribute value of the current row in a contaniner.
+ * Gets the attribute value of the current row in a container.
  * @function
  * @param {string} contid The id of the container
- * @param {strong} column The attribute name in the Mbo. It must be defined in any component bound to the container, otherwise the value will be empty
+ * @param {strong} column The attribute name in the Mbo. It must be defined in any component bound to the container; otherwise, the value will be empty.
  * @return {Promise}
  */
 export const getLocalValue = (contid, column) => {
@@ -1910,7 +1909,7 @@ export const save = contid => {
  * Constructs the server URL for download, based on the DOCLINKS container id
  * @function
  * @param {string} doclinkscontid The id of the DOCLINKS container
- * @param {string?} method By default it is "doclinks". It is possible to creaate the custom download methods, contact the support for detaild
+ * @param {string?} method By default, it is "doclinks". It is possible to creaate the custom download methods, contact the support for detaild
  * @param {Array?} params For the custom dowload method, the optional list of parameters
  * @return {string}
  */
@@ -1932,7 +1931,7 @@ export const getDownloadURL = (doclinkscontid, method, params) =>
  */
 
 /**
- * Uploads a  file to Maximo. By default it uses the standard Maximo DOCLINKS, althugh the custom upload is possible
+ * Uploads a  file to Maximo. By default, it uses the standard Maximo DOCLINKS, although the custom upload is possible.
  * @function
  * @param {string} container The id of the container
  * @param {string} uploadMethod By default, it is "doclinks". The custom upload methods are possible. For details contact our support
@@ -2030,7 +2029,7 @@ export const getOfflineErrorDisplay = Adapter => {
       maximoplus.core.globalFunctions.globalOfflinePostError = this.displayErrors;
       this.state = { errors: [] };
     }
-    /** Display the errors on the blobal error handler
+    /** Display the errors on the global error handler
      * @param {array} errors
      */
     displayErrors(errors) {
@@ -2051,7 +2050,7 @@ export const getOfflineErrorDisplay = Adapter => {
 };
 
 /**
-* Preloads all the data to offline. All the records from the main container and all the related coontainers will be stored to offline. Make sure that number of records to be fetched is limited, otherwise the performance hit will happen
+* Preloads all the data to offline. All the records from the primary container ,and all the related containers will be stored offline. Make sure that the number of rows to be fetched is limited; otherwise, the performance hit will happen.
 
 * @function
 * @return {void}
@@ -2122,7 +2121,7 @@ export const undelRow = contId => {
 };
 
 /**
- * Sets a function that will be called when a top level wain on application is required(most probably to display the wait spinner)
+ * Sets a function that will be called when a top-level wait on the application is required(most probably to display the wait spinner)
  * @fucntion
  * @param {function} setWaitF - Function to be called when the wait is required
  * @return {void}
@@ -2132,7 +2131,7 @@ export const setGlobalWait = setWaitF => {
 };
 
 /**
- * Sets a function that will be called when a top level wain on application is no longer required(most probably to rempve the wait spinner)
+ * Sets a function that will be called when a top-level wait on the application is no longer required(most probably to remove the wait spinner)
  * @fucntion
  * @param {function} removeWaitF - Function to be called when the wait is no longer required
  * @return {void}
@@ -2142,7 +2141,7 @@ export const removeGlobalWait = removeWaitF => {
 };
 
 /**
- *  Server root is the URL of the MaximoPlus server
+ * The server root is the URL of the MaximoPlus server.
  * @fucntion
  * @param {string} SERVER_ROOT - The URL of the MaximoPlus server
  * @return {void}
@@ -2154,7 +2153,7 @@ export const setServerRoot = SERVER_ROOT => {
 };
 
 /**
- * Login to Maixmo
+ * Login to Maximo
  * @function
  * @param {string} username
  * @param {string} password
@@ -2168,7 +2167,7 @@ export const maxLogin = (username, password, callbackF, errbackF) => {
 
 /**
  * The callback function is called when the user is logged off from Maximo
- * Usually it opens the login dialog
+ * Usually, it opens the login dialog
  * @function
  * @param {errorCallback} openLoginDialog - The callback function to be called once the user has been logged off
  */
@@ -2177,7 +2176,7 @@ export const setOnLoggedOff = openLoginDialog => {
 };
 
 /**
- * Get SQLite database callback, called by the core library to get the instance of the SQLite database. Check db.js in React Native template for an example
+ * Get SQLite database callback, called by the core library, to get the instance of the SQLite database. Check db.js in React Native template for an example.
  * @callback getSQLDBCallback
  */
 
@@ -2191,9 +2190,9 @@ export const setSQLDBCallback = getSQLDatabase => {
 };
 
 /**
- * Sets an application state Online or Offline. Useful for the testing, and automated in template
+ * Sets an application state Online or Offline. Useful for the testing, and automated in the template.
  * @function
- * @param {boolean} offline - if true, sets the application offline, otherwise bring it back online
+ * @param {boolean} offline - if true, sets the application offline; otherwise, bring it back online
  * @return {void}
  */
 export const setOffline = offline => {
@@ -2201,12 +2200,11 @@ export const setOffline = offline => {
 };
 
 /**
-* Offline error for one record
-* @typedef {Object} OfflineError
-* @property {object} data - the offline 
-data record that failed to save to Maximo
-* @property {string} message - the error message for the offline record that failed to save to Maxiom
-**/
+ * Offline error for one record
+ * @typedef {Object} OfflineError
+ * @property {object} data - the offline data record that failed to save to Maximo,
+ * @property {string} message - the error message for the offline record that failed to save to Maximo.
+ **/
 
 /**
  * @callback offlineErrorsCallback
@@ -2214,7 +2212,7 @@ data record that failed to save to Maximo
  */
 
 /**
- * Set callback for displaying the offline errore
+ * Set callback for displaying the offline errors.
  * @function
  * @param {offlineErrorsCallback} offlineErrorsCb
  * @return {void}
