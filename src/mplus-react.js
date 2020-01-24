@@ -2058,6 +2058,13 @@ export const getOfflineErrorDisplay = Adapter => {
 export const preloadOffline = () => maximoplus.basecontrols.offload();
 
 /**
+ * Unloads the offline data
+ * @function
+ * @return {void}
+ */
+export const unloadOffline = () => maximoplus.basecontrols.unload();
+
+/**
  * Sets the QBE on the container
  * @function
  * @param {string} contId - the id of the container
