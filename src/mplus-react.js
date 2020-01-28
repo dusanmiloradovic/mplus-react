@@ -563,7 +563,8 @@ MPlusComponent.propTypes = {
  * @property {function} setMaxValue In case of the single-row Component Adapter, this function is used to change the value of the current Maximo record. The function signature is setMaxValue(attributeName, value)
  * @property{Array} maxrows In case of the multi-rows Component Adapter, maxrows gives the array of data
  * @property {function} fetchMore In case of the multi-rows Component Adapter, if we need to get more data for Maximo, we need to use this function. The signature is fetchMore(numberOfRows)
- * @property {function} setMaxRowValue In case of the multi-tows Component Adapter, sets the value of the Maximo attribute. The signature is setMaxRowValue(rowNum, attributeName, value)
+ * @property {function} setMaxRowValue In case of the multi-rows Component Adapter, sets the value of the Maximo attribute. The signature is setMaxRowValue(rowNum, attributeName, value)
+ * @property {function} moveToRow In case if the multi-rows Component Adapter, move the current row of the MboSet. The signature is moveToRow(rowNum)
  */
 
 /**
@@ -582,7 +583,7 @@ MPlusComponent.propTypes = {
 
 /** Adapted - MaximoPlus React Component ready to be used in an MaximoPlus app, a result of the getComponentAdapter function call
  * @typedef {React.Component} Adapted
- * @property }AdaptedProps} props
+ * @property {AdaptedProps} props
  */
 
 /** HOC for component adapter
