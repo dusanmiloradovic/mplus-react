@@ -2228,3 +2228,7 @@ export const setOffline = offline => {
 export const setOfflineErrorsCb = offlineErrorsCb => {
   maximoplus.core.globalFunctions.globalOfflinePostError = offlineErrorsCb;
 };
+
+export const setOfflineListener = offlineListener=>{
+    maximoplus.offline.globalFunctions.listenOffline = offlineListener;
+};
