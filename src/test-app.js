@@ -919,5 +919,5 @@ window.offline = () => {
 
 setOfflineDetector(() => {
   console.log("check from app offline");
-  return !navigator.onLine;
+  return Promise.resolve(!navigator.onLine);
 });

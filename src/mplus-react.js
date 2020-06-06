@@ -2234,5 +2234,5 @@ export const setOfflineListener = (offlineListener) => {
 };
 
 export const setOfflineDetector = (offlineDetector) => {
-  maximoplus.offline.globalFunctions.isAppOffline(offlineDetector);
+  maximoplus.offline.globalFunctions.isAppOffline = offlineDetector;
 };
