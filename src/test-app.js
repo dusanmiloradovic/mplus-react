@@ -24,6 +24,7 @@ import {
   preloadOffline,
   setQbe,
   addRow,
+  setOfflineDetector,
 } from "./mplus-react.js";
 import React from "react";
 import { ContextPool } from "react-multiple-contexts";
@@ -915,3 +916,8 @@ window.offline = () => {
     .then(() => reload("pocont"))
     .then(() => preloadOffline());
 };
+
+setOfflineDetector(() => {
+  console.log("check from app offline");
+  return !navigator.onLine;
+});
