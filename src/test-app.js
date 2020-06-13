@@ -25,11 +25,13 @@ import {
   setQbe,
   addRow,
   setOfflineDetector,
-  prepareSQLDB
+  prepareSQLDB,
+  scriptRunner
 } from "./mplus-react.js";
 import React from "react";
 import { ContextPool } from "react-multiple-contexts";
 import ReactDOM from "react-dom";
+import script from "./test/db.sql";
 
 //the components from the package will be used directly, they are the base for the real styled components. Still, we need to test them first. Also this serves as an implementation reference for the real cases
 const rootContext = React.createContext({ dusan: "test" });
@@ -920,15 +922,8 @@ setOfflineDetector(() => {
   console.log("check from app offline");
   return Promise.resolve(!navigator.onLine);
 });
-
+const preparedScript = script.replace(/\n/g, "");
 prepareSQLDB(db => {
-  return new Promise((resolve, reject) => {
-    db.transaction(tx => {
-      tx.executeSql("create table if not exists bla(a text,b text)");
-      tx.executeSql("insert into bla(a,b) values('a','b')");
-      tx.executeSql("insert into bla(a,b) values('aa','bb')");
-    });
-    resolve(true);
-    //in real scenario, all executeSQL should wait for the completion of executeSql
-  });
+  console.log("PREPARING THE DB");
+  return scriptRunner(db, preparedScript); //it should return promise
 });

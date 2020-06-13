@@ -2194,6 +2194,19 @@ export const setSQLDBCallback = getSQLDatabase => {
   maximoplus.sqlite.globalFunctions.getSQLDatabase = getSQLDatabase;
 };
 
+/**
+ * Prepare empty datbase. Usually used to run the script to load the file.
+ * Native apps can use setSQLDBCallback to get full DB without script
+ * @callback prepareDBCallback
+ * @param db - empty Sqlite database
+ */
+
+/**
+ * Prepare the empty db. Usually runs the script
+ * @function
+ * @param {prepareDBCallback} database -- the empty sqlite database
+ * @return {void}
+ **/
 export const prepareSQLDB = getPrepareSQLDB => {
   maximoplus.sqlite.globalFunctions.prepareDatabase = getPrepareSQLDB;
 };
@@ -2235,4 +2248,43 @@ export const setOfflineListener = offlineListener => {
 
 export const setOfflineDetector = offlineDetector => {
   maximoplus.offline.globalFunctions.isAppOffline = offlineDetector;
+};
+
+const executeSql = (tx, sql) => {
+  console.log(sql);
+  if (!sql) return Promise.resolve("empty sql");
+  return new Promise((resolve, reject) => {
+    tx.executeSql(
+      sql,
+      [],
+      () => {
+        resolve(true);
+      },
+      (tx, err) => {
+        reject(err);
+      }
+    );
+  });
+};
+/**
+ * Runs the script on the empty database. The script is semicolomn separated string, and db is the empty sqlite database
+ * @function
+ * @param {object} db  - sqlite database
+ * @param {string} script
+ */
+
+export const scriptRunner = (db, script) => {
+  const statements = script.split(";");
+  return new Promise((resolve, reject) => {
+    db.transaction(async tx => {
+      try {
+        for (const statement of statements) {
+          await executeSql(tx, statement);
+        }
+        resolve("done");
+      } catch (err) {
+        reject(err);
+      }
+    });
+  });
 };
