@@ -777,6 +777,7 @@ class App extends React.Component {
                   hasLookup: "true",
                   listTemplate: "qbevaluelist",
                   filterTemplate: "valuelist",
+                  preloadOffline: "true",
                   offlineReturnColumn: "VALUE"
                 }
               }}
