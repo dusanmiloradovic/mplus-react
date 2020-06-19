@@ -879,9 +879,17 @@ export function getSimpleList(WrappedList) {
     fetchMore(numRows) {
       this.mp.fetchMore(numRows);
     }
+    /**
+     * Used for pagination instead of infinite list
+     * Goes to the next page
+     */
     pageNext() {
       this.mp.pageNext();
     }
+    /**
+     * Used for pagination instead of infinite list
+     * Goes to the previous page
+     */
     pagePrev() {
       this.mp.pagePrev();
     }
@@ -2204,7 +2212,7 @@ export const setSQLDBCallback = getSQLDatabase => {
 /**
  * Prepare the empty db. Usually runs the script
  * @function
- * @param {prepareDBCallback} database -- the empty sqlite database
+ * @param {prepareDBCallback} getPrepareSQLDB -- the empty sqlite database
  * @return {void}
  **/
 export const prepareSQLDB = getPrepareSQLDB => {

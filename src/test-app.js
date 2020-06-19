@@ -758,6 +758,7 @@ class App extends React.Component {
                     >
                       Change Status
                     </button>
+                    <button onClick={preloadOffline}>Preload Offline</button>
                   </>
                 );
               }}
