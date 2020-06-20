@@ -2185,7 +2185,7 @@ export const maxLogin = (username, password, callbackF, errbackF) => {
  * @param {errorCallback} openLoginDialog - The callback function to be called once the user has been logged off
  */
 export const setOnLoggedOff = openLoginDialog => {
-  maximoplus.core.setOnLoggedOff = openLoginDialog;
+  maximoplus.core.setOnLoggedOff(openLoginDialog);
 };
 
 /**

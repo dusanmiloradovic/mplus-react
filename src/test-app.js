@@ -922,7 +922,7 @@ window.offline = () => {
 
 setOfflineDetector(() => {
   console.log("check from app offline");
-  return Promise.resolve(!navigator.onLine);
+  return Promise.resolve(true);
 });
 const preparedScript = script.replace(/\n/g, "");
 prepareSQLDB(db => {
