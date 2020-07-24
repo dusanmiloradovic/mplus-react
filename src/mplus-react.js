@@ -1234,7 +1234,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                 }
               });
             }
-            return drawFields(flds);
+            return drawFields(flds, this.props);
           }}
         </Consumer>
       );
