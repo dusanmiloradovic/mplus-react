@@ -2282,7 +2282,7 @@ const executeSql = (tx, sql) => {
  */
 
 export const scriptRunner = (db, script) => {
-  const statements = script.split(";");
+  const statements = Array.isArray(script) ? script : script.split(";");
   return new Promise((resolve, reject) => {
     db.transaction(async tx => {
       try {
