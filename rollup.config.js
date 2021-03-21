@@ -10,21 +10,21 @@ export default {
     file: "distrollup/bundle.js",
     format: "es",
     name: "react-mplus",
-    sourcemap: true
+    sourcemap: true,
   },
   plugins: [
     resolve({
       jsnext: true,
-      main: true
+      main: true,
     }),
     commonjs({
-      include: "node_modules/**"
+      include: "node_modules/**",
     }),
     eslint({
-      exclude: ["node_modules/**"]
+      exclude: ["node_modules/**"],
     }),
     babel({
-      exclude: ["node_modules/**"]
-    })
-  ]
+      exclude: ["node_modules/**"],
+    }),
+  ],
 };
