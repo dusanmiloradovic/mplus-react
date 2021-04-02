@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 
 const kont = {};
 
-const hash = value => {
+const hash = (value) => {
   const _value = [];
   for (const k in value) {
     if (
@@ -44,7 +44,7 @@ const dialogRefInnerIds = [];
 // closes we need to clean up that. We will simply see the difference at the time of closing and remove these contexts.
 // We need this to be an array, because we may open the dialog from another dialog , like the stack, we need to record the contexts  at the time of opening the dialog
 const externalRootContext = {};
-export const setExternalRootContext = rootContext => {
+export const setExternalRootContext = (rootContext) => {
   externalRootContext.ctx = rootContext;
 };
 
@@ -61,13 +61,13 @@ const resolveContainer = (contid, container) => {
   }
 };
 
-const getDeferredContainer = contId => {
+const getDeferredContainer = (contId) => {
   if (kont[contId]) {
     return kont[contId];
   }
   let _resolve = null;
   let _reject = null;
-  const prom = new Promise(function(resolve, reject) {
+  const prom = new Promise(function (resolve, reject) {
     _resolve = resolve;
     _reject = reject;
   });
@@ -113,7 +113,7 @@ class MaximoPlusWrapper {
    * @param {function} stateF
    */
   setInternalState(stateF) {
-    const innerStateF = state => {
+    const innerStateF = (state) => {
       // can't ise directly stateF, in case of the dialogs, we need to move the dialog to the upper leel
       const newState = stateF(state);
       const mfs = newState && newState["maxfields"];
@@ -162,7 +162,7 @@ class MaximoPlusWrapper {
    * @param {object} state
    */
   setState(property, state) {
-    this.rootContext.setInnerState(this.contextId, _state => {
+    this.rootContext.setInnerState(this.contextId, (_state) => {
       const ret = _state ? { ..._state } : {};
       ret[property] = state;
       return ret;
@@ -220,7 +220,7 @@ export const openDialog = (dialog, _rootContext) => {
   }
 
   dialogRefInnerIds.push(Object.keys(innerContexts));
-  rootContext.setInnerState("dialogs", dialogs => {
+  rootContext.setInnerState("dialogs", (dialogs) => {
     if (!dialogs) {
       return [dialog];
     }
@@ -233,7 +233,7 @@ export const openDialog = (dialog, _rootContext) => {
  * @function
  */
 
-export const closeDialog = _rootContext => {
+export const closeDialog = (_rootContext) => {
   const rootContext = _rootContext ? _rootContext : getRootContext();
   if (!rootContext || !rootContext.getInnerContext("dialogs")) {
     return;
@@ -243,7 +243,7 @@ export const closeDialog = _rootContext => {
   }
   const dff = difference(Object.keys(innerContexts), dialogRefInnerIds.pop());
 
-  rootContext.setInnerState("dialogs", dialogs => {
+  rootContext.setInnerState("dialogs", (dialogs) => {
     if (dialogs.length == 0) return [];
     const newDialogs = [...dialogs];
     newDialogs.pop();
@@ -337,12 +337,12 @@ export class AppContainer extends React.Component {
       id: PropTypes.string,
       mboname: PropTypes.string,
       appname: PropTypes.string,
-      offlineenabled: PropTypes.bool
+      offlineenabled: PropTypes.bool,
     };
   }
 }
 
-const getDepContainer = containerConstF => {
+const getDepContainer = (containerConstF) => {
   /** Internal. helper class for dep contaniers
    * @private
    */
@@ -372,7 +372,7 @@ const getDepContainer = containerConstF => {
     componentDidMount() {
       this._isMounted = true;
       if (kont[this.props.id] && kont[this.props.id].resolved) {
-        kont[this.props.id].then(mp => {
+        kont[this.props.id].then((mp) => {
           if (this._isMounted) {
             this.setState({ mp: mp });
           }
@@ -380,7 +380,7 @@ const getDepContainer = containerConstF => {
         return;
       }
 
-      kont[this.props.container].then(mboCont => {
+      kont[this.props.container].then((mboCont) => {
         if (!this._isMounted) {
           return;
         }
@@ -420,7 +420,7 @@ const getDepContainer = containerConstF => {
   }
   DepContainer.propTypes = {
     id: PropTypes.string,
-    container: PropTypes.string
+    container: PropTypes.string,
   };
   return DepContainer;
 };
@@ -510,7 +510,7 @@ In case the container property is passed, we have to make sure container is avai
     */
     if (!innerContexts[this.oid]) {
       innerContexts[this.oid] = {
-        context: this.context.addInnerContext(this.oid)
+        context: this.context.addInnerContext(this.oid),
       };
     }
     if (this.props.container && this.props.maxcontainer) {
@@ -518,14 +518,14 @@ In case the container property is passed, we have to make sure container is avai
     }
 
     if (this.props.container) {
-      getDeferredContainer(this.props.container).then(container => {
+      getDeferredContainer(this.props.container).then((container) => {
         this.putContainer(container);
       });
     }
     if (this.props.maxcontainer) {
       this.putContainer(this.props.maxcontainer);
     }
-    animating.map(val => this.setState({ animating: val })); // if component is animating don't display the change until the animation is finished
+    animating.map((val) => this.setState({ animating: val })); // if component is animating don't display the change until the animation is finished
   }
   /** React lifecycle method used to init the MaximoPlus core component
    * @param {object} prevProps
@@ -533,7 +533,7 @@ In case the container property is passed, we have to make sure container is avai
   componentDidUpdate(prevProps) {
     /* If for any reason container is changed in the property, we have to re-initialize*/
     if (this.props.container && this.props.container != prevProps.container) {
-      getDeferredContainer(this.props.container).then(container => {
+      getDeferredContainer(this.props.container).then((container) => {
         this.putContainer(container);
       });
     }
@@ -553,7 +553,7 @@ In case the container property is passed, we have to make sure container is avai
 
 MPlusComponent.propTypes = {
   container: PropTypes.string,
-  maxcontainer: PropTypes.object
+  maxcontainer: PropTypes.object,
 };
 
 /**
@@ -669,7 +669,7 @@ export function getComponentAdapter(Adapter) {
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
-          {value => {
+          {(value) => {
             if (!value) return null;
             const rownum = value.currow;
             const maxrows = value.maxrows;
@@ -729,7 +729,7 @@ export function getComponentAdapter(Adapter) {
     }
   }
   MPAdapter.propTypes = {
-    columns: PropTypes.array
+    columns: PropTypes.array,
   };
   return MPAdapter;
 }
@@ -774,7 +774,7 @@ export function getAppDocTypesPicker(Picker) {
     /** React lifecycle method, used to init the containers */
     componentDidMount() {
       if (this.state.appDocType) return;
-      kont[this.props.container].then(mboCont => {
+      kont[this.props.container].then((mboCont) => {
         const app = "=" + mboCont.getApp();
         const appDocCont = new maximoplus.basecontrols.MboContainer(
           "appdoctype"
@@ -789,7 +789,7 @@ export function getAppDocTypesPicker(Picker) {
     }
   }
   MPAppDoctypes.propTypes = {
-    container: PropTypes.string
+    container: PropTypes.string,
   };
   return MPAppDoctypes;
 }
@@ -815,7 +815,7 @@ export function getSimpleList(WrappedList) {
         this.props.dataSetCallback({
           fetchMore: this.fetchMore,
           pageNext: this.pageNext,
-          pagePrev: this.pagePrev
+          pagePrev: this.pagePrev,
         });
       }
 
@@ -861,12 +861,12 @@ export function getSimpleList(WrappedList) {
     enableLocalWaitSpinner() {
       // useful for infinite scroll if we want to display the  spinner below the list. If not enabled, global wait will be used
 
-      this.mp.prepareCall = _ => {
+      this.mp.prepareCall = (_) => {
         if (!this.wrapper) return;
         this.wrapper.setState("waiting", true);
         this.wrapper.setState("startWait", Date.now());
       };
-      this.mp.finishCall = _ => {
+      this.mp.finishCall = (_) => {
         if (this.wrapper) {
           this.wrapper.setState("waiting", false);
         }
@@ -911,7 +911,7 @@ export function getSimpleList(WrappedList) {
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
-          {value => {
+          {(value) => {
             if (!value) {
               return null;
             }
@@ -925,8 +925,8 @@ export function getSimpleList(WrappedList) {
             drs =
               maxrows &&
               maxrows
-                .filter(o => o.data)
-                .map(o => {
+                .filter((o) => o.data)
+                .map((o) => {
                   o.key = o.data["_uniqueid"] || o.data["uniqueid"]; // for the offline
                   o.rowAction = this.rowAction;
                   return o;
@@ -957,7 +957,7 @@ export function getSimpleList(WrappedList) {
         {
           type: "filter",
           maxcontainer: container,
-          filtername: this.props.filterTemplate
+          filtername: this.props.filterTemplate,
         },
         this.context
       );
@@ -971,7 +971,7 @@ export function getSimpleList(WrappedList) {
   MPSimpleList.propTypes = {
     container: PropTypes.string,
     listTemplate: PropTypes.string,
-    filterTemplate: PropTypes.string
+    filterTemplate: PropTypes.string,
   };
   return MPSimpleList;
 }
@@ -1015,7 +1015,7 @@ export function getPickerList(drawPickerOption, drawPicker) {
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
-          {value => {
+          {(value) => {
             if (!value) return null;
             const maxrows =
               value.maxrows && value.maxrows.filter(({ data }) => data);
@@ -1057,7 +1057,7 @@ export function getPickerList(drawPickerOption, drawPicker) {
     label: PropTypes.string,
     changeListener: PropTypes.func,
     pickercol: PropTypes.string,
-    pickerkeycol: PropTypes.string
+    pickerkeycol: PropTypes.string,
   };
   return MPPickerList;
 }
@@ -1137,7 +1137,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
-          {value => {
+          {(value) => {
             let flds = [];
             const raw = !WrappedTextField;
             if (value && value.maxfields) {
@@ -1166,7 +1166,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                         kind: "picker",
                         key: fKey,
                         metadata: f.metadata,
-                        pickerValue: f.data
+                        pickerValue: f.data,
                       };
                     }
                     return (
@@ -1200,7 +1200,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                     label: f.metadata.title,
                     value: _val,
                     type: f.metadata.maxType,
-                    listener: value =>
+                    listener: (value) =>
                       this.changeInternalFieldValue(fKey, value),
                     changeListener: () => {
                       const newFst = Object.assign({}, this.state.fieldValues);
@@ -1217,7 +1217,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
                     required: f.required,
                     fieldKey: fKey,
                     metadata: f.metadata,
-                    key: fKey
+                    key: fKey,
                   };
                   if (f.metadata.hasLookup) {
                     if (f.metadata.gl) {
@@ -1263,7 +1263,7 @@ If we call the maximo change handler for every field, Maximo may change the valu
   }
   MPSection.propTypes = {
     container: PropTypes.string,
-    columns: PropTypes.array
+    columns: PropTypes.array,
   };
   return MPSection;
 }
@@ -1365,12 +1365,12 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       // this may not be necessary, it will render the search buttons for the dialog
       const buttons = [
         { label: "Search", action: this.search, key: "search" },
-        { label: "Clear", action: this.clear, key: "clear" }
+        { label: "Clear", action: this.clear, key: "clear" },
       ];
       if (this.filterDialog) {
         buttons.push({
           label: "Cancel",
-          action: ev => this.filterDialog.closeDialog()
+          action: (ev) => this.filterDialog.closeDialog(),
         });
       }
       return drawSearchButtons(buttons, this.props);
@@ -1404,7 +1404,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
-          {value => {
+          {(value) => {
             let flds = [];
             const buttons = this.getSearchButtons();
             if (value && value.maxfields) {
@@ -1432,9 +1432,10 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
                       f.listeners["change"](_val);
                     }
                   },
-                  listener: value => this.changeInternalFieldValue(fKey, value),
+                  listener: (value) =>
+                    this.changeInternalFieldValue(fKey, value),
                   immediateChangeListener: f.listeners["change"],
-                  fieldKey: f.metadata.attributeName + counter
+                  fieldKey: f.metadata.attributeName + counter,
                 };
                 if (f.metadata.hasLookup) {
                   attrs.showLookupF = () => f.maximoField.showLookup();
@@ -1475,7 +1476,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
   }
   MPQbeSection.propypes = {
     container: PropTypes.string,
-    columns: PropTypes.array
+    columns: PropTypes.array,
   };
   return MPQbeSection;
 }
@@ -1531,7 +1532,7 @@ function getDialog(DialogWrapper, getDialogF, defaultCloseDialogAction) {
     }
   }
   Dialog.propTypes = {
-    dialogs: PropTypes.array
+    dialogs: PropTypes.array,
   };
   return Dialog;
 }
@@ -1588,25 +1589,25 @@ If both dialogwrapper and getdialogf is null, let the implementation manage the 
       const Consumer = this.Context.Consumer;
       let Dialog = null;
       if (!raw) {
-        Dialog = getDialog(DialogWrapper, getDialogF, _ =>
+        Dialog = getDialog(DialogWrapper, getDialogF, (_) =>
           closeDialog(this.context)
         );
         return (
           <Consumer>
-            {dialogs => {
+            {(dialogs) => {
               if (!dialogs) return null;
               return <Dialog dialogs={dialogs} />;
             }}
           </Consumer>
         );
       } else {
-        const ff = _ => closeDialog(this.context);
+        const ff = (_) => closeDialog(this.context);
         // in this case the implementation will take care of the dialog openings and closing
         return (
           <Consumer>
-            {dialogs => {
+            {(dialogs) => {
               const dials = dialogs
-                ? dialogs.map(d => {
+                ? dialogs.map((d) => {
                     d.closeTheDialog = ff;
                     return d;
                   })
@@ -1676,7 +1677,7 @@ export function getListDialog(WrappedList, drawList) {
     }
   }
   MPListDialog.propTypes = {
-    dialog: PropTypes.object
+    dialog: PropTypes.object,
   };
   return MPListDialog;
 }
@@ -1689,7 +1690,7 @@ export function getListDialog(WrappedList, drawList) {
  * @return {MPlusComponent}
  */
 export function getFilterDialog(getFilter, drawFilter) {
-  return props => drawFilter(getFilter(props.dialog));
+  return (props) => drawFilter(getFilter(props.dialog));
 }
 
 /** HOC to return the gl dialog
@@ -1732,7 +1733,7 @@ export function getGLDialog(drawDialog, WrappedList) {
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
-          {value => {
+          {(value) => {
             if (!value || !value.segments || !value.pickerlist) return null;
             const segments = value.segments;
             const pickerList = value.pickerlist;
@@ -1831,7 +1832,7 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
       const Consumer = this.Context.Consumer;
       return (
         <Consumer>
-          {value => {
+          {(value) => {
             const section = value && value.section;
             const actions = value && value.actions;
             if (!section || !section.fields || !actions) {
@@ -1842,13 +1843,13 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
                 picker: "true",
                 pickerkeycol: "actionid",
                 pickercol: "instruction",
-                pickerrows: "10"
-              }
+                pickerrows: "10",
+              },
             };
 
             if (section.objectName == "REASSIGNWF") {
               metadata = {
-                ASSIGNEE: { hasLookup: "true", listTemplate: "personlist" }
+                ASSIGNEE: { hasLookup: "true", listTemplate: "personlist" },
               };
             }
             return drawDialog(
@@ -1881,7 +1882,7 @@ export function getWorkflowDialog(WrappedSection, drawDialog) {
  * @return {Promise}
  */
 export const getLocalValue = (contid, column) => {
-  return getDeferredContainer(contid).then(mp => {
+  return getDeferredContainer(contid).then((mp) => {
     const ret = mp.getFieldLocalValue(column.toUpperCase());
     //    console.log(column + "=" + ret);
     return ret;
@@ -1894,8 +1895,8 @@ export const getLocalValue = (contid, column) => {
  * @param{string} contid The id of the container
  * @return {Promise}
  */
-export const reload = contid => {
-  return getDeferredContainer(contid).then(mp => {
+export const reload = (contid) => {
+  return getDeferredContainer(contid).then((mp) => {
     mp.reset();
     return mp.moveToRow(0);
   });
@@ -1907,8 +1908,8 @@ export const reload = contid => {
  * @param {string} contid The id of the application container
  * @return {Promise}
  */
-export const save = contid => {
-  return getDeferredContainer(contid).then(mp => mp.save());
+export const save = (contid) => {
+  return getDeferredContainer(contid).then((mp) => mp.save());
 };
 
 /**
@@ -1920,7 +1921,7 @@ export const save = contid => {
  * @return {string}
  */
 export const getDownloadURL = (doclinkscontid, method, params) =>
-  getDeferredContainer(doclinkscontid).then(container =>
+  getDeferredContainer(doclinkscontid).then((container) =>
     maximoplus.net.getDownloadURL(
       container,
       method ? method : "doclinks",
@@ -1950,7 +1951,7 @@ export const uploadFile = (container, uploadMethod, file, doctype) => {
   fd.append("docname", file.name);
   fd.append("doctype", doctype);
   //  fd.append("file", file);
-  const prom = getDeferredContainer(container).then(mbocont => {
+  const prom = getDeferredContainer(container).then((mbocont) => {
     return new Promise((resolve, reject) => {
       if (!isCordovaApp) {
         fd.append("file", file);
@@ -1959,19 +1960,19 @@ export const uploadFile = (container, uploadMethod, file, doctype) => {
           uploadMethod,
           null,
           fd,
-          function(ok) {
+          function (ok) {
             resolve(ok);
           },
-          function(err) {
+          function (err) {
             reject(err);
           },
-          function(loaded, total) {
+          function (loaded, total) {
             file.percloaded = Math.round(loaded / total);
           }
         );
       } else {
         const reader = new FileReader();
-        reader.onloadend = evt => {
+        reader.onloadend = (evt) => {
           const blob = new Blob([evt.target.result], { type: "image/jpeg" });
           fd.append("file", blob, file.name);
           maximoplus.net.upload(
@@ -1979,13 +1980,13 @@ export const uploadFile = (container, uploadMethod, file, doctype) => {
             uploadMethod,
             null,
             fd,
-            function(ok) {
+            function (ok) {
               resolve(ok);
             },
-            function(err) {
+            function (err) {
               reject(err);
             },
-            function(loaded, total) {
+            function (loaded, total) {
               file.percloaded = Math.round(loaded / total);
             }
           );
@@ -2004,7 +2005,7 @@ export const uploadFile = (container, uploadMethod, file, doctype) => {
  * @param {string} command The method name on Mbo
  */
 export const mboCommand = (kontId, command) => {
-  getDeferredContainer(kontId).then(mp => {
+  getDeferredContainer(kontId).then((mp) => {
     return mp.mboCommand(command);
   });
 };
@@ -2016,12 +2017,12 @@ export const mboCommand = (kontId, command) => {
  * @param {string} command The method name on MboSet
  */
 export const mboSetCommand = (kontId, command) => {
-  getDeferredContainer(kontId).then(mp => {
+  getDeferredContainer(kontId).then((mp) => {
     return mp.mbosetCommand(command);
   });
 };
 
-export const getOfflineErrorDisplay = Adapter => {
+export const getOfflineErrorDisplay = (Adapter) => {
   /**
    * Internal. Offline Error displayer component
    */
@@ -2046,7 +2047,9 @@ export const getOfflineErrorDisplay = Adapter => {
      * @return {React.ReactElement}
      */
     render() {
-      const errdisp = this.state.errors.map(e => <Adapter key={e.id} {...e} />);
+      const errdisp = this.state.errors.map((e) => (
+        <Adapter key={e.id} {...e} />
+      ));
       return <>{errdisp}</>;
     }
   }
@@ -2079,7 +2082,7 @@ export const unloadOffline = () => maximoplus.basecontrols.unload();
  * @return {Promise}
  */
 export const setQbe = (contId, attributeName, qbe) => {
-  return getDeferredContainer(contId).then(mp => {
+  return getDeferredContainer(contId).then((mp) => {
     return mp.setQbe(attributeName, qbe);
   });
 };
@@ -2090,8 +2093,8 @@ export const setQbe = (contId, attributeName, qbe) => {
  * @param {string} contId - The id of the container
  * @return {Promise}
  */
-export const addRow = contId => {
-  return getDeferredContainer(contId).then(mp => {
+export const addRow = (contId) => {
+  return getDeferredContainer(contId).then((mp) => {
     return mp.addNewRow();
   });
 };
@@ -2104,7 +2107,7 @@ export const addRow = contId => {
  * @return {Promise}
  */
 export const addRowAt = (contId, index) => {
-  return getDeferredContainer(contId).then(mp => {
+  return getDeferredContainer(contId).then((mp) => {
     return mp.addNewRowAt(index);
   });
 };
@@ -2115,8 +2118,8 @@ export const addRowAt = (contId, index) => {
  * @param {string} contId - The id of the container
  * @return {Promise}
  */
-export const delRow = contId => {
-  return getDeferredContainer(contId).then(mp => {
+export const delRow = (contId) => {
+  return getDeferredContainer(contId).then((mp) => {
     return mp.delRow();
   });
 };
@@ -2127,8 +2130,8 @@ export const delRow = contId => {
  * @param {string} contId - The id of the container
  * @return {Promise}
  */
-export const undelRow = contId => {
-  return getDeferredContainer(contId).then(mp => {
+export const undelRow = (contId) => {
+  return getDeferredContainer(contId).then((mp) => {
     return mp.undelRow();
   });
 };
@@ -2139,7 +2142,7 @@ export const undelRow = contId => {
  * @param {function} setWaitF - Function to be called when the wait is required
  * @return {void}
  */
-export const setGlobalWait = setWaitF => {
+export const setGlobalWait = (setWaitF) => {
   maximoplus.core.globalFunctions.globalDisplayWaitCursor = setWaitF;
 };
 
@@ -2149,7 +2152,7 @@ export const setGlobalWait = setWaitF => {
  * @param {function} removeWaitF - Function to be called when the wait is no longer required
  * @return {void}
  */
-export const removeGlobalWait = removeWaitF => {
+export const removeGlobalWait = (removeWaitF) => {
   maximoplus.core.globalFunctions.globalRemoveWaitCursor = removeWaitF;
 };
 
@@ -2159,7 +2162,7 @@ export const removeGlobalWait = removeWaitF => {
  * @param {string} SERVER_ROOT - The URL of the MaximoPlus server
  * @return {void}
  */
-export const setServerRoot = SERVER_ROOT => {
+export const setServerRoot = (SERVER_ROOT) => {
   maximoplus.net.globalFunctions.serverRoot = () => {
     return SERVER_ROOT;
   };
@@ -2184,7 +2187,7 @@ export const maxLogin = (username, password, callbackF, errbackF) => {
  * @function
  * @param {errorCallback} openLoginDialog - The callback function to be called once the user has been logged off
  */
-export const setOnLoggedOff = openLoginDialog => {
+export const setOnLoggedOff = (openLoginDialog) => {
   maximoplus.core.setOnLoggedOff(openLoginDialog);
 };
 
@@ -2198,7 +2201,7 @@ export const setOnLoggedOff = openLoginDialog => {
  * @function
  * @param {getSQLDBCallback} getSQLDatabase
  */
-export const setSQLDBCallback = getSQLDatabase => {
+export const setSQLDBCallback = (getSQLDatabase) => {
   maximoplus.sqlite.globalFunctions.getSQLDatabase = getSQLDatabase;
 };
 
@@ -2215,7 +2218,7 @@ export const setSQLDBCallback = getSQLDatabase => {
  * @param {prepareDBCallback} getPrepareSQLDB -- the empty sqlite database
  * @return {void}
  **/
-export const prepareSQLDB = getPrepareSQLDB => {
+export const prepareSQLDB = (getPrepareSQLDB) => {
   maximoplus.sqlite.globalFunctions.prepareDatabase = getPrepareSQLDB;
 };
 /**
@@ -2224,7 +2227,7 @@ export const prepareSQLDB = getPrepareSQLDB => {
  * @param {boolean} offline - if true, sets the application offline; otherwise, bring it back online
  * @return {void}
  */
-export const setOffline = offline => {
+export const setOffline = (offline) => {
   maximoplus.core.setOffline(offline);
 };
 
@@ -2246,15 +2249,15 @@ export const setOffline = offline => {
  * @param {offlineErrorsCallback} offlineErrorsCb
  * @return {void}
  */
-export const setOfflineErrorsCb = offlineErrorsCb => {
+export const setOfflineErrorsCb = (offlineErrorsCb) => {
   maximoplus.core.globalFunctions.globalOfflinePostError = offlineErrorsCb;
 };
 
-export const setOfflineListener = offlineListener => {
+export const setOfflineListener = (offlineListener) => {
   maximoplus.offline.globalFunctions.listenOffline = offlineListener;
 };
 
-export const setOfflineDetector = offlineDetector => {
+export const setOfflineDetector = (offlineDetector) => {
   maximoplus.offline.globalFunctions.isAppOffline = offlineDetector;
 };
 
@@ -2284,7 +2287,7 @@ const executeSql = (tx, sql) => {
 export const scriptRunner = (db, script) => {
   const statements = Array.isArray(script) ? script : script.split(";");
   return new Promise((resolve, reject) => {
-    db.transaction(async tx => {
+    db.transaction(async (tx) => {
       try {
         for (const statement of statements) {
           await executeSql(tx, statement);
@@ -2295,4 +2298,8 @@ export const scriptRunner = (db, script) => {
       }
     });
   });
+};
+
+export const setOfflineNotifier = (offlineNotifier) => {
+  maximoplus.core.setOfflineNotifier(offineNotifier);
 };
