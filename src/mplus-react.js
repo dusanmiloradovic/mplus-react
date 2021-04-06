@@ -82,6 +82,14 @@ export const animating = flyd.stream(false);
 const innerContexts = {};
 // to simplify the things, we will calculate the id based on the props of the components, and then create the inner context. This will separate completely Maximoplus components from react components
 
+const removeDuplicates = (data) => {
+  // removes the adjastent data with the same key
+  return data.filter((d, i) => {
+    if (i === 0) return true;
+    return d.key != data[i - 1].key;
+  });
+};
+
 /** Internal.
  * Wrapper class for the maximoplus core library. Instead of directly calling updates from MaximoPlus
  * the wrapper calls the updates. This is the helper class for the provider, it proxies the state to the provider, and isolates the states of components
@@ -932,6 +940,7 @@ export function getSimpleList(WrappedList) {
                   return o;
                 })
                 .filter(({ key }) => key != undefined);
+            drs = drs ? removeDuplicates(drs) : [];
             return (
               <WrappedList
                 {...this.props}
@@ -2301,5 +2310,5 @@ export const scriptRunner = (db, script) => {
 };
 
 export const setOfflineNotifier = (offlineNotifier) => {
-  maximoplus.core.setOfflineNotifier(offineNotifier);
+  maximoplus.core.setOfflineNotifier(offlineNotifier);
 };
