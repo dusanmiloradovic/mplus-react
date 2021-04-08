@@ -439,9 +439,12 @@ const TestComponentAdapter = getComponentAdapter((props) => {
       {props.data.PONUM}
       ....
       {props.data.STATUS}
+      -----
+      {props.data.DESCRIPTION}
       <button
         onClick={(_) => {
-          props.setMaxValue("DESCRIPTION", "Suprise");
+          let r = Math.random().toString(36).substring(7);
+          props.setMaxValue("DESCRIPTION", r);
         }}
       >
         Suprise Me
