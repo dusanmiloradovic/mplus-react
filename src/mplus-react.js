@@ -709,7 +709,7 @@ export function getComponentAdapter(Adapter) {
      * @param {string} value
      */
     setMaxValue(column, value) {
-      this.setMaxValue(column, value);
+      this.mp.setMaxValue(column, value);
     }
     /** Method to be called from the library or component to change the Maximo value on a row
      * @param {number} rownum

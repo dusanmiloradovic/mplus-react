@@ -439,6 +439,13 @@ const TestComponentAdapter = getComponentAdapter((props) => {
       {props.data.PONUM}
       ....
       {props.data.STATUS}
+      <button
+        onClick={(_) => {
+          props.setMaxValue("DESCRIPTION", "Suprise");
+        }}
+      >
+        Suprise Me
+      </button>
     </div>
   );
 });
@@ -729,6 +736,12 @@ class App extends React.Component {
             <SqliteDownload />
           </div>
           <div className="flex-item">
+            <TestComponentAdapter
+              container="posingle"
+              columns={["ponum", "description", "vendor"]}
+            />
+          </div>
+          <div className="flex-item">
             <Section
               container="posingle"
               columns={[
@@ -945,10 +958,6 @@ window.onload = (_) => {
 //uncomment this to test the app start in offline mode
 maximoplus.core.globalFunctions.startedOffline = function () {
   return Promise.resolve(false);
-};
-
-const WrappedMap = (props) => {
-  return <MapView initialRegion={props.initialRegion} />;
 };
 
 //window.offline = () => {
