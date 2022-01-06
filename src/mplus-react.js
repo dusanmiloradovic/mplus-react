@@ -291,7 +291,7 @@ export class AppContainer extends React.Component {
       mp.setOfflineEnabled(true);
     }
     resolveContainer(this.props.id, mp);
-    this.state = { mp: mp };
+    this.state = { mp };
     this.save = this.save.bind(this);
     this.rollback = this.rollback.bind(this);
     this.mboCommand = this.mboCommand.bind(this);
@@ -382,7 +382,7 @@ const getDepContainer = (containerConstF) => {
       if (kont[this.props.id] && kont[this.props.id].resolved) {
         kont[this.props.id].then((mp) => {
           if (this._isMounted) {
-            this.setState({ mp: mp });
+            this.setState({ mp });
           }
         });
         return;
@@ -393,7 +393,7 @@ const getDepContainer = (containerConstF) => {
           return;
         }
         const mp = containerConstF(mboCont, this.props);
-        this.setState({ mp: mp });
+        this.setState({ mp });
         resolveContainer(this.props.id, mp);
       });
     }
@@ -437,7 +437,7 @@ const getDepContainer = (containerConstF) => {
  * RelContainerProps - properties required for RelContainer
  * @typedef {Object} RelContainerProps
  * @property {string} id - The id of the container
- * @property {string} conatiner - The id of the parent container
+ * @property {string} container - The id of the parent container
  * @property {string} relationship - The relationship name, as defined in Maximo database configuration
  */
 
@@ -1255,14 +1255,13 @@ If we call the maximo change handler for every field, Maximo may change the valu
     preloadOfflineList(fieldMeta) {
       const attributeName = fieldMeta.attributeName;
       if (this.mp && !this.preloadedOfflineLists[attributeName]) {
-        this.preloadedOfflineLists[
-          attributeName
-        ] = maximoplus.basecontrols.listToOffline(
-          this.mp.getContainer(),
-          attributeName,
-          fieldMeta.listColumns,
-          fieldMeta.offlineReturnColumn
-        );
+        this.preloadedOfflineLists[attributeName] =
+          maximoplus.basecontrols.listToOffline(
+            this.mp.getContainer(),
+            attributeName,
+            fieldMeta.listColumns,
+            fieldMeta.offlineReturnColumn
+          );
       }
     }
     /** Internal*/
@@ -1472,14 +1471,13 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
     preloadOfflineList(fieldMeta) {
       const attributeName = fieldMeta.attributeName;
       if (this.mp && !this.preloadedOfflineLists[attributeName]) {
-        this.preloadedOfflineLists[
-          attributeName
-        ] = maximoplus.basecontrols.listToOffline(
-          this.mp.getContainer(),
-          attributeName,
-          fieldMeta.listColumns,
-          fieldMeta.offlineReturnColumn
-        );
+        this.preloadedOfflineLists[attributeName] =
+          maximoplus.basecontrols.listToOffline(
+            this.mp.getContainer(),
+            attributeName,
+            fieldMeta.listColumns,
+            fieldMeta.offlineReturnColumn
+          );
       }
     }
   }
@@ -2042,7 +2040,8 @@ export const getOfflineErrorDisplay = (Adapter) => {
     constructor(props) {
       super(props);
       this.displayErrors = this.displayErrors.bind(this);
-      maximoplus.core.globalFunctions.globalOfflinePostError = this.displayErrors;
+      maximoplus.core.globalFunctions.globalOfflinePostError =
+        this.displayErrors;
       this.state = { errors: [] };
     }
     /** Display the errors on the global error handler
