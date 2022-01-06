@@ -3,3 +3,5 @@ maximoplus-core/
 /.eslintrc~
 distrollup/
 disttest/
+/.log/
+*.lock
