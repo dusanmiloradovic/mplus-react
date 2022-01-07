@@ -2223,6 +2223,19 @@ export const undelRow = (contId) => {
 };
 
 /**
+ * Moves the container to the uniqueid
+ * @function
+ * @param {string} contId - The id of the container
+ * @param {integer} uniqueId - The unique id of the Mbo row
+ * @return {Promise}
+ */
+export const moveToUniqueId = (contId, uniqueId) => {
+  return getDeferredContainer(contId).then((mp) => {
+    mp.moveToUniqueid(uniqueId);
+  });
+};
+
+/**
  * Sets a function that will be called when a top-level wait on the application is required(most probably to display the wait spinner)
  * @fucntion
  * @param {function} setWaitF - Function to be called when the wait is required

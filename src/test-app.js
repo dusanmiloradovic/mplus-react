@@ -27,6 +27,8 @@ import {
   setOfflineDetector,
   prepareSQLDB,
   scriptRunner,
+  InboxContainer,
+  moveToUniqueId,
 } from "./mplus-react.js";
 import React, { useState } from "react";
 import { ContextPool } from "react-multiple-contexts";
@@ -235,6 +237,15 @@ export const listTemplates = {
         {PONUM} {STATUS}
       </div>
       <div>Order Date: {ORDERDATE}</div>
+      <div>{DESCRIPTION}</div>
+    </div>
+  ),
+  inboxrow: ({ DESCRIPTION, STARTDATE, OWNERTABLE, OWNERID }) => (
+    <div className="porowtemplate">
+      <div>
+        {OWNERTABLE} {OWNERID}
+      </div>
+      <div>Start Date: {STARTDATE}</div>
       <div>{DESCRIPTION}</div>
     </div>
   ),
@@ -725,6 +736,7 @@ class App extends React.Component {
           relationship="poline"
           id="polinecont"
         />
+        <InboxContainer id="inbox" />
         <div className="flex">
           <div className="flex-item">
             <List
@@ -850,6 +862,27 @@ class App extends React.Component {
               metadata={{ GLDEBITACCT: { hasLookup: "true", gl: "true" } }}
             />
           </div>
+          <div className="flex-item">
+            <List
+              container="inbox"
+              columns={[
+                "description",
+                "startdate",
+                "duedate",
+                "ownertable",
+                "ownerid",
+              ]}
+              norows="20"
+              initdata="true"
+              listTemplate="inboxrow"
+              selectableF={(_) =>
+                getLocalValue("inbox", "OWNERID").then((ownerId) => {
+                  const _ownerId = parseInt(ownerId);
+                  setTimeout((_) => moveToUniqueId("pocont", _ownerId), 1000);
+                })
+              }
+            />
+          </div>
         </div>
       </AppRoot>
     );
@@ -953,7 +986,7 @@ class AppWO extends React.Component {
 
 window.getLocalValue = getLocalValue;
 
-maximoplus.net.setServerRoot("http://localhost:9009");
+maximoplus.net.setServerRoot("http://localhost:8080");
 window.onload = (_) => {
   ReactDOM.render(<App />, document.getElementById("root"));
 };
