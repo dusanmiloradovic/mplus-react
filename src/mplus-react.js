@@ -350,6 +350,75 @@ export class AppContainer extends React.Component {
   }
 }
 
+const getStandaloneContainer = (containerConstF) => {
+  /** Internal. helper class for standanone contaniers
+   * @private
+   */
+  class StandaloneContainer extends React.PureComponent {
+    /** Constructor, intializs the template
+     * @param {object} props
+     */
+    constructor(props) {
+      super(props);
+      if (kont[this.props.id] && kont[this.props.id].resolved) return;
+      getDeferredContainer(this.props.id);
+      this.mboCommand = this.mboCommand.bind(this);
+      this.mboSetCommand = this.mboSetCommand.bind(this);
+    }
+    /** getter function for mp object
+     * @return {object}
+     */
+    get mp() {
+      return this.state.mp;
+    }
+    /** React lifecycle method use to resolve the containers */
+    componentWillUnmount() {
+      this._isMounted = false;
+    }
+
+    /** React lifecycle method use to resolve the containers */
+    componentDidMount() {
+      this._isMounted = true;
+      if (kont[this.props.id] && kont[this.props.id].resolved) return;
+      const mp = containerConstF(this.props);
+      resolveContainer(this.props.id, mp);
+      this.setState({ mp });
+    }
+
+    /** Dumb render
+     * @return {Void}
+     */
+    render() {
+      return null;
+    }
+    /** Dispose related mp */
+    dispose() {
+      if (this.mp) {
+        this.mp.dispose();
+      }
+      delete kont[this.props.id];
+    }
+    /** Execute the mbocommand on the container
+     * @param {string} command
+     * @return {Promise}
+     */
+    mboCommand(command) {
+      return this.mp.mboCommand(command);
+    }
+    /** Execute the mbo set command on the container
+     * @param {string} command
+     * @return {Promise}
+     */
+    mboSetCommand(command) {
+      return this.mp.mbosetCommand(command);
+    }
+  }
+  StandaloneContainer.propTypes = {
+    id: PropTypes.string,
+  };
+  return StandaloneContainer;
+};
+
 const getDepContainer = (containerConstF) => {
   /** Internal. helper class for dep contaniers
    * @private
@@ -474,6 +543,15 @@ export const MboCommandContainer = getDepContainer(
       props.command,
       props.argControl
     )
+);
+
+/**
+ * InboxContainer - Workflow Inbox for a logged in user
+ * @typeof {React.Component}
+ *
+ */
+export const InboxContainer = getStandaloneContainer(
+  (_) => new maximoplus.basecontrols.InboxMboContainer()
 );
 
 /** Internal. Basic React component class to be extended by all the visual components
