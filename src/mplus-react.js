@@ -1504,6 +1504,7 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
                     ? this.state.fieldValues[fKey]
                     : f.data;
                 const attrs = {
+                  metadata: f.metadata,
                   label: f.metadata.title,
                   value: _val,
                   type: f.metadata.maxType,
