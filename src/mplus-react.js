@@ -2091,7 +2091,7 @@ export const uploadFile = (container, uploadMethod, file, doctype) => {
  * @param {string} command The method name on Mbo
  */
 export const mboCommand = (kontId, command) => {
-  getDeferredContainer(kontId).then((mp) => {
+  return getDeferredContainer(kontId).then((mp) => {
     return mp.mboCommand(command);
   });
 };
@@ -2103,8 +2103,26 @@ export const mboCommand = (kontId, command) => {
  * @param {string} command The method name on MboSet
  */
 export const mboSetCommand = (kontId, command) => {
-  getDeferredContainer(kontId).then((mp) => {
+  return getDeferredContainer(kontId).then((mp) => {
     return mp.mbosetCommand(command);
+  });
+};
+
+export const setValue = (kontId, column, value) => {
+  return getDeferredContainer(kontId).then((mp) => {
+    return mp.setValue(column, value);
+  });
+};
+
+export const getRowCount = (kontId) => {
+  return getDeferredContainer(kontId).then((mp) => {
+    return mp.getRowCount();
+  });
+};
+
+export const setOrderBy = (kontId, column) => {
+  return getDeferredContainer(kontId).then((mp) => {
+    return mp.setOrderBy(column);
   });
 };
 
