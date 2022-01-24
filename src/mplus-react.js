@@ -1333,13 +1333,14 @@ If we call the maximo change handler for every field, Maximo may change the valu
     preloadOfflineList(fieldMeta) {
       const attributeName = fieldMeta.attributeName;
       if (this.mp && !this.preloadedOfflineLists[attributeName]) {
-        this.preloadedOfflineLists[attributeName] =
-          maximoplus.basecontrols.listToOffline(
-            this.mp.getContainer(),
-            attributeName,
-            fieldMeta.listColumns,
-            fieldMeta.offlineReturnColumn
-          );
+        this.preloadedOfflineLists[
+          attributeName
+        ] = maximoplus.basecontrols.listToOffline(
+          this.mp.getContainer(),
+          attributeName,
+          fieldMeta.listColumns,
+          fieldMeta.offlineReturnColumn
+        );
       }
     }
     /** Internal*/
@@ -1550,13 +1551,14 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
     preloadOfflineList(fieldMeta) {
       const attributeName = fieldMeta.attributeName;
       if (this.mp && !this.preloadedOfflineLists[attributeName]) {
-        this.preloadedOfflineLists[attributeName] =
-          maximoplus.basecontrols.listToOffline(
-            this.mp.getContainer(),
-            attributeName,
-            fieldMeta.listColumns,
-            fieldMeta.offlineReturnColumn
-          );
+        this.preloadedOfflineLists[
+          attributeName
+        ] = maximoplus.basecontrols.listToOffline(
+          this.mp.getContainer(),
+          attributeName,
+          fieldMeta.listColumns,
+          fieldMeta.offlineReturnColumn
+        );
       }
     }
   }
@@ -2089,6 +2091,7 @@ export const uploadFile = (container, uploadMethod, file, doctype) => {
  * @function
  * @param {string} kontId The id of the contaienr
  * @param {string} command The method name on Mbo
+ * @return {Promise}
  */
 export const mboCommand = (kontId, command) => {
   return getDeferredContainer(kontId).then((mp) => {
@@ -2101,6 +2104,7 @@ export const mboCommand = (kontId, command) => {
  * @function
  * @param {string} kontId The id of the contaienr
  * @param {string} command The method name on MboSet
+ * @return {Promise}
  */
 export const mboSetCommand = (kontId, command) => {
   return getDeferredContainer(kontId).then((mp) => {
@@ -2108,6 +2112,14 @@ export const mboSetCommand = (kontId, command) => {
   });
 };
 
+/**
+ * Sets a value on the column of the container
+ * @function
+ * @param {string} kontId The id of the contaienr
+ * @param {string} column Column
+ * @param {string} value Value
+ * @return {Promise}
+ */
 export const setValue = (kontId, column, value) => {
   return getDeferredContainer(kontId).then((mp) => {
     return mp.setValue(column, value);
@@ -2137,8 +2149,7 @@ export const getOfflineErrorDisplay = (Adapter) => {
     constructor(props) {
       super(props);
       this.displayErrors = this.displayErrors.bind(this);
-      maximoplus.core.globalFunctions.globalOfflinePostError =
-        this.displayErrors;
+      maximoplus.core.globalFunctions.globalOfflinePostError = this.displayErrors;
       this.state = { errors: [] };
     }
     /** Display the errors on the global error handler
