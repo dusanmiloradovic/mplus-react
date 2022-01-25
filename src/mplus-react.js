@@ -61,7 +61,7 @@ const resolveContainer = (contid, container) => {
   }
 };
 
-const getDeferredContainer = (contId) => {
+export const getDeferredContainer = (contId) => {
   if (kont[contId]) {
     return kont[contId];
   }
@@ -1333,14 +1333,13 @@ If we call the maximo change handler for every field, Maximo may change the valu
     preloadOfflineList(fieldMeta) {
       const attributeName = fieldMeta.attributeName;
       if (this.mp && !this.preloadedOfflineLists[attributeName]) {
-        this.preloadedOfflineLists[
-          attributeName
-        ] = maximoplus.basecontrols.listToOffline(
-          this.mp.getContainer(),
-          attributeName,
-          fieldMeta.listColumns,
-          fieldMeta.offlineReturnColumn
-        );
+        this.preloadedOfflineLists[attributeName] =
+          maximoplus.basecontrols.listToOffline(
+            this.mp.getContainer(),
+            attributeName,
+            fieldMeta.listColumns,
+            fieldMeta.offlineReturnColumn
+          );
       }
     }
     /** Internal*/
@@ -1551,14 +1550,13 @@ export function getQbeSection(WrappedTextField, drawFields, drawSearchButtons) {
     preloadOfflineList(fieldMeta) {
       const attributeName = fieldMeta.attributeName;
       if (this.mp && !this.preloadedOfflineLists[attributeName]) {
-        this.preloadedOfflineLists[
-          attributeName
-        ] = maximoplus.basecontrols.listToOffline(
-          this.mp.getContainer(),
-          attributeName,
-          fieldMeta.listColumns,
-          fieldMeta.offlineReturnColumn
-        );
+        this.preloadedOfflineLists[attributeName] =
+          maximoplus.basecontrols.listToOffline(
+            this.mp.getContainer(),
+            attributeName,
+            fieldMeta.listColumns,
+            fieldMeta.offlineReturnColumn
+          );
       }
     }
   }
@@ -2138,6 +2136,18 @@ export const setOrderBy = (kontId, column) => {
   });
 };
 
+export const fetchData = (kontId, startRow, numRows) => {
+  return getDeferredContainer(kontId).then((mp) => {
+    return mp.fetchData(startRow, numRows);
+  });
+};
+
+export const moveToRow = (kontId, row) => {
+  return getDeferredContainer(kontId).then((mp) => {
+    return mp.moveToRow(row);
+  });
+};
+
 export const getOfflineErrorDisplay = (Adapter) => {
   /**
    * Internal. Offline Error displayer component
@@ -2149,7 +2159,8 @@ export const getOfflineErrorDisplay = (Adapter) => {
     constructor(props) {
       super(props);
       this.displayErrors = this.displayErrors.bind(this);
-      maximoplus.core.globalFunctions.globalOfflinePostError = this.displayErrors;
+      maximoplus.core.globalFunctions.globalOfflinePostError =
+        this.displayErrors;
       this.state = { errors: [] };
     }
     /** Display the errors on the global error handler
