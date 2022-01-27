@@ -2443,3 +2443,15 @@ export const scriptRunner = (db, script) => {
 export const setOfflineNotifier = (offlineNotifier) => {
   maximoplus.core.setOfflineNotifier(offlineNotifier);
 };
+
+export const setErrorMessageHandler = (handler) => {
+  maximoplus.core.setErrorMessageHandler(handler);
+};
+
+export const setDisplayWaitCursor = (displayer) => {
+  maximoplus.core.setDisplayWaitCursor(displayer);
+};
+
+export const setRemoveWaitCursor = (remover) => {
+  maximoplus.core.setRemoveWaitCursor(remover);
+};
